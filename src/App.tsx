@@ -7,7 +7,7 @@ import {
   Upload,
   CircleHelp,
   RotateCcw,
-  Camera,
+
 } from "lucide-react";
 import { Scene } from "./components/viewport/Scene";
 import { Toolbar } from "./components/ui/Toolbar";
@@ -15,6 +15,7 @@ import { ObjectInspector } from "./components/ui/ObjectInspector";
 import { useSceneStore } from "./scene/sceneStore";
 import { execute, undo, redo } from "./scene/commandManager";
 import { serialize, deserialize } from "./scene/sceneSerializer";
+import { WebcamPreview } from "./components/camera/WebcamPreview";
 import type { Tool } from "./scene/objectTypes";
 export default function App() {
   const s = useSceneStore();
@@ -168,13 +169,7 @@ export default function App() {
             </span>
             <span>Drag to orbit · Scroll to zoom · Right-drag to pan</span>
           </div>
-          <div className="camera-placeholder">
-            <Camera size={18} />
-            <div>
-              Gesture input<small>Webcam tracking arrives in milestone 2</small>
-            </div>
-            <span className="badge">OFF</span>
-          </div>
+          <WebcamPreview />
         </section>
         <ObjectInspector />
       </div>
@@ -224,3 +219,4 @@ export default function App() {
     </main>
   );
 }
+

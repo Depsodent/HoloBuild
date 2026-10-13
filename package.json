@@ -10,9 +10,11 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "preview": "vite preview --host 127.0.0.1"
+    "preview": "vite preview --host 127.0.0.1",
+    "setup:vision": "node scripts/prepare-vision.mjs"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "^1.1.0",
     "@react-three/drei": "10.7.9",
     "@react-three/fiber": "9.8.1",
     "lucide-react": "^0.468.0",

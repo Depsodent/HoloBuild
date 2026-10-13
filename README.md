@@ -10,10 +10,13 @@ Node 22.12+ or 24 LTS is recommended. In this directory:
 
 ```powershell
 npm.cmd ci
+npm.cmd run setup:vision
 npm.cmd run dev
 ```
 
 Open the Local URL printed by Vite (normally http://127.0.0.1:5173). The app does not need an LLM API key. Camera access requires localhost or HTTPS and explicit user permission.
+
+`setup:vision` copies the installed MediaPipe 1.1 runtime and downloads the official version 1 hand model once, verifying SHA-256. The generated assets are ignored by Git but included in the production build. After setup, tracking needs no external asset requests. Start camera explicitly; Stop releases the webcam and model. Hiding the preview does not stop tracking; hiding the browser tab does. Select a camera while stopped when multiple devices are available.
 
 ```powershell
 npm.cmd run typecheck

@@ -22,7 +22,7 @@ test("transform modes and orbit preserve a healthy WebGL viewport", async ({
   await page.getByRole("button", { name: "Rotate R" }).click();
   await page.getByRole("button", { name: "Scale S" }).click();
   await page.getByRole("button", { name: "Select V" }).click();
-  const canvas = page.locator("canvas");
+  const canvas = page.locator("canvas[data-engine]");
   const bounds = await canvas.boundingBox();
   if (!bounds) throw Error("Missing canvas");
   await page.mouse.move(
@@ -48,7 +48,7 @@ test("workspace renders and mouse editor commands persist through undo and impor
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
   await expect(page).toHaveTitle(/HOLOBUILD/);
-  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.locator("canvas[data-engine]")).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Cube", exact: true }),
   ).toBeVisible();
@@ -81,3 +81,4 @@ test("workspace renders and mouse editor commands persist through undo and impor
   await expect(page.locator(".scene-list button")).toHaveCount(2);
   expect(errors).toEqual([]);
 });
+

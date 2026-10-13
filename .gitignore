@@ -6,3 +6,7 @@ playwright-report/
 !.env.example
 *.tsbuildinfo
 *.log
+
+public/vision/wasm/
+public/vision/*.task
+
