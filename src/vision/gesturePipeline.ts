@@ -34,7 +34,14 @@ export function startGesturePipeline() {
   let lastUi = 0;
   const unsubscribe = landmarkStream.subscribe((frame) => {
     const start = performance.now();
-    const points=frame.landmarks.length===21&&frame.landmarks.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)&&Number.isFinite(p.z))?frame.landmarks:[];
+    const points =
+      frame.landmarks.length === 21 &&
+      frame.landmarks.every(
+        (p) =>
+          Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z),
+      )
+        ? frame.landmarks
+        : [];
     const next = detector.update(
       smooth.update(points, frame.timestamp),
       frame.timestamp,

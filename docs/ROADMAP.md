@@ -3,7 +3,7 @@
 1. Foundation: 3D mouse editor and validation.
 2. Optional webcam: local VIDEO inference, preview, landmarks, lifecycle cleanup.
 3. Recognition: normalized pinch, hysteresis, smoothing, temporal stability, hand-loss reset.
-4. Interaction: camera raycasting, pinch grab, planar drag, preview, release command, loss cancellation.
+4. Interaction implemented: camera raycasting, pinch grab, planar drag, snapped/validated preview, single-command release and loss cancellation. Physical webcam acceptance remains pending.
 5. Construction: additional geometry, surface alignment/stacking, stronger collision rules, richer persistence.
 6. Two-hand transforms, calibration and gesture menus.
 7. Text/voice commands with validated deterministic parsing.

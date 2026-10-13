@@ -4,12 +4,15 @@ import { Mesh } from "three";
 import type { SceneObject, Vec3 } from "../../scene/objectTypes";
 import { useSceneStore } from "../../scene/sceneStore";
 import { execute } from "../../scene/commandManager";
+import { useInteractionStore } from "../../interaction/interactionStore";
 export function BuildingObject({ object }: { object: SceneObject }) {
   const ref = useRef<Mesh>(null);
   const [hover, setHover] = useState(false);
   const selected = useSceneStore((s) => s.selectedId === object.id);
   const tool = useSceneStore((s) => s.tool);
   const snap = useSceneStore((s) => s.snap);
+  const gestureHover = useInteractionStore((s) => s.hoveredId === object.id);
+  const grabbed = useSceneStore((s) => s.preview?.id === object.id);
   function commit() {
     const mesh = ref.current;
     if (mesh)
@@ -48,13 +51,15 @@ export function BuildingObject({ object }: { object: SceneObject }) {
           color={object.color}
           roughness={0.28}
           metalness={0.25}
-          transparent={object.material === "glass"}
-          opacity={object.material === "glass" ? 0.45 : 1}
+          transparent={grabbed || object.material === "glass"}
+          opacity={grabbed ? 0.2 : object.material === "glass" ? 0.45 : 1}
           emissive={object.color}
-          emissiveIntensity={hover ? 0.22 : 0.04}
+          emissiveIntensity={hover || gestureHover ? 0.3 : 0.04}
         />
         <Edges
-          color={selected ? "#b8fff5" : hover ? "#64f7e6" : "#267f85"}
+          color={
+            selected ? "#b8fff5" : hover || gestureHover ? "#64f7e6" : "#267f85"
+          }
           lineWidth={selected ? 2 : 1}
         />
       </mesh>

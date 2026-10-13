@@ -18,4 +18,6 @@ The mirrored cursor is `(1 − index.x, index.y)`. High-frequency data stays in 
 
 Development-only `?testInput` exposes a visibly labeled landmark injection bridge. It is eliminated from production builds and rejects injection while the real camera runs. Unit fixtures and browser tests exercise the same detector and pipeline. Headless WebGL tests run serially because CPU contention can legitimately exceed the 250 ms loss threshold.
 
+Gesture browser fixtures use a controlled Playwright clock so host scheduling cannot accidentally turn continuous test input into hand loss. Real Three.js picking, meshes, collision checks and undo commands still execute. Camera inference tests use real time; physical hand acceptance remains separate.
+
 Physical tests must include both hands separately, different hand sizes, lighting and camera distance, fast motion, occlusion and clutter. Two-hand interaction belongs to a later milestone.

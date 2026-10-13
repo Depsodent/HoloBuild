@@ -31,3 +31,13 @@ Record actual observations and hardware/browser details. Unchecked cases have no
 | Background clutter                | Track confidence/loss is reflected honestly                  | Not tested    |
 
 Do not mark the physical milestones accepted merely because synthetic tests pass. Record observed FPS and inference milliseconds in PERFORMANCE.md with hardware and scene count.
+
+## First laptop webcam session
+
+Use the ordinary localhost URL without `?testInput`. If the embedded browser cannot request camera permission, open the same URL in Edge or Chrome. Press **Start camera**, allow access, and keep the tab visible. The status should become **Local tracking · CPU · one hand**. If denied, enable camera access in that browser's site settings; if busy, close other camera applications. The preview can be hidden without stopping tracking.
+
+In even front lighting, hold one hand around 40–70 cm from the camera, with the whole hand visible. Check that all 21 points follow it. Point with the index finger and curl the other fingers. Move slowly until the cursor is over the cube, hold briefly, then pinch thumb to index. Look for **Grabbed** and the ghost preview. Move sideways, release into pointing, then click Undo: one action should restore the cube.
+
+Repeat a grab and remove the hand: the preview must disappear without moving the cube. Create a second cube and move the first over it: a red preview must reject release. Hold an open palm to open the menu, then point and pinch **Create cube**. End with **Stop camera** and check the laptop's camera indicator turns off.
+
+Report: whether landmarks appeared, whether pointing/pinch labels matched, any cancellation message, displayed FPS and inference Hz/ms, browser, lighting and approximate distance. If tracking keeps restarting, report the metrics before changing thresholds. None of these physical observations have yet been recorded by the developer agent.

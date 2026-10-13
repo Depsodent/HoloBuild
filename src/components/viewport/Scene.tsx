@@ -6,6 +6,7 @@ import { SceneLights } from "./SceneLights";
 import { CameraController } from "./CameraController";
 import { BuildingObject } from "./BuildingObject";
 import { ViewportBoundary } from "./ViewportBoundary";
+import { GestureInteraction, PlacementPreview } from "./GestureInteraction";
 function Metrics() {
   const timer = useRef({ elapsed: 0, frames: 0 });
   useFrame(({ gl }, delta) => {
@@ -43,6 +44,8 @@ export function Scene() {
         <Grid />
         <CameraController />
         <Metrics />
+        <GestureInteraction />
+        <PlacementPreview />
         {objects.map((object) => (
           <BuildingObject key={object.id} object={object} />
         ))}

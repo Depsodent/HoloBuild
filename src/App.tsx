@@ -1,4 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
+import { GestureCursor } from "./components/ui/GestureCursor";
+import { GestureMenu } from "./components/ui/GestureMenu";
+import { InteractionStatus } from "./components/ui/InteractionStatus";
 import {
   Box,
   Undo2,
@@ -19,7 +23,16 @@ import type { Tool } from "./scene/objectTypes";
 import { startGesturePipeline } from "./vision/gesturePipeline";
 export default function App() {
   useEffect(startGesturePipeline, []);
-  const s = useSceneStore();
+  const s = useSceneStore(
+    useShallow(({ objects, past, future, status, fps, tool }) => ({
+      objects,
+      past,
+      future,
+      status,
+      fps,
+      tool,
+    })),
+  );
   const file = useRef<HTMLInputElement>(null);
   const [help, setHelp] = useState(false);
   useEffect(() => {
@@ -171,6 +184,9 @@ export default function App() {
             <span>Drag to orbit · Scroll to zoom · Right-drag to pan</span>
           </div>
           <WebcamPreview />
+          <GestureCursor />
+          <GestureMenu />
+          <InteractionStatus />
         </section>
         <ObjectInspector />
       </div>
@@ -210,6 +226,18 @@ export default function App() {
             <p>
               Save project downloads JSON and stores a local copy. Load imports
               validated JSON. Camera use is optional.
+            </p>
+            <p>
+              Start camera and hold one hand in view. Point at a cube, pinch
+              thumb and index to grab, move, then reopen your hand to place.
+              Movement stays at the cube’s current height. A red preview means
+              placement is blocked. Losing your hand or closing it into a fist
+              cancels the move.
+            </p>
+            <p>
+              Hold an open palm to open the gesture menu. Point and pinch a card
+              to create a cube, undo, or close. Rotate and scale remain
+              available through the mouse controls.
             </p>
             <button className="primary" onClick={() => setHelp(false)}>
               Let’s build

@@ -31,6 +31,28 @@ npm.cmd run test:e2e
 
 Create a cube from Construction. Click an object or its scene-list row to select it. V selects, G moves, R rotates, S scales. The inspector edits precise coordinates, degrees, scale and color. Use the 3D handles for mouse transforms. Drag empty space to orbit, right-drag to pan and scroll to zoom. Delete removes the selection. Ctrl+Z undoes; Ctrl+Shift+Z redoes. Save project exports versioned JSON and writes a local copy. Load validates a JSON file before replacing the scene. Reset can be undone.
 
+## Gesture construction (Milestone 4)
+
+1. Click **Start camera**, allow access, and keep one hand clearly visible.
+2. Extend your index finger with the other fingers curled. The mirrored cursor follows your index fingertip. Point at a cube until it highlights.
+3. Pinch thumb and index together briefly to grab. Move your hand while holding the pinch. A ghost cube previews the snapped position; the original remains unchanged.
+4. Reopen to pointing or an open palm to place. A valid move creates one undo entry; a stationary grab creates none.
+5. Hand loss, stalled tracking, leaving the viewport, a large tracking jump, a fist, an invalid release, or another scene edit cancels the pending move. Mouse pointer-down in the viewport takes back control.
+
+Movement uses a camera ray intersecting a horizontal plane at the cube's existing height. It is **not free-space depth tracking**. Snapping affects X/Z at 0.5 m increments. Preview turns red for conservative bounding-box overlap, below-ground placement, or positions beyond ±50 m. Vertical dragging, automatic stacking, and precise rotated-shape collision are future work. Mouse inspector/gizmo transforms retain their existing numeric validation and do not yet share these gesture-specific collision restrictions.
+
+Hold an open palm to open the tool menu. Point and pinch a card to create a cube, undo, or close; mouse clicks also work. Rotation and scaling are available through mouse tools, not hand gestures yet.
+
+For repeatable development tests, `?testInput` enables a clearly labeled synthetic landmark bridge. It exists only in Vite development mode. Automated fixtures exercise actual raycasting and commands; they do not establish physical hand-tracking accuracy. See [manual acceptance tests](docs/MANUAL_TESTS.md).
+
+To run the browser suite with installed Edge against an existing server:
+
+```powershell
+$env:PLAYWRIGHT_CHANNEL='msedge'
+$env:PLAYWRIGHT_BASE_URL='http://127.0.0.1:5175'
+npm.cmd run test:e2e
+```
+
 ## Architecture
 
 React 19 and React Three Fiber 9 render the editor. Drei supplies camera, grid and transform helpers. Zustand owns serializable scene state. Zod validates commands and imports. The command manager is the only path that commits object changes; the renderer never owns persistent transforms. See [architecture](docs/ARCHITECTURE.md), [gesture design](docs/GESTURES.md), [performance](docs/PERFORMANCE.md), and [roadmap](docs/ROADMAP.md).
