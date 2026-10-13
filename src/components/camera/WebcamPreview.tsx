@@ -1,3 +1,4 @@
+import { GestureStatus } from "../ui/GestureStatus";
 import { useEffect, useRef, useState } from "react";
 import { Camera, CameraOff, Eye, EyeOff } from "lucide-react";
 import { HandTracker } from "../../vision/handTracker";
@@ -109,6 +110,7 @@ export function WebcamPreview() {
           Landmarks
         </label>
       </div>
+      <GestureStatus />
       <div className="camera-meta">
         {state.status === "running"
           ? `${state.handVisible ? "21 landmarks" : "No hand"} · ${state.inferenceHz} Hz · ${state.inferenceMs} ms`

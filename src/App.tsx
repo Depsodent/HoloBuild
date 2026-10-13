@@ -7,7 +7,6 @@ import {
   Upload,
   CircleHelp,
   RotateCcw,
-
 } from "lucide-react";
 import { Scene } from "./components/viewport/Scene";
 import { Toolbar } from "./components/ui/Toolbar";
@@ -17,7 +16,9 @@ import { execute, undo, redo } from "./scene/commandManager";
 import { serialize, deserialize } from "./scene/sceneSerializer";
 import { WebcamPreview } from "./components/camera/WebcamPreview";
 import type { Tool } from "./scene/objectTypes";
+import { startGesturePipeline } from "./vision/gesturePipeline";
 export default function App() {
+  useEffect(startGesturePipeline, []);
   const s = useSceneStore();
   const file = useRef<HTMLInputElement>(null);
   const [help, setHelp] = useState(false);
@@ -219,4 +220,3 @@ export default function App() {
     </main>
   );
 }
-

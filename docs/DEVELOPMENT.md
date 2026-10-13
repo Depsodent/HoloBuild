@@ -30,3 +30,11 @@ Verification: type checking, 7 unit tests and production build passed; 5 Edge br
 
 Try: Start camera, allow access, hold up one hand, toggle landmarks, then Stop and check the camera hardware indicator. Exercise: change the inference cap from 24 to 18 in `handTracker.ts` and compare measured inference rate and FPS. Limitations: synchronous CPU inference, one hand, no physical benchmark yet.
 
+## Milestone 3 — 2026-10-13
+
+Added `vision/gestureTypes.ts`, `calibration.ts`, `smoothing.ts`, `gestureDetector.ts`, `gesturePipeline.ts`, `components/ui/GestureStatus.tsx`, dev-only synthetic landmark injection, and gesture fixtures/tests. The detector classifies pointing, normalized pinch with hysteresis, held open palm, fist and ambiguous/lost states. Exponential smoothing is time-aware; gesture dwell is temporal rather than frame-count based. Raw points remain outside React. UI reports stable versus candidate state and normalized pinch ratio, without inventing probability/confidence scores.
+
+Typecheck, lint, 14 unit tests, production build and the deterministic gesture browser test passed. Existing camera/editor tests passed during the same milestone. The initial parallel headless gesture run exposed software-renderer starvation; serial execution passes and is now configured. This is not evidence of physical-camera performance or reliable real-world gesture classification.
+
+Test: Start camera, point, pinch, reopen, hold open palm. Watch the status settle; remove your hand and confirm it clears. Exercise: adjust `palmDwellMs` in calibration and compare responsiveness versus accidental activation. Limitations: heuristic orientation sensitivity, one hand, physical threshold tuning still pending.
+

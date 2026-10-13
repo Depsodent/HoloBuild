@@ -3,13 +3,11 @@ test("invalid imports preserve the scene and show recovery advice", async ({
   page,
 }) => {
   await page.goto("/");
-  await page
-    .locator("input[type=file]")
-    .setInputFiles({
-      name: "bad.json",
-      mimeType: "application/json",
-      buffer: Buffer.from('{"version":1,"objects":[{}]}'),
-    });
+  await page.locator("input[type=file]").setInputFiles({
+    name: "bad.json",
+    mimeType: "application/json",
+    buffer: Buffer.from('{"version":1,"objects":[{}]}'),
+  });
   await expect(page.locator(".status")).toContainText("Invalid scene file");
   await expect(page.locator(".scene-list button")).toHaveCount(1);
 });
@@ -71,14 +69,11 @@ test("workspace renders and mouse editor commands persist through undo and impor
   const saved = await page.evaluate(() =>
     localStorage.getItem("holobuild.scene")!,
   );
-  await page
-    .locator("input[type=file]")
-    .setInputFiles({
-      name: "scene.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(saved),
-    });
+  await page.locator("input[type=file]").setInputFiles({
+    name: "scene.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(saved),
+  });
   await expect(page.locator(".scene-list button")).toHaveCount(2);
   expect(errors).toEqual([]);
 });
-
