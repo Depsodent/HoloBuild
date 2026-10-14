@@ -2,10 +2,12 @@ import { useGestureStore } from "../../vision/gesturePipeline";
 import { useInteractionStore } from "../../interaction/interactionStore";
 import { useTrackingStore } from "../../vision/trackingStore";
 import { GESTURE_CONFIG } from "../../vision/calibration";
+import { useHandsStore } from "../../vision/handsStream";
 export function GestureDiagnostics() {
   const g = useGestureStore();
   const i = useInteractionStore();
   const t = useTrackingStore();
+  const hands = useHandsStore();
   return (
     <details className="gesture-diagnostics">
       <summary>Gesture diagnostics</summary>
@@ -43,6 +45,23 @@ export function GestureDiagnostics() {
         </dd>
         <dt>Confidence</dt>
         <dd>Not exposed by the detector</dd>
+        <dt>Tracked hands</dt>
+        <dd>
+          {hands.hands.length}
+          {hands.ambiguous ? " · ambiguous" : ""}
+        </dd>
+        {hands.hands.map((h) => (
+          <div className="hand-diagnostic" key={h.id}>
+            <dt>Hand {h.id}</dt>
+            <dd>
+              {h.gesture.gesture} · pinch{" "}
+              {h.gesture.pinchRatio?.toFixed(2) ?? "unavailable"}
+              {h.handedness
+                ? ` · model ${h.handedness} (${h.handednessScore !== undefined ? `${(h.handednessScore * 100).toFixed(0)}% handedness` : "score unavailable"})`
+                : ""}
+            </dd>
+          </div>
+        ))}
       </dl>
       <p>
         Aim until the cube highlights, then pinch. Distance must stay below{" "}

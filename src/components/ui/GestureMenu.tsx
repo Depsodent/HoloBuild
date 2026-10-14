@@ -1,4 +1,4 @@
-import { Box, Undo2, X } from "lucide-react";
+import { Box, Undo2, X, Move3d, Rotate3d, Scaling } from "lucide-react";
 import { useInteractionStore } from "../../interaction/interactionStore";
 import { runMenuAction } from "../../interaction/intentMapper";
 export function GestureMenu() {
@@ -23,6 +23,34 @@ export function GestureMenu() {
         >
           <Undo2 size={24} />
           Undo
+        </button>
+        <button
+          data-gesture-action="move"
+          onClick={() => runMenuAction("move")}
+        >
+          <Move3d size={24} />
+          Move
+        </button>
+        <button
+          data-gesture-action="scale"
+          onClick={() => runMenuAction("scale")}
+        >
+          <Scaling size={24} />
+          Scale
+        </button>
+        <button
+          data-gesture-action="rotate"
+          onClick={() => runMenuAction("rotate")}
+        >
+          <Rotate3d size={24} />
+          Rotate
+        </button>
+        <button
+          data-gesture-action="navigate"
+          onClick={() => runMenuAction("navigate")}
+        >
+          <Move3d size={24} />
+          Pan view
         </button>
         <button
           data-gesture-action="close"

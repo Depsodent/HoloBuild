@@ -1,6 +1,7 @@
 import { create } from "zustand";
 export type Phase = "idle" | "targeting" | "dragging" | "invalid";
-export type MenuAction = "create" | "undo" | "close";
+export type MenuAction =
+  "create" | "undo" | "close" | "move" | "scale" | "rotate" | "navigate";
 export const useInteractionStore = create<{
   phase: Phase;
   hoveredId: string | null;

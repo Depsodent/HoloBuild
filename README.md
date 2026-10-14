@@ -33,7 +33,7 @@ Create a cube, sphere, cylinder, cone, wall, or floor from Construction. Click a
 
 ## Gesture construction (Milestone 4)
 
-1. Click **Start camera**, allow access, and keep one hand clearly visible.
+1. Click **Start camera**, allow access, and keep one hand clearly visible for Move mode.
 2. Extend your index finger; the other fingers may be relaxed. The mirrored cursor follows your index fingertip. Point at a cube until it highlights.
 3. Pinch thumb and index together briefly to grab. Move your hand while holding the pinch. A ghost cube previews the snapped position; the original remains unchanged.
 4. Separate thumb and index to place; relaxed fingers are supported. A valid move creates one undo entry; a stationary grab creates none.
@@ -41,7 +41,7 @@ Create a cube, sphere, cylinder, cone, wall, or floor from Construction. Click a
 
 Movement uses a camera ray intersecting a horizontal plane at the cube's existing height. It is **not free-space depth tracking**. Snapping affects X/Z at 0.5 m increments. Preview turns red for conservative bounding-box overlap, below-ground placement, or positions beyond ±50 m. Vertical dragging, automatic stacking, and precise rotated-shape collision are future work. Mouse inspector/gizmo transforms share the same placement validation as gestures. Grounded shapes remain grounded when rotated or scaled in place. New and duplicated objects search for free grid space. Touching surfaces are allowed; colliding transforms are rejected.
 
-Click Help → Open gesture tools to open the tool menu. Open palm never opens it automatically. Point and pinch a card to create a cube, undo, or close; mouse clicks also work. Rotation and scaling are available through mouse tools, not hand gestures yet.
+Click Help → Open gesture tools to open the tool menu. Open palm activation is disabled by default; the optional advanced setting below enables a deliberate hold. Point and pinch a card to create a cube, undo, or close; mouse clicks also work. Rotation and scaling remain available through mouse tools and the explicit two-hand modes below.
 
 For repeatable development tests, `?testInput` enables a clearly labeled synthetic landmark bridge. It exists only in Vite development mode. Automated fixtures exercise actual raycasting and commands; they do not establish physical hand-tracking accuracy. See [manual acceptance tests](docs/MANUAL_TESTS.md).
 
@@ -74,3 +74,14 @@ Milestone 4 physical webcam acceptance was confirmed by the user. Milestone 5 re
 Drag the Gesture Input title to move it inside the workspace; drag its bottom-right grip to resize. Minimize/expand, maximize/restore and reset buttons control the window. Layout is saved locally; resizing the browser keeps it reachable. Focus the title/grip and use Arrow keys (Shift for larger steps). Minimizing or hiding the preview keeps capture and hand tracking running. Expand to access Stop camera; changing tabs retains the existing safe camera-stop behavior.
 
 Satin metal is opaque with stronger metallic reflections and moderate roughness. Holographic glass is transmissive/translucent with smoother highlights. The existing object color tints both presets, and material selection remains undoable and stored in scene JSON. Reflections are generated locally; no external environment download is needed.
+
+## Milestone 6: advanced gestures
+
+Start camera; it now tracks up to two hands locally. Expand the camera window and scroll to **Gesture mode**. Existing one-hand move is the default.
+
+- **Scale:** select an isolated object, choose Two-hand scale, open both pinches, then pinch both while keeping hands separated. Apart enlarges; together shrinks. Release to place once; Undo restores the original transform.
+- **Rotate:** choose Two-hand yaw rotation. Open then pinch both hands; tilt their connecting line to rotate around world Y. Separation changes do not scale in this mode. Rotation sensitivity is adjustable before grabbing.
+- **Navigate:** choose One-hand camera pan. Keep only one hand visible, open then pinch; move to pan, release to keep the view. Hand loss restores the starting view. Pan sensitivity is adjustable. This changes camera view without adding scene-history entries.
+- **Menu:** optional **Enable open-palm tool menu** is off by default. After a grab or closing tools, lower your hand or point for about five seconds to reset cooldown/rearm. Then show one steady open palm for about two seconds. Point at a card and pinch to confirm. Help and mouse clicks remain available; uncheck the setting to disable activation.
+
+The HUD and connecting guide remain visible when the camera window is minimized. Lost, overlapping/ambiguous or abruptly changing hands cancel previews; open pinches and reacquire before retrying. Model handedness scores are not tracking-confidence probabilities. Advanced modes/menu opt-in reset on reload, while your camera-window layout stays saved. No real-webcam acceptance is inferred from synthetic regression tests.

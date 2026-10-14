@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { landmarkStream } from "../../vision/landmarkStream";
+import { handsStream } from "../../vision/handsStream";
 const connections = [
   [0, 1],
   [1, 2],
@@ -27,31 +27,33 @@ export function HandLandmarkOverlay() {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(
     () =>
-      landmarkStream.subscribe(({ landmarks }) => {
+      handsStream.subscribe(({ hands }) => {
         const canvas = ref.current;
         const ctx = canvas?.getContext("2d");
         if (!canvas || !ctx) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (landmarks.length !== 21) return;
-        ctx.strokeStyle = "#65f6df";
-        ctx.lineWidth = 2;
-        for (const [a, b] of connections) {
-          ctx.beginPath();
-          ctx.moveTo(
-            landmarks[a].x * canvas.width,
-            landmarks[a].y * canvas.height,
-          );
-          ctx.lineTo(
-            landmarks[b].x * canvas.width,
-            landmarks[b].y * canvas.height,
-          );
-          ctx.stroke();
-        }
-        for (const p of landmarks) {
-          ctx.fillStyle = "#ecfff8";
-          ctx.beginPath();
-          ctx.arc(p.x * canvas.width, p.y * canvas.height, 3, 0, Math.PI * 2);
-          ctx.fill();
+        for (const { id, landmarks } of hands) {
+          if (landmarks.length !== 21) continue;
+          ctx.strokeStyle = id % 2 ? "#65f6df" : "#bf9aff";
+          ctx.lineWidth = 2;
+          for (const [a, b] of connections) {
+            ctx.beginPath();
+            ctx.moveTo(
+              landmarks[a].x * canvas.width,
+              landmarks[a].y * canvas.height,
+            );
+            ctx.lineTo(
+              landmarks[b].x * canvas.width,
+              landmarks[b].y * canvas.height,
+            );
+            ctx.stroke();
+          }
+          for (const p of landmarks) {
+            ctx.fillStyle = "#ecfff8";
+            ctx.beginPath();
+            ctx.arc(p.x * canvas.width, p.y * canvas.height, 3, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
       }),
     [],
@@ -62,7 +64,7 @@ export function HandLandmarkOverlay() {
       ref={ref}
       width={320}
       height={240}
-      aria-label="21 hand landmark overlay"
+      aria-label="Tracked hand landmark overlay (21 per hand)"
     />
   );
 }

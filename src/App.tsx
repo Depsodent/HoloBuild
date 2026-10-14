@@ -23,6 +23,7 @@ import type { Tool } from "./scene/objectTypes";
 import { startGesturePipeline } from "./vision/gesturePipeline";
 import { useInteractionStore } from "./interaction/interactionStore";
 import { GestureDiagnostics } from "./components/ui/GestureDiagnostics";
+import { HandGuides } from "./components/ui/HandGuides";
 export default function App() {
   useEffect(startGesturePipeline, []);
   const s = useSceneStore(
@@ -189,6 +190,7 @@ export default function App() {
           <GestureCursor />
           <GestureMenu />
           <GestureDiagnostics />
+          <HandGuides />
           <InteractionStatus />
         </section>
         <ObjectInspector />
@@ -238,10 +240,18 @@ export default function App() {
               cancels the move.
             </p>
             <p>
-              The gesture menu opens only from this Help panel. Point and pinch
-              a card to create a cube, undo, or close. Open palm never opens a
-              popup. Rotate and scale remain available through the mouse
-              controls.
+              The gesture menu opens from Help or the optional sustained-palm
+              setting. Point and pinch a card to confirm a tool. Automatic
+              activation is disabled by default and requires a fresh palm hold
+              after neutral rearming; releasing a pinch never opens it.
+            </p>
+            <p>
+              Select an object and choose Gesture mode in the camera panel.
+              Scale: pinch both hands and change their separation. Rotation:
+              pinch both and tilt the line between them; only world-Y yaw
+              changes. Camera pan: choose its mode and pinch one hand to move
+              the view. Release to confirm. Hand loss, mouse takeover and scene
+              edits cancel active operations.
             </p>
             <button
               onClick={() => {

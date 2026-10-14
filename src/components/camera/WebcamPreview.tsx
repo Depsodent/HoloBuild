@@ -1,4 +1,5 @@
 import { GestureStatus } from "../ui/GestureStatus";
+import { AdvancedGestures } from "../ui/AdvancedGestures";
 import { useEffect, useRef, useState } from "react";
 import {
   Camera,
@@ -13,6 +14,7 @@ import {
 } from "lucide-react";
 import { useFloatingPanel } from "./useFloatingPanel";
 import { useGestureStore } from "../../vision/gesturePipeline";
+import { useHandsStore } from "../../vision/handsStream";
 import { HandTracker } from "../../vision/handTracker";
 import { useTrackingStore } from "../../vision/trackingStore";
 import { HandLandmarkOverlay } from "./HandLandmarkOverlay";
@@ -20,6 +22,7 @@ export function WebcamPreview() {
   const panel = useRef<HTMLElement>(null);
   const floating = useFloatingPanel(panel);
   const gesture = useGestureStore((s) => s.gesture);
+  const handCount = useHandsStore((s) => s.hands.length);
   const video = useRef<HTMLVideoElement>(null);
   const tracker = useRef<HandTracker | null>(null);
   const state = useTrackingStore();
@@ -174,9 +177,10 @@ export function WebcamPreview() {
           </label>
         </div>
         <GestureStatus />
+        <AdvancedGestures />
         <div className="camera-meta">
           {state.status === "running"
-            ? `${state.handVisible ? "21 landmarks" : "No hand"} · ${state.inferenceHz} Hz · ${state.inferenceMs} ms`
+            ? `${handCount ? `${handCount} hands · ${handCount * 21} landmarks` : "No hand"} · ${state.inferenceHz} Hz · ${state.inferenceMs} ms`
             : "Private by design · frames stay on device"}
         </div>
       </div>

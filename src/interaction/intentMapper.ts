@@ -1,4 +1,5 @@
 import { execute, undo } from "../scene/commandManager";
+import { useAdvancedStore } from "./advancedStore";
 import { useSceneStore } from "../scene/sceneStore";
 import type { Vec3 } from "../scene/objectTypes";
 import { placement } from "./placement";
@@ -14,6 +15,13 @@ export function placeObject(id: string, position: Vec3) {
   );
 }
 export function runMenuAction(action: MenuAction) {
+  if (
+    action === "move" ||
+    action === "scale" ||
+    action === "rotate" ||
+    action === "navigate"
+  )
+    useAdvancedStore.setState({ mode: action });
   if (action === "create") execute({ type: "create" });
   if (action === "undo") undo();
   useInteractionStore.setState({ menuOpen: false });

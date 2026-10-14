@@ -4,6 +4,7 @@ export interface Landmark {
   z: number;
 }
 export interface TrackingFrame {
+  hands?: import("./handRecognizer").HandInput[];
   landmarks: Landmark[];
   timestamp: number;
   inferenceMs: number;

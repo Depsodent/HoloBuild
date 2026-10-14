@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { createCube } from "./objectFactory";
 import type { SceneObject, Tool, Vec3 } from "./objectTypes";
 export interface Preview {
+  scale?: Vec3;
+  rotation?: Vec3;
   id: string;
   position: Vec3;
   valid: boolean;

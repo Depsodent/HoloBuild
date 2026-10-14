@@ -32,7 +32,7 @@ const defaults: TrackerDependencies = {
         delegate: "CPU",
       },
       runningMode: "VIDEO",
-      numHands: 1,
+      numHands: 2,
       minHandDetectionConfidence: 0.6,
       minHandPresenceConfidence: 0.6,
       minTrackingConfidence: 0.6,
@@ -117,7 +117,7 @@ export class HandTracker {
       this.detector = detector;
       useTrackingStore.setState({
         status: "running",
-        message: "Local tracking · CPU · one hand",
+        message: "Local tracking · CPU · up to two hands",
       });
       let lastVideoTime = -1,
         lastInference = 0,
@@ -141,6 +141,11 @@ export class HandTracker {
             const landmarks = result.landmarks[0] ?? [];
             landmarkStream.publish({
               landmarks,
+              hands: result.landmarks.map((points, i) => ({
+                landmarks: points,
+                handedness: result.handedness[i]?.[0]?.categoryName,
+                handednessScore: result.handedness[i]?.[0]?.score,
+              })),
               timestamp: now,
               inferenceMs,
               aspectRatio: video.videoWidth / video.videoHeight || 1,

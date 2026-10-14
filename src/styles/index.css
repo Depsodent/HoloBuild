@@ -922,3 +922,59 @@ footer {
   outline: 2px solid #79edd7;
   outline-offset: -2px;
 }
+.advanced-gestures {
+  border-top: 1px solid #29404c;
+  padding-top: 10px;
+  margin-top: 10px;
+  font-size: 10px;
+  color: #9abfc5;
+}
+.advanced-gestures select {
+  margin: 6px 0;
+}
+.advanced-gestures p {
+  line-height: 1.5;
+  margin: 5px 0;
+}
+.gesture-menu {
+  z-index: 20;
+  top: 16%;
+  max-height: 78%;
+  overflow: auto;
+}
+.gesture-cursor {
+  z-index: 22;
+}
+.hand-guides {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 11;
+  pointer-events: none;
+}
+.advanced-hud {
+  position: absolute;
+  right: 24px;
+  bottom: 44px;
+  z-index: 12;
+  pointer-events: none;
+  display: grid;
+  gap: 5px;
+  font-size: 10px;
+  color: #a2d8d3;
+  padding: 12px;
+  border: 1px solid #346b6b;
+  border-radius: 8px;
+  background: #101b2be6;
+}
+.advanced-hud b {
+  font-size: 18px;
+  color: #79ffe0;
+}
+.advanced-hud small {
+  font-size: 9px;
+}
+.hand-diagnostic {
+  display: contents;
+}

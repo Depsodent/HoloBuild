@@ -1,8 +1,7 @@
 import { create } from "zustand";
 import { landmarkStream } from "./landmarkStream";
-import { LandmarkSmoother } from "./smoothing";
-import { GestureDetector } from "./gestureDetector";
-import { GESTURE_CONFIG } from "./calibration";
+import { HandRecognizer } from "./handRecognizer";
+import { handsStream, useHandsStore } from "./handsStream";
 import type { GestureFrame } from "./gestureTypes";
 const empty: GestureFrame = {
   gesture: "none",
@@ -29,33 +28,33 @@ export const gestureStream = {
 };
 export const useGestureStore = create<GestureFrame>(() => empty);
 export function startGesturePipeline() {
-  const smooth = new LandmarkSmoother(
-    GESTURE_CONFIG.smoothingMs,
-    GESTURE_CONFIG.lossGapMs,
-  );
-  const detector = new GestureDetector();
+  const recognizer = new HandRecognizer();
+  let primary: number | undefined;
   let lastUi = 0;
   const unsubscribe = landmarkStream.subscribe((frame) => {
     const start = performance.now();
-    const points =
-      frame.landmarks.length === 21 &&
-      frame.landmarks.every(
-        (p) =>
-          Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z),
-      )
-        ? frame.landmarks
-        : [];
-    const next = detector.update(
-      smooth.update(points, frame.timestamp),
+    const result = recognizer.update(
+      frame.hands ?? [{ landmarks: frame.landmarks }],
       frame.timestamp,
       frame.aspectRatio,
     );
+    const previousPrimary = primary;
+    if (!result.hands.some((h) => h.id === primary))
+      primary = result.hands[0]?.id;
+    const hand = result.hands.find((h) => h.id === primary);
+    const next =
+      result.ambiguous ||
+      (previousPrimary !== undefined && primary !== previousPrimary)
+        ? { ...empty, timestamp: frame.timestamp }
+        : (hand?.gesture ?? { ...empty, timestamp: frame.timestamp });
     next.recognitionMs = performance.now() - start;
     const changed = next.gesture !== current.gesture;
     current = next;
     listeners.forEach((fn) => fn(next));
+    handsStream.publish(result);
     if (changed || frame.timestamp - lastUi >= 150 || !next.cursor) {
       useGestureStore.setState(next);
+      useHandsStore.setState(result);
       lastUi = frame.timestamp;
     }
   });
@@ -63,6 +62,9 @@ export function startGesturePipeline() {
     unsubscribe();
     current = empty;
     useGestureStore.setState(empty);
+    const lost = { hands: [], timestamp: 0, aspectRatio: 1, ambiguous: false };
+    handsStream.publish(lost);
+    useHandsStore.setState(lost);
     listeners.forEach((fn) => fn(empty));
   };
 }

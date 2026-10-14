@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
 import { gestureStream } from "../../vision/gesturePipeline";
 import { useInteractionStore } from "../../interaction/interactionStore";
+import { useAdvancedStore } from "../../interaction/advancedStore";
 export function GestureCursor() {
   const ref = useRef<HTMLDivElement>(null);
   const phase = useInteractionStore((s) => s.phase);
+  const mode = useAdvancedStore((s) => s.mode);
   useEffect(() => {
     let last = 0;
     const off = gestureStream.subscribe((frame) => {
@@ -38,9 +40,15 @@ export function GestureCursor() {
       <small>
         {phase === "invalid"
           ? "INVALID"
-          : phase === "dragging"
-            ? "GRABBED"
-            : "PINCH TO GRAB"}
+          : mode !== "move"
+            ? mode === "navigate"
+              ? "CAMERA PAN"
+              : mode === "scale"
+                ? "TWO-HAND SCALE"
+                : "YAW ROTATION"
+            : phase === "dragging"
+              ? "GRABBED"
+              : "PINCH TO GRAB"}
       </small>
     </div>
   );

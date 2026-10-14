@@ -27,14 +27,14 @@ Record actual observations and hardware/browser details. Unchecked cases have no
 | Pinch, move, release              | One snapped planar move and one undo entry                   | Not tested    |
 | Release outside valid workspace   | Invalid preview rejected                                     | Not tested    |
 | Palm held briefly                 | No popup, even after pinch release                           | Not tested    |
-| Two visible hands                 | One-hand mode only; two-hand transforms unsupported          | Not tested    |
+| Two visible hands                 | Two-hand tracking; explicit scale/rotation modes             | Not tested    |
 | Background clutter                | Track confidence/loss is reflected honestly                  | Not tested    |
 
 Do not mark the physical milestones accepted merely because synthetic tests pass. Record observed FPS and inference milliseconds in PERFORMANCE.md with hardware and scene count.
 
 ## First laptop webcam session
 
-Use the ordinary localhost URL without `?testInput`. If the embedded browser cannot request camera permission, open the same URL in Edge or Chrome. Press **Start camera**, allow access, and keep the tab visible. The status should become **Local tracking · CPU · one hand**. If denied, enable camera access in that browser's site settings; if busy, close other camera applications. The preview can be hidden without stopping tracking.
+Use the ordinary localhost URL without `?testInput`. If the embedded browser cannot request camera permission, open the same URL in Edge or Chrome. Press **Start camera**, allow access, and keep the tab visible. The status should become **Local tracking · CPU · up to two hands**. If denied, enable camera access in that browser's site settings; if busy, close other camera applications. The preview can be hidden without stopping tracking.
 
 In even front lighting, hold one hand around 40–70 cm from the camera, with the whole hand visible. Check that all 21 points follow it. Point with the index finger; the other fingers may be relaxed. Move slowly until the cursor is over the cube, hold briefly, then pinch thumb to index. Look for **Grabbed** and the ghost preview. Move sideways, release into pointing, then click Undo: one action should restore the cube.
 
@@ -77,3 +77,15 @@ Record object type, camera conditions, diagnostics and any failure. Milestone 5 
 - Undo/Redo material selection and save/load a mixed-material scene.
 
 Do not mark physical retesting complete based on automated synthetic camera or landmark tests.
+
+## Milestone 6 physical webcam acceptance — pending
+
+Use **http://127.0.0.1:5175/** without `?testInput`. Start the camera, keep the tab visible, and verify both skeletons/hand IDs in even front lighting. Keep wrists apart; crossing/occlusion may cancel safely. Expand/scroll the camera panel to access Gesture mode.
+
+1. **Two-hand scale:** Select one isolated cube. Choose Two-hand scale. Show both hands with thumb/index apart for about half a second, then pinch both. Move apart and together; inspect the factor, ghost and unchanged inspector values during preview. Release a pinch to confirm. Undo once, Redo once. Repeat with sphere, cylinder, cone, wall and floor. Hide a hand mid-operation; the original transform must remain unchanged.
+2. **Two-hand rotation:** Select an object and choose Two-hand yaw rotation. Open both pinches, pinch both, then tilt the connecting line by raising one hand and lowering the other. Keep separation comfortable. Confirm the angle/ghost changes without scaling. Release; Undo restores the original orientation. Try a previously tilted object and a nearby obstacle; invalid red previews must not commit.
+3. **Deliberate menu:** Enable open-palm tool menu. Lower your hand or point for five seconds after manipulation/close; then hold one steady open palm for about two seconds. Point at Scale/Rotate/Move/Pan view and pinch to confirm. Brief palms, pinch release into a held palm, and mouse/panel dragging must never open tools. Close and keep your palm held; it must remain closed. Uncheck activation and confirm it stays disabled. Help/mouse cards still work.
+4. **Camera navigation:** Choose One-hand camera pan and keep one hand visible. Open then pinch; move sideways/up/down. Release retains the view, and object transforms/history stay unchanged. Hide the hand mid-pan; the initial view returns. Confirm mouse orbit works afterward. Return to One-hand move before grabbing objects.
+5. **Preservation:** Minimize/restore and drag/resize the camera window during tracking. Repeat one-hand point/grab/move/release/Undo. Test materials, duplicate/delete, snapping and mixed-scene save/load.
+
+Report mode, hand count/IDs, factor/angle, diagnostics/rejection text, FPS/inference Hz, lighting and any failure. The developer's simulated landmark/model-video tests do not establish physical reliability. Do not begin further gesture/voice/LLM work before accepting this milestone.
