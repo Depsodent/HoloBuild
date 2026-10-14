@@ -34,14 +34,14 @@ Create a cube from Construction. Click an object or its scene-list row to select
 ## Gesture construction (Milestone 4)
 
 1. Click **Start camera**, allow access, and keep one hand clearly visible.
-2. Extend your index finger with the other fingers curled. The mirrored cursor follows your index fingertip. Point at a cube until it highlights.
+2. Extend your index finger; the other fingers may be relaxed. The mirrored cursor follows your index fingertip. Point at a cube until it highlights.
 3. Pinch thumb and index together briefly to grab. Move your hand while holding the pinch. A ghost cube previews the snapped position; the original remains unchanged.
-4. Reopen to pointing or an open palm to place. A valid move creates one undo entry; a stationary grab creates none.
+4. Separate thumb and index to place; relaxed fingers are supported. A valid move creates one undo entry; a stationary grab creates none.
 5. Hand loss, stalled tracking, leaving the viewport, a large tracking jump, a fist, an invalid release, or another scene edit cancels the pending move. Mouse pointer-down in the viewport takes back control.
 
 Movement uses a camera ray intersecting a horizontal plane at the cube's existing height. It is **not free-space depth tracking**. Snapping affects X/Z at 0.5 m increments. Preview turns red for conservative bounding-box overlap, below-ground placement, or positions beyond ±50 m. Vertical dragging, automatic stacking, and precise rotated-shape collision are future work. Mouse inspector/gizmo transforms retain their existing numeric validation and do not yet share these gesture-specific collision restrictions.
 
-Hold an open palm to open the tool menu. Point and pinch a card to create a cube, undo, or close; mouse clicks also work. Rotation and scaling are available through mouse tools, not hand gestures yet.
+Click Help → Open gesture tools to open the tool menu. Open palm never opens it automatically. Point and pinch a card to create a cube, undo, or close; mouse clicks also work. Rotation and scaling are available through mouse tools, not hand gestures yet.
 
 For repeatable development tests, `?testInput` enables a clearly labeled synthetic landmark bridge. It exists only in Vite development mode. Automated fixtures exercise actual raycasting and commands; they do not establish physical hand-tracking accuracy. See [manual acceptance tests](docs/MANUAL_TESTS.md).
 

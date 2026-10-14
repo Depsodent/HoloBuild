@@ -6,9 +6,13 @@ export const useInteractionStore = create<{
   hoveredId: string | null;
   menuOpen: boolean;
   message: string;
+  rayTarget: string | null;
+  rejection: string;
 }>(() => ({
   phase: "idle",
   hoveredId: null,
   menuOpen: false,
   message: "Point at a cube, then pinch to grab.",
+  rayTarget: null,
+  rejection: "Open your pinch and aim at a cube.",
 }));

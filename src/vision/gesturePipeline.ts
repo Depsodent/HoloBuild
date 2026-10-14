@@ -10,6 +10,9 @@ const empty: GestureFrame = {
   timestamp: 0,
   cursor: null,
   pinchRatio: null,
+  pinchActive: false,
+  pinchCandidate: false,
+  pinchStable: false,
   stable: false,
   recognitionMs: 0,
 };
@@ -45,6 +48,7 @@ export function startGesturePipeline() {
     const next = detector.update(
       smooth.update(points, frame.timestamp),
       frame.timestamp,
+      frame.aspectRatio,
     );
     next.recognitionMs = performance.now() - start;
     const changed = next.gesture !== current.gesture;

@@ -21,6 +21,8 @@ import { serialize, deserialize } from "./scene/sceneSerializer";
 import { WebcamPreview } from "./components/camera/WebcamPreview";
 import type { Tool } from "./scene/objectTypes";
 import { startGesturePipeline } from "./vision/gesturePipeline";
+import { useInteractionStore } from "./interaction/interactionStore";
+import { GestureDiagnostics } from "./components/ui/GestureDiagnostics";
 export default function App() {
   useEffect(startGesturePipeline, []);
   const s = useSceneStore(
@@ -186,6 +188,7 @@ export default function App() {
           <WebcamPreview />
           <GestureCursor />
           <GestureMenu />
+          <GestureDiagnostics />
           <InteractionStatus />
         </section>
         <ObjectInspector />
@@ -235,10 +238,19 @@ export default function App() {
               cancels the move.
             </p>
             <p>
-              Hold an open palm to open the gesture menu. Point and pinch a card
-              to create a cube, undo, or close. Rotate and scale remain
-              available through the mouse controls.
+              The gesture menu opens only from this Help panel. Point and pinch
+              a card to create a cube, undo, or close. Open palm never opens a
+              popup. Rotate and scale remain available through the mouse
+              controls.
             </p>
+            <button
+              onClick={() => {
+                setHelp(false);
+                useInteractionStore.setState({ menuOpen: true });
+              }}
+            >
+              Open gesture tools
+            </button>
             <button className="primary" onClick={() => setHelp(false)}>
               Let’s build
             </button>

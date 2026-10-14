@@ -139,7 +139,12 @@ export class HandTracker {
             const result = detector.detectForVideo(video, now);
             const inferenceMs = performance.now() - start;
             const landmarks = result.landmarks[0] ?? [];
-            landmarkStream.publish({ landmarks, timestamp: now, inferenceMs });
+            landmarkStream.publish({
+              landmarks,
+              timestamp: now,
+              inferenceMs,
+              aspectRatio: video.videoWidth / video.videoHeight || 1,
+            });
             frames++;
             totalMs += inferenceMs;
             // Leave room for rendering when synchronous inference is expensive.

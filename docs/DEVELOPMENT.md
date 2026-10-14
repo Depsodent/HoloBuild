@@ -74,3 +74,33 @@ Manual test: Start camera → point at a cube → pinch → move → reopen to p
 Limitations: one-hand planar translation only; no vertical gesture movement, automatic stacking, two-hand transforms, exact rotated-shape collision or physical calibration yet. Conservative AABBs can reject separated rotated cubes. Mouse transforms preserve their earlier rules and can create overlaps. Heavy CPU stalls can trigger safe cancellation.
 
 Exercise: change `snapCoordinate`'s step from 0.5 to 0.25 m, update the displayed grid-step label, and extend its unit test. Next is Milestone 5: additional primitives and improved placement/stacking tools; do not start two-hand/AI work before the basic editor is physically tested.
+
+## Milestone 4 webcam interaction repair — 2026-10-14
+
+### Report and starting state
+
+Continued the existing Desktop project at clean checkpoint `a1a5d86`, preserving Milestones 1–4. The user physically confirmed that camera startup, tracking and cursor motion worked, but reported unreliable grabs and repeated “Point. Pinch. Build.” popups. No physical acceptance is claimed for this repaired build. No reset, deletion, project recreation or Milestone 5 work was performed.
+
+### Diagnosis and targeted fixes
+
+Code inspection identified three concrete failure paths: strict stable-pointing arming was cleared by unknown/fist poses during closure; the grab used only the current fingertip ray after debounce, allowing closure drift to lose the target; and release dwell restarted whenever the non-pinch pose classification changed. The popup was opened directly by a stable open-palm transition, with no explicit user action. The virtual cursor did not dispatch arbitrary UI clicks.
+
+- Pinch now has an independent hysteresis latch and 90 ms activation/release debounce. Open thumb/index arms aiming without requiring all other fingers to be curled. Relaxed release can place; fist release still cancels. Activation/release thresholds remain **0.32 / 0.48**.
+- A recent actual selectable ray hit survives closure for at most **500 ms** and **0.08 normalized cursor displacement**. Stale/distant hits cannot be used. Grab offset remains captured at closure; release freezes the last preview while debounce settles, then creates one validated history command. Stationary/invalid moves create none.
+- MediaPipe y is converted from image-height units to image-width units for distance/angle measurements, using the actual video dimensions. Cursor mapping remains `(1 − x, y)` and agrees with the mirrored preview and Three.js NDC ray. Handedness does not gate selection.
+- Help → **Open gesture tools** is the only menu-opening path. Open-palm recognition and pinch release cannot open it.
+- Collapsible **Gesture diagnostics** displays pose/candidate, normalized distance, thresholds, threshold latch, debounced pinch state, target ID, actual selectable ray hit, grab phase, rejection/cancellation reason, tracking status and rate. Confidence is explicitly unavailable, not confused with handedness probability.
+- Webcam/diagnostics overlays and Help block object grabbing through UI. Mouse pointer-down cancels and suspends gestures until pointer-up; a held pinch cannot restart the cancelled operation. Existing undo-during-grab and tracking-loss safeguards remain intact.
+- Live camera and synthetic fixtures both publish landmarks plus aspect ratio into the same smoother, detector, controller and raycaster. New fixtures model relaxed fingers, nonzero depth, gradual closure, fingertip drift and changing release poses. They are synthetic approximations, not recorded webcam data.
+
+### Verification and checkpoint
+
+On the actual Desktop checkout: **TypeScript passed; ESLint passed; 28 unit tests passed; all 14 serial Edge/Playwright browser tests passed (1.1 minutes); production build passed.** Browser coverage includes the real local MediaPipe runtime on synthetic video, denied camera permission, cursor/raycast alignment, pinch selection, snapped move and one-command release, no release/palm popup, rapid transitions, hand loss/stall, collision rejection, Undo during grab, explicit Help/menu use, mouse takeover and original editor import/export/orbit tests. The expanded diagnostics screenshot was visually inspected in the rendered application.
+
+The build retains the existing large-bundle and third-party Zod annotation warnings. Vite is running at **http://127.0.0.1:5175/** and an HTTP request returned 200. Save this verified repair as `fix: stabilize webcam pinch interaction and require explicit gesture help`.
+
+### Physical acceptance and next step
+
+The code-level failure paths are repaired and automated regressions pass; **reliable physical-webcam interaction is still awaiting the user's retest**. Ask the user to: point at cube → pinch to grab → move → release to place → confirm no popup → undo. If unsuccessful, use diagnostics to identify whether distance/latch, debounce, targeting, grab rejection or frame loss failed. Capture actual closed/open distances before adding calibration; do not weaken thresholds speculatively.
+
+Limitations remain one-hand fixed-height translation, heuristic sensitivity to occlusion/orientation, conservative AABB collision and safe cancellation after >250 ms stalls. Camera conditions and performance need physical measurement. Milestone 5 (additional primitives and placement/stacking) remains deferred until this interaction is accepted; it has not started.

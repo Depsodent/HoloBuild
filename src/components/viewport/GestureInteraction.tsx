@@ -15,6 +15,17 @@ export function GestureInteraction() {
     const raycasting = createRaycasting(camera, scene);
     const instance = new GestureController({
       ...raycasting,
+      blocked(cursor) {
+        if (document.querySelector('[aria-label="Workspace help"]'))
+          return true;
+        const rect = gl.domElement.getBoundingClientRect();
+        return !!document
+          .elementFromPoint(
+            rect.left + cursor.x * rect.width,
+            rect.top + cursor.y * rect.height,
+          )
+          ?.closest(".webcam-panel, .gesture-diagnostics");
+      },
       menuHit(cursor) {
         const rect = gl.domElement.getBoundingClientRect();
         const x = rect.left + cursor.x * rect.width,
@@ -30,9 +41,10 @@ export function GestureInteraction() {
       },
     });
     controller.current = instance;
+    let mouseActive = false;
     const off = gestureStream.subscribe((frame) => {
       last.current = performance.now();
-      instance.update(frame);
+      if (!mouseActive) instance.update(frame);
     });
     const offScene = useSceneStore.subscribe((state, previous) => {
       if (
@@ -47,14 +59,21 @@ export function GestureInteraction() {
       }
     });
     const cancelOnMouse = () => {
-      if (instance.dragging)
-        instance.cancel("Mouse control resumed. Gesture preview cancelled.");
+      mouseActive = true;
+      instance.cancel("Mouse control resumed. Open pinch and aim again.");
+    };
+    const mouseUp = () => {
+      mouseActive = false;
     };
     gl.domElement.addEventListener("pointerdown", cancelOnMouse);
+    window.addEventListener("pointerup", mouseUp);
+    window.addEventListener("pointercancel", mouseUp);
     return () => {
       off();
       offScene();
       gl.domElement.removeEventListener("pointerdown", cancelOnMouse);
+      window.removeEventListener("pointerup", mouseUp);
+      window.removeEventListener("pointercancel", mouseUp);
       instance.cancel("Viewport restarted. Uncommitted movement cancelled.");
       controller.current = null;
     };

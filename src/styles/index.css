@@ -782,3 +782,38 @@ footer {
 .gesture-menu button:hover {
   background: #285955;
 }
+.gesture-diagnostics {
+  position: absolute;
+  right: 20px;
+  top: 55px;
+  z-index: 14;
+  width: 265px;
+  max-height: calc(100% - 100px);
+  overflow: auto;
+  padding: 10px 12px;
+  background: #142532f5;
+  border: 1px solid #467e7e;
+  border-radius: 8px;
+  font-size: 10px;
+  color: #c0dedf;
+}
+.gesture-diagnostics summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.gesture-diagnostics dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.gesture-diagnostics dt {
+  color: #8babbc;
+}
+.gesture-diagnostics dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.gesture-diagnostics p {
+  line-height: 1.5;
+  color: #8babbc;
+}

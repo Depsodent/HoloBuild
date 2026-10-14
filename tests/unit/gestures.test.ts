@@ -55,3 +55,38 @@ it("smooths motion consistently and resets after loss", () => {
   s.update([], 100);
   expect(s.update([{ x: 1, y: 1, z: 1 }], 110)[0].x).toBe(1);
 });
+
+it("debounces a live-style pinch independently of changing release poses", () => {
+  const d = new GestureDetector();
+  const relaxed = hand("open-palm");
+  // A relaxed two-finger aim is unknown, not the strict pointing classifier.
+  for (let i = 13; i < 21; i++) relaxed[i] = hand()[i];
+  d.update(relaxed, 0);
+  expect(d.update(relaxed, 200).gesture).toBe("unknown");
+  const closed = structuredClone(relaxed);
+  closed[4] = { ...closed[8], x: closed[8].x + 0.05, z: 0.02 };
+  expect(d.update(closed, 240).pinchActive).toBe(false);
+  expect(d.update(closed, 340).pinchActive).toBe(true);
+  d.update(relaxed, 380);
+  d.update(hand("open-palm"), 420);
+  expect(d.update(relaxed, 480).pinchActive).toBe(false);
+});
+it("short threshold crossings cannot chatter into grabs or releases", () => {
+  const d = new GestureDetector();
+  for (let t = 0; t < 300; t += 30)
+    expect(d.update(hand(t % 60 ? "pointing" : "pinch"), t).pinchActive).toBe(
+      false,
+    );
+  d.update(hand("pinch"), 330);
+  expect(d.update(hand("pinch"), 430).pinchActive).toBe(true);
+  d.update(hand(), 460);
+  expect(d.update(hand("pinch"), 490).pinchActive).toBe(true);
+});
+it("normalizes webcam aspect ratio without changing mirrored cursor coordinates", () => {
+  const p = hand("pinch", 0.28);
+  const wide = p.map((v) => ({ ...v, y: (v.y * 4) / 3 }));
+  const a = new GestureDetector().update(p, 0);
+  const b = new GestureDetector().update(wide, 0, 4 / 3);
+  expect(b.pinchRatio).toBeCloseTo(a.pinchRatio!);
+  expect(b.cursor).toEqual({ x: 1 - wide[8].x, y: wide[8].y });
+});

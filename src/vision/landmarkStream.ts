@@ -7,6 +7,7 @@ export interface TrackingFrame {
   landmarks: Landmark[];
   timestamp: number;
   inferenceMs: number;
+  aspectRatio?: number;
 }
 type Listener = (frame: TrackingFrame) => void;
 const listeners = new Set<Listener>();

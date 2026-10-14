@@ -1,11 +1,16 @@
 import { test, expect } from "@playwright/test";
-import { hold, poseAt, target } from "../helpers/gestureInput";
-test("open-palm menu creates a cube through point/pinch without mouse input", async ({
+import { hold, poseAt, livePoseAt, target } from "../helpers/gestureInput";
+test("open palm never opens tools; explicit Help opens tools for point/pinch selection", async ({
   page,
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
   await hold(page, poseAt("open-palm", start.cursor), 850);
+  await expect(page.getByLabel("Gesture tool menu")).toHaveCount(0);
+  await page.getByRole("button", { name: "Help", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Open gesture tools", exact: true })
+    .click();
   await expect(page.getByLabel("Gesture tool menu")).toBeVisible();
   const card = (await page
     .locator("[data-gesture-action=create]")
@@ -163,6 +168,93 @@ test("undo during a grab cancels the transaction instead of resurrecting its pre
   expect(await page.evaluate(() => window.__HOLO_TEST__!.snapshot())).toEqual({
     history: 0,
     redo: 1,
+    preview: null,
+  });
+});
+
+test("live-style relaxed aim, progressive pinch and mixed release place once without popups", async ({
+  page,
+}) => {
+  await page.goto("/?testInput");
+  const start = await target(page);
+  await hold(page, livePoseAt(0.9, start.cursor), 600, 4 / 3);
+  await expect(page.locator(".gesture-cursor")).toHaveClass(/targeting/);
+  const closed = { x: start.cursor.x + 0.035, y: start.cursor.y + 0.015 };
+  for (const ratio of [0.6, 0.42, 0.26, 0.2])
+    await hold(page, livePoseAt(ratio, closed), 70, 4 / 3);
+  await hold(page, livePoseAt(0.2, closed), 200, 4 / 3);
+  await expect(page.locator(".gesture-cursor")).toHaveClass(/dragging/);
+  const end = { x: closed.x + 0.12, y: closed.y };
+  await hold(page, livePoseAt(0.24, end), 600, 4 / 3);
+  // Release moves between unknown and palm while the pinch stays open.
+  await hold(page, livePoseAt(0.9, end), 100, 4 / 3);
+  await hold(page, poseAt("open-palm", end), 70);
+  await hold(page, livePoseAt(0.9, end), 150, 4 / 3);
+  await hold(page, poseAt("open-palm", end), 800);
+  await expect(page.getByLabel("Gesture tool menu")).toHaveCount(0);
+  await expect(page.getByLabel("Workspace help")).toHaveCount(0);
+  expect(
+    (await page.evaluate(() => window.__HOLO_TEST__!.snapshot())).history,
+  ).toBe(1);
+  await page.getByText("Gesture diagnostics", { exact: true }).click();
+  await expect(page.locator(".gesture-diagnostics")).toContainText(
+    "Activate / release",
+  );
+  await expect(page.locator(".gesture-diagnostics")).toContainText(
+    "0.32 / 0.48",
+  );
+  await page.screenshot({ path: "test-results/gesture-diagnostics.png" });
+  await hold(page, [], 50);
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  expect(
+    await page.evaluate(() => window.__HOLO_TEST__!.scene()[0].position),
+  ).toEqual(start.object.position);
+});
+
+test("rapid gesture changes cannot open help or commit a move", async ({
+  page,
+}) => {
+  await page.goto("/?testInput");
+  const start = await target(page);
+  await hold(page, poseAt("pointing", start.cursor));
+  for (let n = 0; n < 5; n++) {
+    await hold(page, poseAt("pinch", start.cursor), 35);
+    await hold(page, poseAt("open-palm", start.cursor), 100);
+  }
+  await hold(page, poseAt("pointing", start.cursor));
+  await expect(page.getByLabel("Gesture tool menu")).toHaveCount(0);
+  await expect(page.getByLabel("Workspace help")).toHaveCount(0);
+  expect(await page.evaluate(() => window.__HOLO_TEST__!.snapshot())).toEqual({
+    history: 0,
+    redo: 0,
+    preview: null,
+  });
+});
+
+test("mouse orbit takes control during a grab and a held pinch cannot restart it", async ({
+  page,
+}) => {
+  await page.goto("/?testInput");
+  const start = await target(page);
+  await hold(page, poseAt("pointing", start.cursor));
+  await hold(page, poseAt("pinch", start.cursor));
+  await expect(page.locator(".gesture-cursor")).toHaveClass(/dragging/);
+  const canvas = (await page.locator("canvas[data-engine]").boundingBox())!;
+  await page.mouse.move(
+    canvas.x + canvas.width * 0.75,
+    canvas.y + canvas.height * 0.75,
+  );
+  await page.mouse.down();
+  await hold(page, poseAt("pinch", start.cursor));
+  await page.mouse.move(
+    canvas.x + canvas.width * 0.8,
+    canvas.y + canvas.height * 0.7,
+  );
+  await page.mouse.up();
+  await hold(page, poseAt("pinch", start.cursor));
+  expect(await page.evaluate(() => window.__HOLO_TEST__!.snapshot())).toEqual({
+    history: 0,
+    redo: 0,
     preview: null,
   });
 });

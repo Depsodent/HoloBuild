@@ -26,3 +26,14 @@ export function hand(
   if (kind === "pinch") p[4] = { ...p[8], x: p[8].x + ratio * 0.25 };
   return p;
 }
+
+// Synthetic live-style variation: relaxed middle finger, non-zero depth,
+// gradual thumb closure. These are reproducible fixtures, not webcam recordings.
+export function relaxedHand(ratio = 0.9): Landmark[] {
+  const p = hand("pinch", ratio);
+  const open = hand("open-palm");
+  for (let i = 9; i <= 12; i++) p[i] = { ...open[i] };
+  p[4].z = 0.012;
+  p[8].z = -0.006;
+  return p;
+}

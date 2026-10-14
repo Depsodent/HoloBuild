@@ -26,18 +26,22 @@ export function isExtended(points: Landmark[], mcp: number) {
 }
 export class GestureDetector {
   private pinching = false;
+  private pinchActive = false;
+  private pinchSince = 0;
   private current: Gesture = "none";
   private candidate: Gesture = "none";
   private since = 0;
   private lastTime: number | null = null;
   reset() {
     this.pinching = false;
+    this.pinchActive = false;
+    this.pinchSince = 0;
     this.current = "none";
     this.candidate = "none";
     this.since = 0;
     this.lastTime = null;
   }
-  update(points: Landmark[], now: number): GestureFrame {
+  update(points: Landmark[], now: number, aspectRatio = 1): GestureFrame {
     if (this.lastTime !== null && now - this.lastTime > config.lossGapMs)
       this.reset();
     this.lastTime = now;
@@ -61,13 +65,26 @@ export class GestureDetector {
         timestamp: now,
         cursor: null,
         pinchRatio: null,
+        pinchActive: false,
+        pinchCandidate: false,
+        pinchStable: false,
         stable: false,
         recognitionMs: 0,
       };
     }
-    const ratio = pinchRatio(points);
-    this.pinching = ratio < (this.pinching ? config.pinchOff : config.pinchOn);
-    const extended = [5, 9, 13, 17].map((i) => isExtended(points, i));
+    // MediaPipe x/z use image width, y uses image height. Measure in one
+    // coordinate system while leaving normalized cursor coordinates untouched.
+    const metric = points.map((p) => ({ ...p, y: p.y / aspectRatio }));
+    const ratio = pinchRatio(metric);
+    const pinching = ratio < (this.pinching ? config.pinchOff : config.pinchOn);
+    if (pinching !== this.pinching) this.pinchSince = now;
+    this.pinching = pinching;
+    if (
+      now - this.pinchSince >=
+      (pinching ? config.pinchDwellMs : config.releaseDwellMs)
+    )
+      this.pinchActive = pinching;
+    const extended = [5, 9, 13, 17].map((i) => isExtended(metric, i));
     const next: Gesture = this.pinching
       ? "pinch"
       : extended.every(Boolean)
@@ -100,6 +117,9 @@ export class GestureDetector {
       timestamp: now,
       cursor: { x: 1 - points[8].x, y: points[8].y },
       pinchRatio: ratio,
+      pinchActive: this.pinchActive,
+      pinchCandidate: pinching,
+      pinchStable: this.pinchActive === pinching,
       stable: this.current === next,
       recognitionMs: 0,
     };
