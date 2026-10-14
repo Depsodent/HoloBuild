@@ -1,3 +1,4 @@
+import { SHAPES } from "../../scene/objectFactory";
 import { Copy, Trash2, RotateCcw } from "lucide-react";
 import { useSceneStore } from "../../scene/sceneStore";
 import { execute } from "../../scene/commandManager";
@@ -13,7 +14,7 @@ export function ObjectInspector() {
       {object ? (
         <>
           <div className="object-id">
-            BOX GEOMETRY <span>● SELECTED</span>
+            {object.type.toUpperCase()} GEOMETRY <span>● SELECTED</span>
           </div>
           <label className="field">
             Name
@@ -86,6 +87,7 @@ export function ObjectInspector() {
           <label className="field">
             Material
             <select
+              aria-label="Material"
               value={object.material}
               onChange={(e) =>
                 execute({
@@ -121,7 +123,7 @@ export function ObjectInspector() {
                   type: "update",
                   id: object.id,
                   patch: {
-                    position: [0, 0.5, 0],
+                    position: [0, SHAPES[object.type].size[1] / 2, 0],
                     rotation: [0, 0, 0],
                     scale: [1, 1, 1],
                   },
@@ -134,7 +136,7 @@ export function ObjectInspector() {
         </>
       ) : (
         <p className="muted">
-          Click a cube in the viewport or the scene list to inspect it.
+          Click an object in the viewport or the scene list to inspect it.
         </p>
       )}
       <div className="section-label scene-title">

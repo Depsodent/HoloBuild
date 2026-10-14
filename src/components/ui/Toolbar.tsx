@@ -1,5 +1,11 @@
+import { SHAPES } from "../../scene/objectFactory";
 import {
   Box,
+  Circle,
+  Cylinder,
+  Triangle,
+  RectangleHorizontal,
+  Grid2X2,
   MousePointer2,
   Move3d,
   Rotate3d,
@@ -8,7 +14,15 @@ import {
 } from "lucide-react";
 import { useSceneStore } from "../../scene/sceneStore";
 import { execute } from "../../scene/commandManager";
-import type { Tool } from "../../scene/objectTypes";
+import type { Tool, ObjectType } from "../../scene/objectTypes";
+const shapeIcons = {
+  cube: Box,
+  sphere: Circle,
+  cylinder: Cylinder,
+  cone: Triangle,
+  wall: RectangleHorizontal,
+  floor: Grid2X2,
+};
 const tools = [
   ["select", "Select", MousePointer2, "V"],
   ["translate", "Move", Move3d, "G"],
@@ -22,13 +36,28 @@ export function Toolbar() {
     <aside className="panel tools">
       <div className="eyebrow">CONSTRUCTION</div>
       <h2>Your building blocks</h2>
-      <button className="shape" onClick={() => execute({ type: "create" })}>
-        <Box size={38} />
-        <span>
-          Cube<small>1 × 1 × 1 m</small>
-        </span>
-        <Plus size={17} />
-      </button>
+      <div className="shape-palette" aria-label="Construction shapes">
+        {(Object.entries(SHAPES) as [ObjectType, typeof SHAPES.cube][]).map(
+          ([type, shape]) => (
+            <button
+              key={type}
+              className="shape"
+              title={`Create ${shape.name}`}
+              onClick={() => execute({ type: "create", objectType: type })}
+            >
+              {(() => {
+                const Icon = shapeIcons[type];
+                return <Icon size={22} />;
+              })()}
+              <span>
+                {shape.name}
+                <small>{shape.description}</small>
+              </span>
+              <Plus size={14} />
+            </button>
+          ),
+        )}
+      </div>
       <div className="section-label">TRANSFORM</div>
       <div className="tool-list">
         {tools.map(([id, label, Icon, key]) => (

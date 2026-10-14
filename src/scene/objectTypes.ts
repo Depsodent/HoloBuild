@@ -8,7 +8,7 @@ export type Vec3 = z.infer<typeof vectorSchema>;
 export const objectSchema = z.object({
   id: z.string().min(1).max(100),
   name: z.string().min(1).max(60),
-  type: z.literal("cube"),
+  type: z.enum(["cube", "sphere", "cylinder", "cone", "wall", "floor"]),
   position: vectorSchema,
   rotation: vectorSchema,
   scale: z.tuple([
@@ -21,3 +21,5 @@ export const objectSchema = z.object({
 });
 export type SceneObject = z.infer<typeof objectSchema>;
 export type Tool = "select" | "translate" | "rotate" | "scale";
+
+export type ObjectType = SceneObject["type"];

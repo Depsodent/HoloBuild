@@ -1,3 +1,4 @@
+import { ObjectGeometry } from "./ObjectGeometry";
 import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Edges } from "@react-three/drei";
@@ -110,7 +111,7 @@ export function PlacementPreview() {
       rotation={object.rotation}
       scale={object.scale}
     >
-      <boxGeometry />
+      <ObjectGeometry type={object.type} />
       <meshBasicMaterial
         color={preview.valid ? "#79ffe0" : "#ff6c83"}
         transparent

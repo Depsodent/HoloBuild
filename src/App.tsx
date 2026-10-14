@@ -217,9 +217,9 @@ export default function App() {
             <div className="eyebrow">QUICK START</div>
             <h2>Your spatial workspace</h2>
             <p>
-              Create a cube from the left panel. Select it, then use Move,
-              Rotate, or Scale to show its 3D handles. The inspector provides
-              precise numeric transforms.
+              Create a cube, sphere, cylinder, cone, wall, or floor from the
+              left panel. Select it, then use Move, Rotate, or Scale to show its
+              3D handles. The inspector provides precise numeric transforms.
             </p>
             <p>
               Drag empty space to orbit. Scroll to zoom. Right-drag to pan. V
@@ -231,7 +231,7 @@ export default function App() {
               validated JSON. Camera use is optional.
             </p>
             <p>
-              Start camera and hold one hand in view. Point at a cube, pinch
+              Start camera and hold one hand in view. Point at an object, pinch
               thumb and index to grab, move, then reopen your hand to place.
               Movement stays at the cube’s current height. A red preview means
               placement is blocked. Losing your hand or closing it into a fist

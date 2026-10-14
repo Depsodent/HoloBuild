@@ -32,3 +32,11 @@ The shell subscribes only to scene fields it displays, so transient gesture prev
 The renderer subscribes to gesture frames and cancels a grab on missing/invalid points, inactivity beyond 250 ms, viewport departure, scene/selection/tool changes or mouse pointer-down. On a scene edit, cancellation is checked even if that edit already cleared the preview. Grab setup changes selection/tool before opening the transaction, so its own setup is not mistaken for an external edit. Orbit controls are disabled only during a gesture grab.
 
 Only Help → Open gesture tools opens the DOM tool menu; open-palm recognition has no menu side effect; pointer coordinates identify a card, and a later point/pinch edge invokes its shared command. High-frequency gesture inference remains independent of any future AI parser.
+
+## Milestone 5 construction architecture
+
+`objectTypes.ts` declares the six supported primitive types; `objectFactory.ts` owns their display names and base dimensions. `ObjectGeometry` is reused by real meshes and the gesture ghost, so render/pick/preview shapes agree. Stable object IDs and the existing raycaster work for every type. Recognition, thresholds, debounce, closure retention and Help-only menu activation are unchanged.
+
+`placement.ts` computes world bounds from primitive dimensions, rotation and nonuniform scale. Boxes use transformed corners; spheres use ellipsoid support extents; cylinders use radial/axial support; cones use base-disc/apex support. Collision uses overlapping world AABBs with 0.02 m tolerance, so it is conservative rather than exact mesh intersection. Ground and ±50 m limits apply to whole bounds. Touching surfaces are permitted.
+
+The existing `execute` create/update/duplicate commands now use that same validator. Creation/duplication search deterministic nearby grid positions. A rejected transform changes neither objects nor history. A mouse gizmo restores its actual mesh from committed state after snapping/rejection. Grounded rotation/scale preserves bottom height; explicit vertical movement is unchanged. JSON remains version 1 with an expanded type enum, preserving old cube scenes. Import validates structure/IDs/types, not collision layout, to avoid destroying legacy scenes.

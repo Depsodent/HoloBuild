@@ -108,3 +108,32 @@ Limitations remain one-hand fixed-height translation, heuristic sensitivity to o
 ## Milestone 4 — physical acceptance confirmed 2026-10-14
 
 The user reports all six checks passed with their actual laptop webcam on checkpoint `6b99b1d`: pointing highlights the cube, pinch grabs, hand movement moves it, release places it, no unwanted popup appears, and Undo restores its position. No failures were reported. This is user-reported physical acceptance, separate from the prior 28 unit and 14 browser tests. Preserve the unchanged gesture thresholds, debounce, target retention and explicit Help behavior as the Milestone 5 baseline.
+
+## Milestone 5 — Advanced Construction Tools, 2026-10-14
+
+### Recovery and preservation
+
+Milestone 4 physical acceptance is preserved in Git checkpoint `c8a5e15` (user-reported six webcam checks passed on `6b99b1d`). On resuming Milestone 5, the Desktop checkout was clean at that checkpoint; the partially edited shapes implementation remained in the existing Codex staging directory. Preserved and completed those edits without resetting or discarding files. Source comparison confirms `src/vision/*`, `gestureController.ts` and the explicit-only gesture menu are unchanged from the physically accepted baseline.
+
+### Implementation
+
+- Added sphere, cylinder, cone, wall and floor alongside cube. `scene/objectTypes.ts` expands the supported type enum; `objectFactory.ts` centralizes names and base dimensions. Walls are 3 × 2 × 0.25 m; floors are 4 × 0.2 × 4 m. Curved primitives have diameter 1 m and height 1 m where applicable.
+- `components/viewport/ObjectGeometry.tsx` supplies the same geometry for rendered objects and gesture previews. Each mesh retains its object ID, so the existing real raycaster and gesture grab controller select and move every type without a separate scene system.
+- `Toolbar.tsx` exposes all six shapes with distinctive icons and dimensions in a compact two-column palette, preserving the holographic theme. Inspector labels identify the actual geometry; position, rotation, scale, name, material/color, duplicate, delete and reset controls work for every type. Keyboard shortcuts remain V/G/R/S, Delete, Ctrl+Z and Ctrl+Shift+Z.
+- `placement.ts` accounts for base dimensions, Euler rotation and nonuniform scale. Box bounds use transformed corners; curved primitives use analytical support extents (ellipsoid, cylinder, cone base/apex). Ground and whole-object ±50 m bounds are checked. Collision remains conservative world-AABB overlap with 0.02 m tolerance; touching is allowed.
+- Shared `execute` commands now validate inspector and mouse-gizmo transforms with the same placement rules used by gestures. X/Z snapping is 0.5 m when enabled. Grounded in-place scale/rotation preserves the bottom at ground level. A rejected edit changes neither objects nor history; gizmos restore the actual mesh from the accepted transform.
+- Creation/duplication search deterministically for nearby free grid space rather than introducing overlaps. All new operations use the existing undo/redo manager. JSON version 1 accepts every supported type and remains compatible with old cube scenes; malformed and unknown types are rejected. Import preserves structurally valid layouts rather than silently rearranging them.
+
+### Verification
+
+The recovered first feature group passed TypeScript, ESLint, 36 unit tests and build; existing browser regressions passed. New browser coverage exposed an ambiguous Material control label, which was fixed with an explicit accessible label; all seven initial shape browser tests then passed. Shared placement integration subsequently passed 39 unit tests. Final complete suite results are recorded below after completion.
+
+Regression coverage includes every primitive's commands and save/load, mouse mesh selection and inspector transforms/appearance, gesture raycast/grab/move/release with exactly one move entry, undo, duplication/deletion, rotated/nonuniform bounds, floor contact, overlap rejection without history changes, free-space spawning, snapping enabled/disabled and keyboard tool/history actions. Existing pinch-debounce, popup prevention, loss/stall/Undo cancellation, collision and camera/editor tests are retained. Browser gesture fixtures are simulated landmarks through the production controller; they are not physical webcam verification.
+
+### Remaining limitations and acceptance gate
+
+One-hand gesture motion remains at the object's existing height. Rotation/scale use mouse controls. There is no automatic stacking, gravity, exact mesh-to-mesh collision, two-hand input, voice or LLM integration. AABBs may reject close curved or rotated shapes whose meshes do not touch. Imported legacy scenes may contain overlaps; placement edits subsequently enforce the new validator. Creation can fail when its bounded free-space search finds no valid spot. Numeric inspector changes remain immediate commands, so typing multiple intermediate values can produce multiple undo entries; a completed gesture/gizmo drag still commits once.
+
+The user must physically retest new shapes: create → point/highlight → pinch/grab → move → release → no popup → Undo, then test mouse rotate/scale, material/color, duplicate/delete and mixed-scene save/load. Milestone 4's physical acceptance remains recorded; Milestone 5 physical acceptance is pending. **Do not begin Milestone 6 until the user has tested and accepted Milestone 5.**
+
+Final Desktop checkout validation: **TypeScript passed; ESLint passed; all 39 unit tests passed; all 22 serial Edge/Playwright browser tests passed (2.1 minutes); production build passed.** The final rendered mixed-shape/palette screenshot was visually inspected. The usual large-bundle and third-party Zod annotation build warnings remain non-blocking. Save the stable implementation checkpoint as `feat: milestone 5 advanced construction tools`. Vite remains available at **http://127.0.0.1:5175/** for the user's new-shape webcam acceptance test.

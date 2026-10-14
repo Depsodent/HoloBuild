@@ -29,7 +29,7 @@ npm.cmd run test:e2e
 
 ## Mouse controls
 
-Create a cube from Construction. Click an object or its scene-list row to select it. V selects, G moves, R rotates, S scales. The inspector edits precise coordinates, degrees, scale and color. Use the 3D handles for mouse transforms. Drag empty space to orbit, right-drag to pan and scroll to zoom. Delete removes the selection. Ctrl+Z undoes; Ctrl+Shift+Z redoes. Save project exports versioned JSON and writes a local copy. Load validates a JSON file before replacing the scene. Reset can be undone.
+Create a cube, sphere, cylinder, cone, wall, or floor from Construction. Click an object or its scene-list row to select it. V selects, G moves, R rotates, S scales. The inspector edits precise coordinates, degrees, scale and color. Use the 3D handles for mouse transforms. Drag empty space to orbit, right-drag to pan and scroll to zoom. Delete removes the selection. Ctrl+Z undoes; Ctrl+Shift+Z redoes. Save project exports versioned JSON and writes a local copy. Load validates a JSON file before replacing the scene. Reset can be undone.
 
 ## Gesture construction (Milestone 4)
 
@@ -39,7 +39,7 @@ Create a cube from Construction. Click an object or its scene-list row to select
 4. Separate thumb and index to place; relaxed fingers are supported. A valid move creates one undo entry; a stationary grab creates none.
 5. Hand loss, stalled tracking, leaving the viewport, a large tracking jump, a fist, an invalid release, or another scene edit cancels the pending move. Mouse pointer-down in the viewport takes back control.
 
-Movement uses a camera ray intersecting a horizontal plane at the cube's existing height. It is **not free-space depth tracking**. Snapping affects X/Z at 0.5 m increments. Preview turns red for conservative bounding-box overlap, below-ground placement, or positions beyond ±50 m. Vertical dragging, automatic stacking, and precise rotated-shape collision are future work. Mouse inspector/gizmo transforms retain their existing numeric validation and do not yet share these gesture-specific collision restrictions.
+Movement uses a camera ray intersecting a horizontal plane at the cube's existing height. It is **not free-space depth tracking**. Snapping affects X/Z at 0.5 m increments. Preview turns red for conservative bounding-box overlap, below-ground placement, or positions beyond ±50 m. Vertical dragging, automatic stacking, and precise rotated-shape collision are future work. Mouse inspector/gizmo transforms share the same placement validation as gestures. Grounded shapes remain grounded when rotated or scaled in place. New and duplicated objects search for free grid space. Touching surfaces are allowed; colliding transforms are rejected.
 
 Click Help → Open gesture tools to open the tool menu. Open palm never opens it automatically. Point and pinch a card to create a cube, undo, or close; mouse clicks also work. Rotation and scaling are available through mouse tools, not hand gestures yet.
 
@@ -60,3 +60,11 @@ React 19 and React Three Fiber 9 render the editor. Drei supplies camera, grid a
 External references: [React Three Fiber installation](https://r3f.docs.pmnd.rs/getting-started/installation), [MediaPipe Hand Landmarker for Web](https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker/web_js).
 
 Developer: **Aaryan** · GitHub: **Depsodent**. Local development checkpoint; no public deployment or connected AI service is claimed.
+
+## Advanced construction (Milestone 5)
+
+The palette includes six primitives. Base dimensions: cube 1 × 1 × 1 m; sphere Ø1 m; cylinder and cone Ø1 × 1 m; wall 3 × 2 × 0.25 m; floor 4 × 0.2 × 4 m. The inspector scale multiplies those dimensions. Select from the viewport or collection; use V/G/R/S, transform handles, or inspector coordinates. Material, color, duplication, deletion and every committed transform use shared undo/redo.
+
+Grid snapping rounds X/Z translations to 0.5 m; transform handles also offer 15° rotation and 0.1 scale increments. Inspector Y remains precise, including thin floors. To rest a default cube on a default floor, set cube Y to 0.7 m. There is no automatic surface stacking or gravity. Collision is conservative transformed world bounds, not exact mesh contact. Load preserves structurally valid version-1 scenes (including older cube scenes); it does not rearrange overlapping imported objects. Subsequent placement edits validate against the scene.
+
+Milestone 4 physical webcam acceptance was confirmed by the user. Milestone 5 requires a fresh user acceptance test for the additional shapes; synthetic tests do not substitute for that confirmation.

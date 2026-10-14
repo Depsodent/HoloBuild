@@ -817,3 +817,40 @@ footer {
   line-height: 1.5;
   color: #8babbc;
 }
+.shape-palette {
+  display: grid;
+  gap: 5px;
+}
+.shape-palette .shape {
+  margin: 0;
+  padding: 10px;
+  gap: 9px;
+}
+.shape-palette .shape small {
+  font-size: 9px;
+}
+.tools {
+  overflow-y: auto;
+}
+.tools .tip {
+  margin-top: 22px;
+}
+/* Keep all primitive choices compact so transform controls remain reachable. */
+.shape-palette {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.shape-palette .shape {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 8px;
+}
+.shape-palette .shape span {
+  font-size: 11px;
+}
+.shape-palette .shape small {
+  font-size: 8px;
+}
+.shape-palette .shape > svg:last-child {
+  display: none;
+}

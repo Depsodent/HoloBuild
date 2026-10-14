@@ -1,3 +1,4 @@
+import { ObjectGeometry } from "./ObjectGeometry";
 import { useRef, useState } from "react";
 import { Edges, TransformControls } from "@react-three/drei";
 import { Mesh } from "three";
@@ -15,7 +16,7 @@ export function BuildingObject({ object }: { object: SceneObject }) {
   const grabbed = useSceneStore((s) => s.preview?.id === object.id);
   function commit() {
     const mesh = ref.current;
-    if (mesh)
+    if (mesh) {
       execute({
         type: "update",
         id: object.id,
@@ -25,6 +26,16 @@ export function BuildingObject({ object }: { object: SceneObject }) {
           scale: mesh.scale.toArray() as Vec3,
         },
       });
+      // Reflect validation/snapping even when rejected props did not change.
+      const accepted = useSceneStore
+        .getState()
+        .objects.find((o) => o.id === object.id);
+      if (accepted) {
+        mesh.position.fromArray(accepted.position);
+        mesh.rotation.set(...accepted.rotation);
+        mesh.scale.fromArray(accepted.scale);
+      }
+    }
   }
   return (
     <>
@@ -46,7 +57,7 @@ export function BuildingObject({ object }: { object: SceneObject }) {
         }}
         onPointerOut={() => setHover(false)}
       >
-        <boxGeometry />
+        <ObjectGeometry type={object.type} />
         <meshStandardMaterial
           color={object.color}
           roughness={0.28}

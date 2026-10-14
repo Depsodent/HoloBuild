@@ -52,3 +52,16 @@ Report: whether landmarks appeared, whether pointing/pinch labels matched, any c
 6. Undo the movement; the cube must return in one action.
 
 If any step fails, expand **Gesture diagnostics** and report the gesture/candidate, pinch distance when closed and when open, latch and pinch state, targeted object, selectable ray hit, grab state, rejection reason and tracking Hz. This separates recognition, aiming, transaction and tracking-loss failures. Do not treat the automated suite as webcam verification.
+
+## Milestone 5 physical acceptance (pending)
+
+Milestone 4's six webcam actions passed according to the user's 2026-10-14 report. Repeat with **each** of sphere, cylinder, cone, wall and floor:
+
+- Create from the palette; pan/zoom if necessary to bring the object into view.
+- Point until highlighted, pinch, move, release; verify no Help popup.
+- Undo once, then Redo. Try a collision: it should show red and cancel on release.
+- With the mouse, select and test Move/Rotate/Scale handles and inspector position/rotation/scale. Verify rejected transforms restore the object.
+- Change material/color, duplicate, delete, and undo those operations.
+- Save a mixed-shape scene, reset, and load it again.
+
+Record object type, camera conditions, diagnostics and any failure. Milestone 5 is not physically accepted until the user confirms these checks. Do not proceed to Milestone 6 meanwhile.
