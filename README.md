@@ -68,3 +68,9 @@ The palette includes six primitives. Base dimensions: cube 1 × 1 × 1 m; sphere
 Grid snapping rounds X/Z translations to 0.5 m; transform handles also offer 15° rotation and 0.1 scale increments. Inspector Y remains precise, including thin floors. To rest a default cube on a default floor, set cube Y to 0.7 m. There is no automatic surface stacking or gravity. Collision is conservative transformed world bounds, not exact mesh contact. Load preserves structurally valid version-1 scenes (including older cube scenes); it does not rearrange overlapping imported objects. Subsequent placement edits validate against the scene.
 
 Milestone 4 physical webcam acceptance was confirmed by the user. Milestone 5 requires a fresh user acceptance test for the additional shapes; synthetic tests do not substitute for that confirmation.
+
+## Floating camera and existing materials (5.1)
+
+Drag the Gesture Input title to move it inside the workspace; drag its bottom-right grip to resize. Minimize/expand, maximize/restore and reset buttons control the window. Layout is saved locally; resizing the browser keeps it reachable. Focus the title/grip and use Arrow keys (Shift for larger steps). Minimizing or hiding the preview keeps capture and hand tracking running. Expand to access Stop camera; changing tabs retains the existing safe camera-stop behavior.
+
+Satin metal is opaque with stronger metallic reflections and moderate roughness. Holographic glass is transmissive/translucent with smoother highlights. The existing object color tints both presets, and material selection remains undoable and stored in scene JSON. Reflections are generated locally; no external environment download is needed.

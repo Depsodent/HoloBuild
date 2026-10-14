@@ -40,6 +40,48 @@ test("real local MediaPipe processes a synthetic video and releases its stream",
     /No hand · [1-9]\d* Hz/,
     { timeout: 20000 },
   );
+  const time = await page
+    .locator("video")
+    .evaluate((v: HTMLVideoElement) => v.currentTime);
+  await page
+    .getByRole("button", { name: "Minimize Gesture Input", exact: true })
+    .click();
+  await expect(page.locator(".camera-title")).toContainText("RUNNING");
+  await expect(page.locator(".camera-title")).toContainText("No hand");
+  await expect
+    .poll(() =>
+      page.locator("video").evaluate((v: HTMLVideoElement) => v.currentTime),
+    )
+    .toBeGreaterThan(time + 0.2);
+  expect(
+    await page
+      .locator("video")
+      .evaluate(
+        (v: HTMLVideoElement) =>
+          (v.srcObject as MediaStream).getVideoTracks()[0].readyState,
+      ),
+  ).toBe("live");
+  await expect(page.locator("html")).not.toHaveAttribute(
+    "data-test-track-stopped",
+    "true",
+  );
+  await page
+    .getByRole("button", { name: "Expand Gesture Input", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Hide camera preview", exact: true })
+    .click();
+  const hiddenTime = await page
+    .locator("video")
+    .evaluate((v: HTMLVideoElement) => v.currentTime);
+  await expect
+    .poll(() =>
+      page.locator("video").evaluate((v: HTMLVideoElement) => v.currentTime),
+    )
+    .toBeGreaterThan(hiddenTime + 0.2);
+  await page
+    .getByRole("button", { name: "Show camera preview", exact: true })
+    .click();
   await page.getByRole("button", { name: "Stop camera", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute(
     "data-test-track-stopped",

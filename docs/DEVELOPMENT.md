@@ -137,3 +137,42 @@ One-hand gesture motion remains at the object's existing height. Rotation/scale 
 The user must physically retest new shapes: create → point/highlight → pinch/grab → move → release → no popup → Undo, then test mouse rotate/scale, material/color, duplicate/delete and mixed-scene save/load. Milestone 4's physical acceptance remains recorded; Milestone 5 physical acceptance is pending. **Do not begin Milestone 6 until the user has tested and accepted Milestone 5.**
 
 Final Desktop checkout validation: **TypeScript passed; ESLint passed; all 39 unit tests passed; all 22 serial Edge/Playwright browser tests passed (2.1 minutes); production build passed.** The final rendered mixed-shape/palette screenshot was visually inspected. The usual large-bundle and third-party Zod annotation build warnings remain non-blocking. Save the stable implementation checkpoint as `feat: milestone 5 advanced construction tools`. Vite remains available at **http://127.0.0.1:5175/** for the user's new-shape webcam acceptance test.
+
+## Milestone 5.1 — floating Gesture Input and material distinction, 2026-10-15
+
+### Preservation and diagnosis
+
+The Desktop project retained the previously verified Milestone 5 edits as uncommitted files. Preserved that 39-unit/22-browser-test implementation and its documentation in checkpoint `91e2b44` before beginning these refinements. No project recreation, reset or removal was used. The physically accepted Milestone 4 recognition/pinch code remains the baseline.
+
+Inspection showed that Material selection already updated `object.material` through the shared undoable update command and persisted the preset identifier in version-1 JSON. The render path used the same roughness 0.28 and metalness 0.25 for both presets, changing only transparency/opacity, with no environment reflections. This made their surfaces look similar in the dark scene.
+
+### Floating camera window
+
+`WebcamPreview.tsx`, `useFloatingPanel.ts` and `panelLayout.ts` add bounded header dragging with pointer capture, corner resizing, minimize/expand, maximize/restore and reset. Position, full size and minimized state are stored in `holobuild.gesture-window.v1`. Malformed or inaccessible storage falls back safely. A ResizeObserver clamps the window inside the viewport when the workspace shrinks; toolbar and inspector lie outside its parent bounds.
+
+The minimized 54 px bar shows camera status and recognized gesture. Video, MediaPipe tracker and landmark stream stay mounted; hiding the body or preview never calls Stop. Start/Stop remain explicit controls after expansion. Existing hidden-browser-tab cleanup still releases the camera. Drag/resize handles support Arrow keys (10 px) and Shift+Arrow (40 px), with focus indicators; window buttons remain in keyboard order. Pointer/wheel events are contained by the panel. Starting a window drag/resize uses the existing mouse-takeover cancellation path, clearing any active gesture preview without committing or stopping tracking; a held pinch cannot restart it. Camera/model permission is never persisted or automatically restarted on reload.
+
+### Existing material presets
+
+`materialPresets.ts` keeps saved IDs `solid` and `glass` and leaves object color separate. `BuildingObject.tsx` now applies MeshPhysicalMaterial:
+
+- Satin metal: roughness 0.38, metalness 0.65, opaque, transmission 0, modest clearcoat.
+- Holographic glass: roughness 0.07, metalness 0, transmission 0.65, opacity 0.55, thickness 0.3, IOR 1.45 and stronger clearcoat/reflections. Transparent depth writes are disabled to reduce opaque-looking layering.
+
+`StudioEnvironment.tsx` generates a procedural RoomEnvironment/PMREM reflection map locally and disposes its resources on teardown. It does not download an HDR asset or replace the dark background/grid. The workspace ground uses a lit, nonreflective Lambert material to retain its dark appearance; Three.js applies the scene environment globally to standard materials, so a per-material intensity override was insufficient. Reduced idle emissive light allows optical differences to show; target hover feedback remains. Both presets apply to every shared primitive mesh. Existing preset selection, undo/redo and save/load commands are unchanged.
+
+### Acceptance gate
+
+Physical webcam testing of this refinement is pending user confirmation. Test moving/resizing/minimizing/restoring the window while tracking; confirm camera indicator and gesture construction continue. Compare both presets on curved and flat primitives, then Undo/Redo and save/load. Milestone 6 remains unstarted until these refinements are tested and approved.
+
+Limitations: glass is a stylized single-mesh physical preset rather than a full optical simulation; transparent intersections can exhibit sorting artifacts. Layout recovery clamps to the available workspace and may reduce a previously larger window. Small windows scroll their controls; hiding/minimizing saves visual space but does not reduce inference cost. Existing conservative collision and fixed-height gesture-motion limits remain.
+
+### Modified files
+
+Camera UI/layout: `src/components/camera/WebcamPreview.tsx`, `panelLayout.ts`, `useFloatingPanel.ts`, and `src/styles/index.css`. Rendering/presets: `src/scene/materialPresets.ts`, `src/components/viewport/BuildingObject.tsx`, `StudioEnvironment.tsx`, and `Scene.tsx`. UI gesture conflict coordination: `src/components/viewport/GestureInteraction.tsx`. Tests: `tests/unit/refinements.test.ts`, `tests/e2e/refinements.spec.ts`, `camera.spec.ts`, and `editor.spec.ts`. Documentation: this file, README, ARCHITECTURE and MANUAL_TESTS.
+
+### Final verification
+
+On the actual Desktop checkout (2026-10-15): **TypeScript passed; ESLint passed; all 42 unit tests passed; all 31 serial Edge/Playwright browser tests passed (3.5 minutes); production build passed.** Final material and floating-window screenshots were visually inspected, including the restored dark ground and clearly different cube/sphere/floor materials. The suite covers all six shapes, preset appearance changes, exact material-history increment, color preservation, Undo/Redo and JSON persistence; mouse/keyboard drag/resize, minimize/expand, maximize/restore, reset, storage reload and responsive clamping; minimized gesture construction and safe active-grab cancellation when dragging the panel; real MediaPipe execution on synthetic video with live tracks/playback while minimized/hidden, followed by explicit Stop; and all earlier gesture/editor regressions.
+
+The initial browser run revealed two test assumptions (partial accessible-name matching and expecting a history entry from a no-op cube import); these were corrected without altering production commands. Final complete tests passed after the material-ground correction. Existing large-bundle and third-party Zod annotation warnings remain non-blocking. HTTP returned 200 at **http://127.0.0.1:5175/**. Save the stable checkpoint as `feat: milestone 5.1 floating gesture window and distinct materials`. No physical webcam retest is claimed; user acceptance remains the next step. Milestone 6 has not started.

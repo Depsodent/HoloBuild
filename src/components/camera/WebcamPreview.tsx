@@ -1,10 +1,25 @@
 import { GestureStatus } from "../ui/GestureStatus";
 import { useEffect, useRef, useState } from "react";
-import { Camera, CameraOff, Eye, EyeOff } from "lucide-react";
+import {
+  Camera,
+  CameraOff,
+  Eye,
+  EyeOff,
+  Minus,
+  Maximize2,
+  RotateCcw,
+  ChevronDown,
+  Grip,
+} from "lucide-react";
+import { useFloatingPanel } from "./useFloatingPanel";
+import { useGestureStore } from "../../vision/gesturePipeline";
 import { HandTracker } from "../../vision/handTracker";
 import { useTrackingStore } from "../../vision/trackingStore";
 import { HandLandmarkOverlay } from "./HandLandmarkOverlay";
 export function WebcamPreview() {
+  const panel = useRef<HTMLElement>(null);
+  const floating = useFloatingPanel(panel);
+  const gesture = useGestureStore((s) => s.gesture);
   const video = useRef<HTMLVideoElement>(null);
   const tracker = useRef<HandTracker | null>(null);
   const state = useTrackingStore();
@@ -50,10 +65,29 @@ export function WebcamPreview() {
     }
   }
   return (
-    <section className="webcam-panel" aria-label="Gesture camera">
+    <section
+      ref={panel}
+      style={floating.style}
+      className={`webcam-panel floating-camera ${floating.layout.minimized ? "minimized" : ""}`}
+      aria-label="Gesture camera"
+      onPointerDown={(e) => e.stopPropagation()}
+      onWheel={(e) => e.stopPropagation()}
+    >
       <div className="camera-title">
         <Camera size={16} />
-        <strong>Gesture input</strong>
+        <div
+          className="camera-drag-handle"
+          role="button"
+          tabIndex={0}
+          aria-label="Move Gesture Input window"
+          title="Drag to move · Arrow keys move · Shift moves faster"
+          {...floating.handle("move")}
+        >
+          <strong>Gesture input</strong>
+          {floating.layout.minimized && (
+            <small>{gesture === "none" ? "No hand" : gesture}</small>
+          )}
+        </div>
         <span className={`badge ${active ? "live" : ""}`}>
           {state.status.toUpperCase()}
         </span>
@@ -63,59 +97,99 @@ export function WebcamPreview() {
         >
           {visible ? <EyeOff size={14} /> : <Eye size={14} />}
         </button>
-      </div>
-      <div
-        className="camera-feed"
-        style={{ display: visible && active ? "block" : "none" }}
-      >
-        <video ref={video} muted playsInline aria-label="Webcam preview" />
-        {overlay && <HandLandmarkOverlay />}
-      </div>
-      <p className="camera-message" role="status">
-        {state.message}
-      </p>
-      {devices.length > 1 && (
-        <select
-          aria-label="Camera device"
-          disabled={active}
-          value={device}
-          onChange={(e) => setDevice(e.target.value)}
+        <button
+          aria-label={
+            floating.layout.minimized
+              ? "Expand Gesture Input"
+              : "Minimize Gesture Input"
+          }
+          onClick={floating.minimize}
         >
-          <option value="">Default camera</option>
-          {devices.map((d, i) => (
-            <option key={d.deviceId} value={d.deviceId}>
-              {d.label || `Camera ${i + 1}`}
-            </option>
-          ))}
-        </select>
-      )}
-      <div className="camera-actions">
-        {active ? (
-          <button onClick={() => tracker.current?.stop()}>
-            <CameraOff size={14} />
-            Stop camera
-          </button>
-        ) : (
-          <button className="primary" onClick={start}>
-            <Camera size={14} />
-            Start camera
+          {floating.layout.minimized ? (
+            <ChevronDown size={14} />
+          ) : (
+            <Minus size={14} />
+          )}
+        </button>
+        {!floating.layout.minimized && (
+          <button
+            aria-label="Maximize or restore Gesture Input"
+            onClick={floating.maximize}
+          >
+            <Maximize2 size={14} />
           </button>
         )}
-        <label>
-          <input
-            type="checkbox"
-            checked={overlay}
-            onChange={(e) => setOverlay(e.target.checked)}
-          />
-          Landmarks
-        </label>
+        <button
+          aria-label="Reset Gesture Input layout"
+          onClick={floating.reset}
+        >
+          <RotateCcw size={14} />
+        </button>
       </div>
-      <GestureStatus />
-      <div className="camera-meta">
-        {state.status === "running"
-          ? `${state.handVisible ? "21 landmarks" : "No hand"} · ${state.inferenceHz} Hz · ${state.inferenceMs} ms`
-          : "Private by design · frames stay on device"}
+      <div className="camera-body" hidden={floating.layout.minimized}>
+        <div
+          className="camera-feed"
+          style={{ display: visible && active ? "block" : "none" }}
+        >
+          <video ref={video} muted playsInline aria-label="Webcam preview" />
+          {overlay && <HandLandmarkOverlay />}
+        </div>
+        <p className="camera-message" role="status">
+          {state.message}
+        </p>
+        {devices.length > 1 && (
+          <select
+            aria-label="Camera device"
+            disabled={active}
+            value={device}
+            onChange={(e) => setDevice(e.target.value)}
+          >
+            <option value="">Default camera</option>
+            {devices.map((d, i) => (
+              <option key={d.deviceId} value={d.deviceId}>
+                {d.label || `Camera ${i + 1}`}
+              </option>
+            ))}
+          </select>
+        )}
+        <div className="camera-actions">
+          {active ? (
+            <button onClick={() => tracker.current?.stop()}>
+              <CameraOff size={14} />
+              Stop camera
+            </button>
+          ) : (
+            <button className="primary" onClick={start}>
+              <Camera size={14} />
+              Start camera
+            </button>
+          )}
+          <label>
+            <input
+              type="checkbox"
+              checked={overlay}
+              onChange={(e) => setOverlay(e.target.checked)}
+            />
+            Landmarks
+          </label>
+        </div>
+        <GestureStatus />
+        <div className="camera-meta">
+          {state.status === "running"
+            ? `${state.handVisible ? "21 landmarks" : "No hand"} · ${state.inferenceHz} Hz · ${state.inferenceMs} ms`
+            : "Private by design · frames stay on device"}
+        </div>
       </div>
+      {!floating.layout.minimized && (
+        <button
+          className="camera-resize"
+          aria-label="Resize Gesture Input window"
+          title="Drag to resize · Arrow keys resize"
+          {...floating.handle("resize")}
+        >
+          <Grip size={16} />
+        </button>
+      )}
     </section>
   );
 }

@@ -65,3 +65,15 @@ Milestone 4's six webcam actions passed according to the user's 2026-10-14 repor
 - Save a mixed-shape scene, reset, and load it again.
 
 Record object type, camera conditions, diagnostics and any failure. Milestone 5 is not physically accepted until the user confirms these checks. Do not proceed to Milestone 6 meanwhile.
+
+## Milestone 5.1 user acceptance (pending)
+
+- Start the physical camera and confirm landmarks/gestures.
+- Drag by the title; resize with the corner; confirm the scene does not orbit or move from those mouse actions.
+- Minimize and perform point → pinch → move → release → Undo. Confirm capture stays active.
+- Expand, maximize/restore and reset; reload to confirm layout persistence (camera restarts only by explicit Start).
+- Shrink the browser and use keyboard arrows on the title/grip; all controls must remain reachable.
+- Compare Satin metal and Holographic glass on cube, sphere, cylinder, cone, wall and floor; retain the selected color.
+- Undo/Redo material selection and save/load a mixed-material scene.
+
+Do not mark physical retesting complete based on automated synthetic camera or landmark tests.

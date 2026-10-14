@@ -1,4 +1,5 @@
 import { ObjectGeometry } from "./ObjectGeometry";
+import { MATERIAL_PRESETS } from "../../scene/materialPresets";
 import { useRef, useState } from "react";
 import { Edges, TransformControls } from "@react-three/drei";
 import { Mesh } from "three";
@@ -58,14 +59,13 @@ export function BuildingObject({ object }: { object: SceneObject }) {
         onPointerOut={() => setHover(false)}
       >
         <ObjectGeometry type={object.type} />
-        <meshStandardMaterial
+        <meshPhysicalMaterial
+          {...MATERIAL_PRESETS[object.material]}
           color={object.color}
-          roughness={0.28}
-          metalness={0.25}
           transparent={grabbed || object.material === "glass"}
-          opacity={grabbed ? 0.2 : object.material === "glass" ? 0.45 : 1}
+          opacity={grabbed ? 0.2 : MATERIAL_PRESETS[object.material].opacity}
           emissive={object.color}
-          emissiveIntensity={hover || gestureHover ? 0.3 : 0.04}
+          emissiveIntensity={hover || gestureHover ? 0.15 : 0}
         />
         <Edges
           color={

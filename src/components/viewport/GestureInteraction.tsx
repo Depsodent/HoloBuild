@@ -66,13 +66,23 @@ export function GestureInteraction() {
     const mouseUp = () => {
       mouseActive = false;
     };
+    const panelPointerDown = (event: PointerEvent) => {
+      if (
+        event.button === 0 &&
+        event.target instanceof Element &&
+        event.target.closest(".camera-drag-handle, .camera-resize")
+      )
+        cancelOnMouse();
+    };
     gl.domElement.addEventListener("pointerdown", cancelOnMouse);
+    document.addEventListener("pointerdown", panelPointerDown, true);
     window.addEventListener("pointerup", mouseUp);
     window.addEventListener("pointercancel", mouseUp);
     return () => {
       off();
       offScene();
       gl.domElement.removeEventListener("pointerdown", cancelOnMouse);
+      document.removeEventListener("pointerdown", panelPointerDown, true);
       window.removeEventListener("pointerup", mouseUp);
       window.removeEventListener("pointercancel", mouseUp);
       instance.cancel("Viewport restarted. Uncommitted movement cancelled.");

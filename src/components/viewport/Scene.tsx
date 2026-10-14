@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { useSceneStore } from "../../scene/sceneStore";
 import { Grid } from "./Grid";
 import { SceneLights } from "./SceneLights";
+import { StudioEnvironment } from "./StudioEnvironment";
 import { CameraController } from "./CameraController";
 import { BuildingObject } from "./BuildingObject";
 import { ViewportBoundary } from "./ViewportBoundary";
@@ -41,6 +42,7 @@ export function Scene() {
         <color attach="background" args={["#0a121e"]} />
         <fog attach="fog" args={["#0a121e", 25, 65]} />
         <SceneLights />
+        <StudioEnvironment />
         <Grid />
         <CameraController />
         <Metrics />
@@ -55,7 +57,7 @@ export function Scene() {
           receiveShadow
         >
           <planeGeometry args={[200, 200]} />
-          <meshStandardMaterial
+          <meshLambertMaterial
             color="#0c1723"
             polygonOffset
             polygonOffsetFactor={1}
