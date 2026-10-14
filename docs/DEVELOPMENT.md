@@ -104,3 +104,7 @@ The build retains the existing large-bundle and third-party Zod annotation warni
 The code-level failure paths are repaired and automated regressions pass; **reliable physical-webcam interaction is still awaiting the user's retest**. Ask the user to: point at cube → pinch to grab → move → release to place → confirm no popup → undo. If unsuccessful, use diagnostics to identify whether distance/latch, debounce, targeting, grab rejection or frame loss failed. Capture actual closed/open distances before adding calibration; do not weaken thresholds speculatively.
 
 Limitations remain one-hand fixed-height translation, heuristic sensitivity to occlusion/orientation, conservative AABB collision and safe cancellation after >250 ms stalls. Camera conditions and performance need physical measurement. Milestone 5 (additional primitives and placement/stacking) remains deferred until this interaction is accepted; it has not started.
+
+## Milestone 4 — physical acceptance confirmed 2026-10-14
+
+The user reports all six checks passed with their actual laptop webcam on checkpoint `6b99b1d`: pointing highlights the cube, pinch grabs, hand movement moves it, release places it, no unwanted popup appears, and Undo restores its position. No failures were reported. This is user-reported physical acceptance, separate from the prior 28 unit and 14 browser tests. Preserve the unchanged gesture thresholds, debounce, target retention and explicit Help behavior as the Milestone 5 baseline.
