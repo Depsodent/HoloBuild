@@ -33,7 +33,7 @@ export async function hold(
     // Gesture timing is simulated; rendering, raycasts and scene commands are real.
     // CPU load must not turn a continuous fixture into accidental hand loss.
     await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") });
-    await page.clock.pauseAt(new Date("2026-01-01T00:00:01Z"));
+    await page.clock.pauseAt(new Date("2026-01-01T00:01:00Z"));
     clockedPages.add(page);
   }
   await page.evaluate(
