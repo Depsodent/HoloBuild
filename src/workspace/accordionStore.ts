@@ -4,6 +4,8 @@ export const ACCORDION_DEFAULTS: Record<string, boolean> = {
   "tools.transform": false,
   "tools.gestures": true,
   "tools.gesture-settings": false,
+  "tools.voice": false,
+  "tools.voice-help": false,
   "tools.models": false,
   "tools.lighting": false,
   "inspector.transform": true,

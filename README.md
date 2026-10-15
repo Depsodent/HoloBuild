@@ -39,7 +39,7 @@ Use **Import 3D Model** for glTF 2.0 GLB/GLTF files. Select local BIN/image depe
 
 Imported bundles live in IndexedDB for the current browser origin. **Save project** exports self-contained JSON, including assets, for portability and keeps only small metadata/references in Local Storage. **Restore local project** restores the last local save; changing origin/port or clearing browser storage breaks local references, so retain exported JSON backups. **Load** validates embedded assets before changing the scene. Legacy primitive-only version-1 scenes still load. Project assets are capped at 20 MiB (30 MiB JSON). See [development details and budgets](docs/DEVELOPMENT.md) and [manual tests](docs/MANUAL_TESTS.md).
 
-Milestones 6/6.1 and 7 were accepted by the user. Milestone 7.1 physical-webcam acceptance remains pending; automation does not establish that acceptance. Milestone 8 has not started.
+Milestones 6/6.1, 7 and 7.1 were accepted by the user, including physical two-hand reliability and smooth-feeling camera interaction. Milestone 8 awaits physical microphone acceptance; automation does not establish that acceptance.
 
 ## Reliability and workspace refinements (Milestone 7.1)
 
@@ -110,4 +110,10 @@ Gesture Input and Object Inspector share a resizable left sidebar with independe
 
 The camera header provides minimize/expand and Undock/Dock. An undocked camera retains drag, resize, maximize/restore and layout reset. These actions keep its existing capture/tracker mounted. Diagnostics has a separate draggable/resizable/minimizable window; close/reopen it with the header waveform button. The adjacent layout button resets all UI layouts without clearing the scene or stopping capture. Geometry and panel preferences are stored locally, with safe defaults if storage is unavailable or corrupt.
 
-Small screens use compact rails and one overlay drawer at a time; the chosen drawer is remembered on refresh. Mode instructions occupy a single footer line, with full text available through its tooltip and Help. Camera controls can scroll within the available panel height. Milestones 6, 6.1 and 7 have been accepted by the user. Milestone 7.1 awaits physical testing; see `docs/MANUAL_TESTS.md`. Milestone 8 is not started.
+Small screens use compact rails and one overlay drawer at a time; the chosen drawer is remembered on refresh. Mode instructions occupy a single footer line, with full text available through its tooltip and Help. Camera controls can scroll within the available panel height. These workspace refinements have been accepted by the user; see `docs/MANUAL_TESTS.md` for current microphone acceptance steps.
+
+## Milestone 8: voice and deterministic text commands
+
+The user has now physically accepted Milestone 7.1, including camera smoothness and two-hand reliability. Open **Construction Tools → Voice & AI Commands** to type `Create a sphere`, `Move it up 2 meters`, `Rotate it 45 degrees`, `Make it red`, `Apply wood material`, `Undo`, or `Save the scene`. This milestone uses an allowlisted TypeScript interpreter, not an AI model. Existing command history, geometry validation, snapping and imported-model manipulation are shared. Delete/clear require the inline Confirm button.
+
+**Start listening** explicitly activates browser speech recognition when supported; **Stop listening** aborts pending audio. Closing the group/sidebar or hiding the app stops listening; reopening never starts it. Only final results execute, once per recognition result. Browser support/service availability varies and speech may send audio to a provider; offline/private operation is not guaranteed. Text remains functional without speech. See [supported commands and limits](docs/COMMANDS.md) and [physical microphone checklist](docs/MANUAL_TESTS.md). Physical Milestone 8 acceptance is pending. No LLM structure generation, Milestone 9, push or deployment was begun.

@@ -19,6 +19,7 @@ import { LightingControls } from "./LightingControls";
 import { ModelImport } from "./ModelImport";
 import { AdvancedGestures } from "./AdvancedGestures";
 import { Accordion } from "./Accordion";
+import { VoiceCommands } from "./VoiceCommands";
 const shapeIcons = {
   cube: Box,
   sphere: Circle,
@@ -129,6 +130,7 @@ export function Toolbar({ compact = false }: { compact?: boolean }) {
           <Accordion id="tools.gestures" title="Gesture Controls">
             <AdvancedGestures />
           </Accordion>
+          <VoiceCommands />
           <Accordion id="tools.models" title="Imported Models">
             <ModelImport compact={false} />
           </Accordion>

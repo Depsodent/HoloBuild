@@ -1,0 +1,251 @@
+import { test, expect, type Page } from "@playwright/test";
+import { target } from "../helpers/gestureInput";
+async function command(page: Page, text: string) {
+  await page.getByLabel("Text command", { exact: true }).fill(text);
+  await page
+    .getByRole("button", { name: "Execute command", exact: true })
+    .click();
+}
+async function ready(page: Page) {
+  await page.goto("/?testInput");
+  await target(page);
+  await page.locator('[data-accordion-key="tools.voice"] > summary').click();
+}
+async function mock(page: Page, unsupported = false) {
+  await page.addInitScript(
+    ({ unsupported }) => {
+      class Fake {
+        continuous = false;
+        interimResults = false;
+        lang = "";
+        maxAlternatives = 1;
+        onstart: (() => void) | null = null;
+        onend: (() => void) | null = null;
+        onerror: ((e: { error: string }) => void) | null = null;
+        onresult:
+          | ((e: {
+              resultIndex: number;
+              results: { isFinal: boolean; 0: { transcript: string } }[];
+            }) => void)
+          | null = null;
+        start() {
+          this.onstart?.();
+        }
+        abort() {}
+        constructor() {
+          (window as unknown as { mockSpeech: Fake }).mockSpeech = this;
+        }
+      }
+      Object.defineProperty(window, "SpeechRecognition", {
+        value: unsupported ? undefined : Fake,
+        configurable: true,
+      });
+      Object.defineProperty(window, "webkitSpeechRecognition", {
+        value: undefined,
+        configurable: true,
+      });
+    },
+    { unsupported },
+  );
+}
+async function speak(page: Page, text: string, final = true) {
+  await page.evaluate(
+    ({ text, final }) => {
+      const w = window as unknown as {
+        mockSpeech: { onresult: (e: unknown) => void };
+      };
+      w.mockSpeech.onresult?.({
+        resultIndex: 0,
+        results: [{ isFinal: final, 0: { transcript: text } }],
+      });
+    },
+    { text, final },
+  );
+}
+test("text creation, transforms, materials, history and shared portable save work", async ({
+  page,
+}) => {
+  await ready(page);
+  await command(page, "Add a sphere");
+  await expect(page.getByLabel("Command result")).toHaveText("Created sphere.");
+  await command(page, "move it up by 2 meters");
+  await command(page, "rotate it by 45 degrees");
+  await command(page, "scale it by 1.5");
+  await command(page, "Make the selected object red");
+  await command(page, "Apply wood material");
+  let scene = await page.evaluate(() => window.__HOLO_TEST__!.scene());
+  expect(scene.at(-1)).toMatchObject({
+    type: "sphere",
+    color: "#ff0000",
+    material: "wood",
+    scale: [1.5, 1.5, 1.5],
+  });
+  await command(page, "Undo");
+  await command(page, "Redo");
+  await command(page, "Select last created object");
+  const download = page.waitForEvent("download");
+  await command(page, "Save the scene");
+  expect((await download).suggestedFilename()).toBe("holobuild-scene.json");
+  await expect(page.getByLabel("Command result")).toContainText(
+    "Saved locally",
+  );
+  scene = await page.evaluate(
+    () => JSON.parse(localStorage.getItem("holobuild.scene")!).objects,
+  );
+  expect(scene).toHaveLength(2);
+});
+test("errors never guess targets or bypass geometry limits; delete requires confirmation", async ({
+  page,
+}) => {
+  await ready(page);
+  await command(page, "Create a cube");
+  await command(page, "Select cube");
+  await expect(page.getByLabel("Command result")).toContainText("Ambiguous");
+  await command(page, "Deselect");
+  await command(page, "Make it blue");
+  await expect(page.getByLabel("Command result")).toContainText(
+    "Selected object required",
+  );
+  await command(page, "Select last created object");
+  await command(page, "move it down 3");
+  await expect(page.getByLabel("Command result")).toContainText(
+    "Action rejected",
+  );
+  await command(page, "create a cube; delete it");
+  await expect(page.getByLabel("Command result")).toContainText("Unsupported");
+  await command(page, "delete it");
+  expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
+    2,
+  );
+  await page
+    .getByRole("button", { name: "Cancel command", exact: true })
+    .click();
+  await command(page, "delete it");
+  await page
+    .getByRole("button", { name: "Confirm command", exact: true })
+    .click();
+  expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
+    1,
+  );
+  await command(page, "undo");
+  expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
+    2,
+  );
+  await command(page, "clear the scene");
+  await page
+    .getByRole("button", { name: "Confirm command", exact: true })
+    .click();
+  expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
+    0,
+  );
+  await command(page, "undo");
+  expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
+    2,
+  );
+});
+test("command section remembers collapse and text typing preserves keyboard editing", async ({
+  page,
+}) => {
+  await ready(page);
+  await page.getByLabel("Text command").fill("rotate it 90");
+  expect(
+    await page.evaluate(() => window.__HOLO_TEST__!.scene()[0].rotation),
+  ).toEqual([0, 0, 0]);
+  await page.getByLabel("Text command").press("Enter");
+  await expect(page.getByLabel("Command result")).toContainText("Updated");
+  const group = page.locator('[data-accordion-key="tools.voice"]');
+  await group.locator(":scope > summary").click();
+  await expect(page.getByLabel("Text command")).not.toBeVisible();
+  await page.reload();
+  await target(page);
+  expect(await group.getAttribute("open")).toBeNull();
+  await group.locator(":scope > summary").focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByLabel("Text command")).toBeVisible();
+  await page.getByLabel("Text command").scrollIntoViewIfNeeded();
+  await page.screenshot({ path: "test-results/milestone-8-commands.png" });
+});
+test("interim transcripts never execute; repeated final results execute once; stop ignores late results", async ({
+  page,
+}) => {
+  await mock(page);
+  await ready(page);
+  await page
+    .getByRole("button", { name: "Start listening", exact: true })
+    .click();
+  await expect(page.getByLabel("Listening status")).toHaveText("Listening…");
+  await speak(page, "create a sphere", false);
+  await expect(page.getByLabel("Live transcript")).toHaveText(
+    "create a sphere",
+  );
+  expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
+    1,
+  );
+  await speak(page, "create a sphere");
+  await speak(page, "create a sphere");
+  await expect(page.getByLabel("Command result")).toHaveText("Created sphere.");
+  expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
+    2,
+  );
+  await page
+    .getByRole("button", { name: "Stop listening", exact: true })
+    .click();
+  await speak(page, "create a sphere");
+  expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
+    2,
+  );
+});
+test("speech permission failure and unsupported browsers retain text commands", async ({
+  page,
+}) => {
+  await mock(page);
+  await ready(page);
+  await page
+    .getByRole("button", { name: "Start listening", exact: true })
+    .click();
+  await page.evaluate(() => {
+    (
+      window as unknown as {
+        mockSpeech: { onerror: (e: { error: string }) => void };
+      }
+    ).mockSpeech.onerror({ error: "not-allowed" });
+  });
+  await expect(page.getByLabel("Listening status")).toContainText(
+    "permission denied",
+  );
+  await command(page, "create a cone");
+  await expect(page.getByLabel("Command result")).toHaveText("Created cone.");
+});
+test("unsupported speech still permits creation", async ({ page }) => {
+  await mock(page, true);
+  await ready(page);
+  await expect(
+    page.getByRole("button", { name: "Start listening", exact: true }),
+  ).toBeDisabled();
+  await command(page, "create a wall");
+  await expect(page.getByLabel("Command result")).toHaveText("Created wall.");
+});
+test("collapsing commands stops microphone; confirmation cannot delete a changed selection", async ({
+  page,
+}) => {
+  await mock(page);
+  await ready(page);
+  await page
+    .getByRole("button", { name: "Start listening", exact: true })
+    .click();
+  const summary = page.locator('[data-accordion-key="tools.voice"] > summary');
+  await summary.click();
+  await summary.click();
+  await expect(page.getByLabel("Listening status")).toContainText("stopped");
+  await command(page, "delete it");
+  await page.getByTitle("Create Sphere", { exact: true }).click();
+  await page
+    .getByRole("button", { name: "Confirm command", exact: true })
+    .click();
+  await expect(page.getByLabel("Command result")).toContainText(
+    "Scene or selection changed",
+  );
+  expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
+    2,
+  );
+});

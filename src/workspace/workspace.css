@@ -540,3 +540,28 @@ main > footer .credit {
     font-size: 18px;
   }
 }
+.voice-commands {
+  display: grid;
+  gap: 9px;
+  font-size: 12px;
+}
+.voice-commands form {
+  display: grid;
+  gap: 8px;
+}
+.voice-commands input {
+  width: 100%;
+  min-width: 0;
+}
+.voice-commands p {
+  margin: 0;
+  line-height: 1.5;
+}
+.voice-transcript {
+  overflow-wrap: anywhere;
+  max-height: 100px;
+  overflow: auto;
+}
+.command-error {
+  color: #ffb3ac;
+}
