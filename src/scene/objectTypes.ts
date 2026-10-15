@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MATERIAL_IDS } from "./materialPresets";
 export const vectorSchema = z.tuple([
   z.number().finite().min(-100).max(100),
   z.number().finite().min(-100).max(100),
@@ -17,7 +18,7 @@ export const objectSchema = z.object({
     z.number().min(0.1).max(20),
   ]),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
-  material: z.enum(["solid", "glass"]),
+  material: z.enum(MATERIAL_IDS),
 });
 export type SceneObject = z.infer<typeof objectSchema>;
 export type Tool = "select" | "translate" | "rotate" | "scale";

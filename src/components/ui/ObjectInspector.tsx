@@ -3,6 +3,8 @@ import { Copy, Trash2, RotateCcw } from "lucide-react";
 import { useSceneStore } from "../../scene/sceneStore";
 import { execute } from "../../scene/commandManager";
 import type { Vec3 } from "../../scene/objectTypes";
+import { MATERIAL_IDS, MATERIAL_PRESETS } from "../../scene/materialPresets";
+import type { MaterialId } from "../../scene/materialPresets";
 export function ObjectInspector() {
   const objects = useSceneStore((s) => s.objects);
   const id = useSceneStore((s) => s.selectedId);
@@ -93,12 +95,15 @@ export function ObjectInspector() {
                 execute({
                   type: "update",
                   id: object.id,
-                  patch: { material: e.target.value as "solid" | "glass" },
+                  patch: { material: e.target.value as MaterialId },
                 })
               }
             >
-              <option value="solid">Satin metal</option>
-              <option value="glass">Holographic glass</option>
+              {MATERIAL_IDS.map((id) => (
+                <option key={id} value={id}>
+                  {MATERIAL_PRESETS[id].label}
+                </option>
+              ))}
             </select>
           </label>
           <div className="object-actions">
