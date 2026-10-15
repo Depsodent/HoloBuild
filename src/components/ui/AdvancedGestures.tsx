@@ -33,8 +33,10 @@ export function AdvancedGestures() {
             ? `${state.angle.toFixed(1)}°`
             : "Move"}
       </p>
-      <p role="status">{state.message}</p>
-      <p>{MODE_INSTRUCTIONS[state.mode]}</p>
+      <p className="advanced-message" role="status" title={state.message}>
+        {state.message}
+      </p>
+      <p className="mode-instructions">{MODE_INSTRUCTIONS[state.mode]}</p>
       {state.mode === "navigate" && (
         <label>
           Pan sensitivity{" "}

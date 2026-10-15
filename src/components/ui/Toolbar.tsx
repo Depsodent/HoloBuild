@@ -29,11 +29,14 @@ const tools = [
   ["rotate", "Rotate", Rotate3d, "R"],
   ["scale", "Scale", Scaling, "S"],
 ] as const;
-export function Toolbar() {
+export function Toolbar({ compact = false }: { compact?: boolean }) {
   const active = useSceneStore((s) => s.tool);
   const snap = useSceneStore((s) => s.snap);
   return (
-    <aside className="panel tools">
+    <aside
+      className={`panel tools ${compact ? "compact-tools" : ""}`}
+      aria-label="Construction tools"
+    >
       <div className="eyebrow">CONSTRUCTION</div>
       <h2>Your building blocks</h2>
       <div className="shape-palette" aria-label="Construction shapes">
@@ -43,6 +46,7 @@ export function Toolbar() {
               key={type}
               className="shape"
               title={`Create ${shape.name}`}
+              aria-label={`${shape.name} ${shape.description}`}
               onClick={() => execute({ type: "create", objectType: type })}
             >
               {(() => {
@@ -66,9 +70,10 @@ export function Toolbar() {
             className={active === id ? "active" : ""}
             onClick={() => useSceneStore.getState().setTool(id as Tool)}
             title={`${label} (${key})`}
+            aria-label={`${label} ${key}`}
           >
             <Icon size={18} />
-            {label}
+            <span className="tool-name">{label}</span>
             <kbd>{key}</kbd>
           </button>
         ))}
@@ -76,10 +81,12 @@ export function Toolbar() {
       <label className="toggle">
         <input
           type="checkbox"
+          aria-label="Snap to grid"
           checked={snap}
           onChange={(e) => useSceneStore.setState({ snap: e.target.checked })}
         />
-        Snap to grid <span>0.5 m</span>
+        <span className="snap-description">Snap to grid</span>{" "}
+        <span>0.5 m</span>
       </label>
       <div className="tip">
         <span>BUILD WITH INTENTION</span>

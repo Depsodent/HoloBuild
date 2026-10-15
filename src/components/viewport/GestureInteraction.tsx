@@ -170,12 +170,37 @@ export function GestureInteraction() {
       if (
         event.button === 0 &&
         event.target instanceof Element &&
-        event.target.closest(".camera-drag-handle, .camera-resize")
+        event.target.closest(
+          "[data-layout-handle], .sidebar-heading, .panel-section-heading",
+        )
       )
         cancelOnMouse();
     };
+    const panelKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest("[data-layout-handle]") &&
+        [
+          "ArrowLeft",
+          "ArrowRight",
+          "ArrowUp",
+          "ArrowDown",
+          "Home",
+          "End",
+        ].includes(event.key)
+      ) {
+        cancelOnMouse();
+        mouseUp();
+      }
+    };
+    const layoutReset = () => {
+      cancelOnMouse();
+      mouseUp();
+    };
     gl.domElement.addEventListener("pointerdown", cancelOnMouse, true);
     document.addEventListener("pointerdown", panelPointerDown, true);
+    document.addEventListener("keydown", panelKeyDown, true);
+    window.addEventListener("holobuild:reset-layout", layoutReset);
     window.addEventListener("pointerup", mouseUp);
     window.addEventListener("pointercancel", mouseUp);
     return () => {
@@ -189,6 +214,8 @@ export function GestureInteraction() {
       offScene();
       gl.domElement.removeEventListener("pointerdown", cancelOnMouse, true);
       document.removeEventListener("pointerdown", panelPointerDown, true);
+      document.removeEventListener("keydown", panelKeyDown, true);
+      window.removeEventListener("holobuild:reset-layout", layoutReset);
       window.removeEventListener("pointerup", mouseUp);
       window.removeEventListener("pointercancel", mouseUp);
       instance.cancel("Viewport restarted. Uncommitted movement cancelled.");

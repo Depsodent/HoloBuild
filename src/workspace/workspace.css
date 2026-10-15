@@ -1,0 +1,445 @@
+/* Layout state belongs to the workspace, independently of scene/history state. */
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+main {
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+main > header {
+  min-width: 0;
+}
+.workspace.adaptive-workspace {
+  position: relative;
+  height: auto;
+  min-height: 0;
+  min-width: 0;
+  grid-template-columns: var(--left-width) 6px minmax(0, 1fr) 6px var(
+      --right-width
+    );
+  overflow: hidden;
+}
+.adaptive-workspace > .viewport {
+  grid-column: 3;
+  grid-row: 1;
+  height: auto;
+  min-height: 0;
+  min-width: 0;
+}
+.workspace-left,
+.workspace-right {
+  min-width: 0;
+  min-height: 0;
+  background: #101925;
+  display: flex;
+  flex-direction: column;
+}
+.workspace-left {
+  grid-column: 1;
+  grid-row: 1;
+}
+.workspace-right {
+  grid-column: 5;
+  grid-row: 1;
+}
+.sidebar-heading {
+  height: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 9px;
+  color: #7797a4;
+  font-size: 9px;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #243440;
+}
+.sidebar-heading button,
+.panel-section-heading button {
+  padding: 5px;
+  border: 0;
+  background: transparent;
+}
+.sidebar-heading > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.collapsed > .sidebar-heading {
+  padding: 3px;
+  justify-content: center;
+}
+.collapsed > .sidebar-heading > span {
+  display: none;
+}
+.left-split {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+.camera-dock {
+  min-width: 0;
+  min-height: 0;
+}
+.dock-placeholder {
+  border: 0;
+  width: 100%;
+  height: 42px;
+  font-size: 10px;
+}
+.inspector-section {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid #29404c;
+}
+.panel-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 12px;
+  min-height: 40px;
+  font-size: 11px;
+  color: #a5c9d3;
+  flex-shrink: 0;
+}
+.inspector-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.inspector-scroll[hidden] {
+  display: none;
+}
+.adaptive-workspace .panel.inspector {
+  border: 0;
+  padding: 10px 15px 22px;
+  overflow: visible;
+}
+.inspector .eyebrow {
+  display: none;
+}
+.inspector h2 {
+  margin: 3px 0 16px;
+  overflow-wrap: anywhere;
+}
+.inspector .scene-list button {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.workspace-left.collapsed .left-split {
+  visibility: hidden;
+  pointer-events: none;
+}
+.workspace-left.collapsed .floating-camera:not(.docked-camera) {
+  visibility: visible;
+  pointer-events: auto;
+}
+.left-rail {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 3px;
+}
+.left-rail[hidden] {
+  display: none;
+}
+.left-rail button {
+  padding: 7px;
+}
+.workspace-resizer {
+  touch-action: none;
+  user-select: none;
+  background: #0b1520;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+.workspace-resizer:hover,
+.workspace-resizer:focus-visible {
+  background: #235050;
+  outline: 1px solid #6ef3db;
+  outline-offset: -1px;
+}
+.workspace-resizer.vertical {
+  cursor: col-resize;
+  width: 6px;
+  grid-row: 1;
+}
+.workspace-resizer.vertical[aria-label="Resize left sidebar"] {
+  grid-column: 2;
+}
+.workspace-resizer.vertical[aria-label="Resize right sidebar"] {
+  grid-column: 4;
+}
+.workspace-resizer.vertical > span {
+  height: 30px;
+  width: 2px;
+  border-radius: 2px;
+  background: #365561;
+}
+.workspace-resizer.horizontal {
+  cursor: row-resize;
+  min-height: 7px;
+}
+.workspace-resizer.horizontal > span {
+  width: 36px;
+  height: 2px;
+  border-radius: 2px;
+  background: #365561;
+}
+.adaptive-workspace .workspace-right .tools {
+  border: 0;
+  padding: 16px 12px;
+  flex: 1;
+  min-height: 0;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.workspace-right .tools > .eyebrow {
+  display: none;
+}
+.workspace-right .tools h2 {
+  font-size: 16px;
+  margin-top: 0;
+}
+.workspace-right.narrow .shape-palette .shape small {
+  display: none;
+}
+.workspace-right .shape-palette .shape {
+  min-width: 0;
+}
+.tools.compact-tools {
+  padding: 8px 4px !important;
+}
+.compact-tools h2,
+.compact-tools > .eyebrow,
+.compact-tools .section-label,
+.compact-tools .tip {
+  display: none;
+}
+.compact-tools .shape-palette {
+  grid-template-columns: 1fr;
+}
+.compact-tools .shape-palette .shape {
+  align-items: center;
+  padding: 8px 4px;
+}
+.compact-tools .shape-palette .shape span,
+.compact-tools .tool-name,
+.compact-tools kbd,
+.compact-tools .snap-description,
+.compact-tools .toggle > span {
+  display: none;
+}
+.compact-tools .tool-list {
+  margin-top: 12px;
+  border-top: 1px solid #29404c;
+  padding-top: 8px;
+}
+.compact-tools .tool-list button {
+  justify-content: center;
+  padding: 9px 4px;
+}
+.compact-tools .toggle {
+  justify-content: center;
+  padding: 12px 0;
+}
+.compact-tools .toggle input {
+  margin: 0;
+}
+.adaptive-workspace .floating-camera {
+  z-index: 15;
+}
+.adaptive-workspace .docked-camera {
+  z-index: auto;
+}
+.adaptive-workspace .viewport-heading {
+  top: 20px;
+  left: 24px;
+}
+.adaptive-workspace .viewport-heading h1 {
+  font-size: clamp(18px, 2.1vw, 30px);
+}
+.compact-hint {
+  margin-left: auto;
+  max-width: 42%;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: right;
+  color: #9ecbc8;
+  letter-spacing: 0;
+}
+main > footer {
+  min-width: 0;
+  gap: 14px;
+}
+main > footer .status {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
+}
+main > footer .status .status-dot {
+  margin-right: 8px;
+}
+main > footer .credit {
+  display: none;
+}
+.advanced-gestures .mode-instructions {
+  display: none;
+}
+.advanced-gestures .advanced-message {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.toggle .snap-description {
+  margin-left: 0;
+}
+.modal-backdrop {
+  z-index: 40;
+}
+@media (max-width: 1100px) {
+  main > header {
+    gap: 15px;
+    padding-inline: 15px;
+  }
+  main > footer {
+    padding-inline: 12px;
+    gap: 10px;
+  }
+  .compact-hint {
+    max-width: 45%;
+  }
+  .workspace-right .tip {
+    display: none;
+  }
+}
+@media (max-width: 779px) {
+  main > header {
+    min-height: 82px;
+    padding: 10px;
+    gap: 8px;
+  }
+  main > header .brand small {
+    display: none;
+  }
+  main > header .brand {
+    font-size: 16px;
+  }
+  main > header nav {
+    margin-left: auto;
+    gap: 3px;
+  }
+  main > header nav button {
+    padding: 7px;
+    font-size: 10px;
+  }
+  main > header nav i {
+    margin-inline: 2px;
+  }
+  .small-workspace.adaptive-workspace {
+    grid-template-columns: 44px 0 minmax(0, 1fr) 0 60px;
+  }
+  .small-workspace > .workspace-resizer {
+    visibility: hidden;
+  }
+  .small-workspace .collapsed > .sidebar-heading {
+    position: relative;
+    z-index: 18;
+    background: #101925;
+  }
+  .small-workspace .workspace-left:not(.collapsed) {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--left-drawer);
+    z-index: 13;
+    box-shadow: 12px 0 35px #0008;
+  }
+  .small-workspace .workspace-right:not(.collapsed) {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--right-drawer);
+    z-index: 13;
+    box-shadow: -12px 0 35px #0008;
+  }
+  .small-workspace .viewport-heading {
+    left: 12px;
+    right: 12px;
+  }
+  .small-workspace .viewport-heading .view-label {
+    display: none;
+  }
+  .small-workspace .viewport-bottom {
+    left: 12px;
+    bottom: 12px;
+  }
+  .small-workspace .interaction-status {
+    left: 12px;
+    top: 125px;
+    right: 12px;
+  }
+  main > footer {
+    flex-wrap: nowrap;
+    padding: 8px 10px;
+    min-height: 38px;
+    font-size: 8px;
+  }
+  main > footer .status {
+    flex-basis: auto;
+  }
+  main > footer > span:nth-child(3),
+  main > footer > span:nth-child(4) {
+    display: none;
+  }
+  .compact-hint {
+    max-width: 55%;
+  }
+  .modal {
+    max-height: 90dvh;
+    overflow: auto;
+    padding: 20px;
+  }
+}
+@media (max-width: 450px) {
+  .project-action-label {
+    display: none;
+  }
+  main > header {
+    align-content: center;
+  }
+  main > header nav {
+    margin-left: 0;
+    flex-wrap: nowrap;
+    width: 100%;
+    justify-content: space-between;
+  }
+  main > header .brand {
+    font-size: 14px;
+  }
+  main > header .brand > svg {
+    width: 22px;
+    height: 22px;
+  }
+  .small-workspace .viewport-heading h1 {
+    font-size: 18px;
+  }
+}

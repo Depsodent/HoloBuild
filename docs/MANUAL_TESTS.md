@@ -89,3 +89,17 @@ Use **http://127.0.0.1:5175/** without `?testInput`. Start the camera, keep the 
 5. **Preservation:** Minimize/restore and drag/resize the camera window during tracking. Repeat one-hand point/grab/move/release/Undo. Test materials, duplicate/delete, snapping and mixed-scene save/load.
 
 Report mode, hand count/IDs, factor/angle, diagnostics/rejection text, FPS/inference Hz, lighting and any failure. The developer's simulated landmark/model-video tests do not establish physical reliability. Do not begin further gesture/voice/LLM work before accepting this milestone.
+
+## Milestone 6.1 physical layout acceptance — pending
+
+Open http://127.0.0.1:5175/ without test input. Gesture Input is now above Object Inspector on the left; construction tools are on the right. Use the header waveform button to reopen diagnostics and the layout button to reset panel geometry.
+
+1. Start your laptop camera. Move both sidebar inner boundaries and the divider below Gesture Input; also focus each divider and use arrow keys (Shift for 40px steps). Scroll the inspector and confirm the preview does not move. Check the scene resizes and mouse orbit/selection still work.
+2. Minimize/expand Gesture Input, collapse/expand its sidebar, undock/drag/resize/redock it and hide/show the preview. Confirm tracking remains active throughout, including while minimized. Minimize/restore Object Inspector independently.
+3. Drag/resize/minimize/restore/close/reopen diagnostics. Check gesture, pinch ratio, target/ray hit, mode, factor/angle and rejection readings. UI manipulation must neither orbit nor place objects; an active uncommitted operation cancels safely.
+4. Point at an object, pinch, move, release, confirm no popup and Undo once. Repeat explicit two-hand scale/yaw modes. Return to One-hand move afterward.
+5. Collapse construction tools and create shapes/use transforms from its icon rail. Restore it; check inspector transforms, materials/color, duplicate/delete, snapping and JSON save/load. Verify Undo/Redo.
+6. Reload to check saved widths, split height, docking, minimize/collapse and diagnostics geometry. Camera restart after a full reload remains explicit. Use Reset Workspace Layout while capture is active; only the layout should reset.
+7. Shrink the browser. On small screens use the side rail expand controls to open one drawer at a time; verify camera and Undo/Redo remain reachable, the page does not scroll horizontally and footer hints stay on one line (hover/focus Help for full instructions).
+
+Report any failure with screen dimensions, mode, camera/tracking status, inference Hz/FPS, pinch ratio, target/ray hit and rejection text. Physical webcam acceptance must be supplied by the user.

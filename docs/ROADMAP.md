@@ -6,6 +6,7 @@
 4. Interaction implemented: camera raycasting, pinch grab, planar drag, snapped/validated preview, single-command release and loss cancellation. Physical webcam acceptance confirmed by the user on 2026-10-14.
 5. Construction implemented: six primitives, shared transforms/appearance/history, shape-aware conservative collision, ground alignment, free-space spawning, and mixed-shape version-1 persistence. Additional-shape physical acceptance pending; automatic stacking remains future work.
 6. Advanced gestures implemented: independent two-hand tracking, explicit scale/yaw modes, deliberate opt-in menu and camera pan. Physical acceptance pending; no voice/LLM integration started.
+   Milestone 6.1 refines the workspace: docked camera/inspector left split, right construction tools, resizable/collapsible sidebars, floating diagnostics and compact hints. Physical layout approval is required before continuing.
 7. Text/voice commands with validated deterministic parsing.
 8. Structured scene generation and secure backend LLM integration only when credentials are configured.
 9. Physical benchmarks, browser matrix and portfolio polish.

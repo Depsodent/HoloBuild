@@ -6,6 +6,9 @@ test("floating camera drag/resize/keyboard/persistence do not orbit or edit the 
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
+  await page
+    .getByRole("button", { name: "Undock Gesture Input", exact: true })
+    .click();
   const panel = page.getByLabel("Gesture camera");
   const header = page.getByRole("button", {
     name: "Move Gesture Input window",
@@ -90,9 +93,7 @@ test("floating camera drag/resize/keyboard/persistence do not orbit or edit the 
     .click();
   expect((await panel.boundingBox())!.width).toBeCloseTo(resized.width, 0);
   await page.setViewportSize({ width: 950, height: 720 });
-  const workspace = (await page
-      .getByLabel("3D construction viewport")
-      .boundingBox())!,
+  const workspace = (await page.locator(".workspace").boundingBox())!,
     small = (await panel.boundingBox())!;
   expect(small.x).toBeGreaterThanOrEqual(workspace.x);
   expect(small.x + small.width).toBeLessThanOrEqual(
@@ -219,6 +220,9 @@ test("dragging the camera window cancels an active preview without placing the o
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
+  await page
+    .getByRole("button", { name: "Undock Gesture Input", exact: true })
+    .click();
   await hold(page, poseAt("pointing", start.cursor));
   await hold(page, poseAt("pinch", start.cursor));
   await hold(

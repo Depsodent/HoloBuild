@@ -11,16 +11,26 @@ import {
   RotateCcw,
   ChevronDown,
   Grip,
+  ExternalLink,
+  PanelLeft,
 } from "lucide-react";
 import { useFloatingPanel } from "./useFloatingPanel";
+import { useWorkspaceLayout } from "../../workspace/layoutStore";
 import { useGestureStore } from "../../vision/gesturePipeline";
 import { useHandsStore } from "../../vision/handsStream";
 import { HandTracker } from "../../vision/handTracker";
 import { useTrackingStore } from "../../vision/trackingStore";
 import { HandLandmarkOverlay } from "./HandLandmarkOverlay";
+import "./WebcamPreview.css";
 export function WebcamPreview() {
   const panel = useRef<HTMLElement>(null);
-  const floating = useFloatingPanel(panel);
+  const { layout, update } = useWorkspaceLayout();
+  const floating = useFloatingPanel(panel, {
+    boundarySelector: ".workspace",
+    minimized: layout.cameraMinimized,
+  });
+  const minimized = layout.cameraMinimized;
+  const docked = layout.cameraDocked;
   const gesture = useGestureStore((s) => s.gesture);
   const handCount = useHandsStore((s) => s.hands.length);
   const video = useRef<HTMLVideoElement>(null);
@@ -70,66 +80,57 @@ export function WebcamPreview() {
   return (
     <section
       ref={panel}
-      style={floating.style}
-      className={`webcam-panel floating-camera ${floating.layout.minimized ? "minimized" : ""}`}
+      style={docked ? undefined : floating.style}
+      className={`webcam-panel floating-camera ${docked ? "docked-camera" : "undocked-camera"} ${minimized ? "minimized" : ""}`}
       aria-label="Gesture camera"
       onPointerDown={(e) => e.stopPropagation()}
       onWheel={(e) => e.stopPropagation()}
     >
       <div className="camera-title">
         <Camera size={16} />
-        <div
-          className="camera-drag-handle"
-          role="button"
-          tabIndex={0}
-          aria-label="Move Gesture Input window"
-          title="Drag to move · Arrow keys move · Shift moves faster"
-          {...floating.handle("move")}
-        >
-          <strong>Gesture input</strong>
-          {floating.layout.minimized && (
-            <small>{gesture === "none" ? "No hand" : gesture}</small>
-          )}
-        </div>
+        {docked ? (
+          <strong className="camera-heading">Gesture input</strong>
+        ) : (
+          <div
+            className="camera-drag-handle"
+            role="button"
+            tabIndex={0}
+            aria-label="Move Gesture Input window"
+            title="Drag to move · Arrow keys move · Shift moves faster"
+            data-layout-handle
+            {...floating.handle("move")}
+          >
+            <strong>Gesture input</strong>
+          </div>
+        )}
         <span className={`badge ${active ? "live" : ""}`}>
           {state.status.toUpperCase()}
         </span>
-        <button
-          aria-label={visible ? "Hide camera preview" : "Show camera preview"}
-          onClick={() => setVisible(!visible)}
-        >
-          {visible ? <EyeOff size={14} /> : <Eye size={14} />}
-        </button>
-        <button
-          aria-label={
-            floating.layout.minimized
-              ? "Expand Gesture Input"
-              : "Minimize Gesture Input"
-          }
-          onClick={floating.minimize}
-        >
-          {floating.layout.minimized ? (
-            <ChevronDown size={14} />
-          ) : (
-            <Minus size={14} />
-          )}
-        </button>
-        {!floating.layout.minimized && (
-          <button
-            aria-label="Maximize or restore Gesture Input"
-            onClick={floating.maximize}
+        {minimized && (
+          <span
+            className="camera-compact-status"
+            title={`${handCount} tracked hands · ${gesture === "none" ? "No hand" : gesture}`}
           >
-            <Maximize2 size={14} />
-          </button>
+            {handCount > 0 && <span>{handCount}H</span>}
+            <span>{gesture === "none" ? "No hand" : gesture.replace("-", " ")}</span>
+          </span>
         )}
         <button
-          aria-label="Reset Gesture Input layout"
-          onClick={floating.reset}
+          aria-label={docked ? "Undock Gesture Input" : "Dock Gesture Input"}
+          title={docked ? "Undock Gesture Input" : "Dock Gesture Input"}
+          onClick={() => update({ cameraDocked: !docked })}
         >
-          <RotateCcw size={14} />
+          {docked ? <ExternalLink size={14} /> : <PanelLeft size={14} />}
+        </button>
+        <button
+          aria-label={minimized ? "Expand Gesture Input" : "Minimize Gesture Input"}
+          title={minimized ? "Expand Gesture Input" : "Minimize Gesture Input"}
+          onClick={() => update({ cameraMinimized: !minimized })}
+        >
+          {minimized ? <ChevronDown size={14} /> : <Minus size={14} />}
         </button>
       </div>
-      <div className="camera-body" hidden={floating.layout.minimized}>
+      <div className="camera-body" hidden={minimized}>
         <div
           className="camera-feed"
           style={{ display: visible && active ? "block" : "none" }}
@@ -176,6 +177,34 @@ export function WebcamPreview() {
             Landmarks
           </label>
         </div>
+        <div className="camera-view-actions">
+          <button
+            aria-label={visible ? "Hide camera preview" : "Show camera preview"}
+            title={visible ? "Hide camera preview" : "Show camera preview"}
+            onClick={() => setVisible(!visible)}
+          >
+            {visible ? <EyeOff size={14} /> : <Eye size={14} />}
+            {visible ? "Hide preview" : "Show preview"}
+          </button>
+          {!docked && (
+            <>
+              <button
+                aria-label="Maximize or restore Gesture Input"
+                title="Maximize or restore Gesture Input"
+                onClick={floating.maximize}
+              >
+                <Maximize2 size={14} />
+              </button>
+              <button
+                aria-label="Reset Gesture Input layout"
+                title="Reset Gesture Input layout"
+                onClick={floating.reset}
+              >
+                <RotateCcw size={14} />
+              </button>
+            </>
+          )}
+        </div>
         <GestureStatus />
         <AdvancedGestures />
         <div className="camera-meta">
@@ -184,11 +213,12 @@ export function WebcamPreview() {
             : "Private by design · frames stay on device"}
         </div>
       </div>
-      {!floating.layout.minimized && (
+      {!docked && !minimized && (
         <button
           className="camera-resize"
           aria-label="Resize Gesture Input window"
           title="Drag to resize · Arrow keys resize"
+          data-layout-handle
           {...floating.handle("resize")}
         >
           <Grip size={16} />

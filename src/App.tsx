@@ -11,19 +11,20 @@ import {
   Upload,
   CircleHelp,
   RotateCcw,
+  PanelsTopLeft,
+  Activity,
 } from "lucide-react";
 import { Scene } from "./components/viewport/Scene";
-import { Toolbar } from "./components/ui/Toolbar";
-import { ObjectInspector } from "./components/ui/ObjectInspector";
 import { useSceneStore } from "./scene/sceneStore";
 import { execute, undo, redo } from "./scene/commandManager";
 import { serialize, deserialize } from "./scene/sceneSerializer";
-import { WebcamPreview } from "./components/camera/WebcamPreview";
 import type { Tool } from "./scene/objectTypes";
 import { startGesturePipeline } from "./vision/gesturePipeline";
 import { useInteractionStore } from "./interaction/interactionStore";
-import { GestureDiagnostics } from "./components/ui/GestureDiagnostics";
 import { HandGuides } from "./components/ui/HandGuides";
+import { WorkspaceLayout } from "./workspace/WorkspaceLayout";
+import { CompactHint } from "./workspace/CompactHint";
+import { useWorkspaceLayout } from "./workspace/layoutStore";
 export default function App() {
   useEffect(startGesturePipeline, []);
   const s = useSceneStore(
@@ -116,13 +117,22 @@ export default function App() {
             <Redo2 size={17} />
           </button>
           <i />
-          <button onClick={() => file.current?.click()}>
+          <button
+            aria-label="Load"
+            title="Load scene JSON"
+            onClick={() => file.current?.click()}
+          >
             <Upload size={16} />
-            Load
+            <span className="project-action-label">Load</span>
           </button>
-          <button className="primary" onClick={save}>
+          <button
+            className="primary"
+            aria-label="Save project"
+            title="Save project"
+            onClick={save}
+          >
             <Download size={16} />
-            Save project
+            <span className="project-action-label">Save project</span>
           </button>
           <button
             title="Reset scene"
@@ -136,6 +146,25 @@ export default function App() {
           </button>
           <button aria-label="Help" onClick={() => setHelp(true)}>
             <CircleHelp size={18} />
+          </button>
+          <button
+            aria-label="Toggle Gesture Diagnostics"
+            title="Show or hide Gesture Diagnostics"
+            onClick={() =>
+              useWorkspaceLayout.getState().update({
+                diagnosticsVisible:
+                  !useWorkspaceLayout.getState().layout.diagnosticsVisible,
+              })
+            }
+          >
+            <Activity size={17} />
+          </button>
+          <button
+            aria-label="Reset Workspace Layout"
+            title="Reset Workspace Layout"
+            onClick={() => useWorkspaceLayout.getState().reset()}
+          >
+            <PanelsTopLeft size={17} />
           </button>
         </nav>
         <input
@@ -163,8 +192,7 @@ export default function App() {
           }}
         />
       </header>
-      <div className="workspace">
-        <Toolbar />
+      <WorkspaceLayout>
         <section className="viewport" aria-label="3D construction viewport">
           <Scene />
           <div className="viewport-heading">
@@ -186,15 +214,12 @@ export default function App() {
             </span>
             <span>Drag to orbit · Scroll to zoom · Right-drag to pan</span>
           </div>
-          <WebcamPreview />
           <GestureCursor />
           <GestureMenu />
-          <GestureDiagnostics />
           <HandGuides />
           <InteractionStatus />
         </section>
-        <ObjectInspector />
-      </div>
+      </WorkspaceLayout>
       <footer>
         <span className="status">
           <span className="status-dot" />
@@ -203,6 +228,7 @@ export default function App() {
         <span>{s.fps} FPS</span>
         <span>{s.objects.length} OBJECTS</span>
         <span>{s.tool.toUpperCase()}</span>
+        <CompactHint />
         <span className="credit">
           Made by <b>Aaryan</b>
         </span>
@@ -220,8 +246,8 @@ export default function App() {
             <h2>Your spatial workspace</h2>
             <p>
               Create a cube, sphere, cylinder, cone, wall, or floor from the
-              left panel. Select it, then use Move, Rotate, or Scale to show its
-              3D handles. The inspector provides precise numeric transforms.
+              right panel. Select it, then use Move, Rotate, or Scale to show
+              its 3D handles. The inspector provides precise numeric transforms.
             </p>
             <p>
               Drag empty space to orbit. Scroll to zoom. Right-drag to pan. V

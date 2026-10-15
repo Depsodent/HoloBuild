@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent, KeyboardEvent, RefObject } from "react";
 import {
   BAR_HEIGHT,
@@ -8,16 +8,35 @@ import {
   parseLayout,
 } from "./panelLayout";
 import type { PanelLayout, WorkspaceSize } from "./panelLayout";
-function readLayout() {
+export interface FloatingPanelOptions {
+  storageKey?: string;
+  boundarySelector?: string;
+  initialLayout?: (size: WorkspaceSize) => PanelLayout;
+  minimized?: boolean;
+}
+function readLayout(storageKey: string) {
   try {
-    return parseLayout(localStorage.getItem(PANEL_KEY));
+    return parseLayout(localStorage.getItem(storageKey));
   } catch {
     return null;
   }
 }
-export function useFloatingPanel(panel: RefObject<HTMLElement | null>) {
-  const [layout, setLayout] = useState(
-    () => readLayout() ?? defaultLayout({ width: 800, height: 600 }),
+export function useFloatingPanel(
+  panel: RefObject<HTMLElement | null>,
+  {
+    storageKey = PANEL_KEY,
+    boundarySelector,
+    initialLayout = defaultLayout,
+    minimized,
+  }: FloatingPanelOptions = {},
+) {
+  const [storedLayout, setLayout] = useState(
+    () => readLayout(storageKey) ?? initialLayout({ width: 800, height: 600 }),
+  );
+  const layout = useMemo(
+    () =>
+      minimized === undefined ? storedLayout : { ...storedLayout, minimized },
+    [storedLayout, minimized],
   );
   const size = useRef<WorkspaceSize>({ width: 800, height: 600 });
   const initialized = useRef(false);
@@ -30,18 +49,24 @@ export function useFloatingPanel(panel: RefObject<HTMLElement | null>) {
     layout: PanelLayout;
   } | null>(null);
   useEffect(() => {
-    const workspace = panel.current?.parentElement;
+    const workspace = boundarySelector
+      ? (panel.current?.closest<HTMLElement>(boundarySelector) ??
+        panel.current?.parentElement)
+      : panel.current?.parentElement;
     if (!workspace) return;
     const observer = new ResizeObserver(() => {
       size.current = {
         width: workspace.clientWidth,
         height: workspace.clientHeight,
       };
-      const saved = readLayout();
+      const saved = readLayout(storageKey);
       const first = !initialized.current && !saved;
       setLayout((current) =>
         clampLayout(
-          first ? defaultLayout(size.current) : current,
+          {
+            ...(first ? initialLayout(size.current) : current),
+            ...(minimized === undefined ? {} : { minimized }),
+          },
           size.current,
         ),
       );
@@ -49,15 +74,24 @@ export function useFloatingPanel(panel: RefObject<HTMLElement | null>) {
     });
     observer.observe(workspace);
     return () => observer.disconnect();
-  }, [panel]);
+  }, [panel, boundarySelector, storageKey, initialLayout, minimized]);
   useEffect(() => {
     if (!initialized.current) return;
     try {
-      localStorage.setItem(PANEL_KEY, JSON.stringify(layout));
+      localStorage.setItem(storageKey, JSON.stringify(layout));
     } catch {
       /* Storage can be disabled. */
     }
-  }, [layout]);
+  }, [layout, storageKey]);
+  const reset = useCallback(() => {
+    previous.current = null;
+    drag.current = null;
+    setLayout(clampLayout(initialLayout(size.current), size.current));
+  }, [initialLayout]);
+  useEffect(() => {
+    window.addEventListener("holobuild:reset-layout", reset);
+    return () => window.removeEventListener("holobuild:reset-layout", reset);
+  }, [reset]);
   function start(e: PointerEvent<HTMLElement>, mode: "move" | "resize") {
     if (e.button !== 0) return;
     e.preventDefault();
@@ -145,10 +179,7 @@ export function useFloatingPanel(panel: RefObject<HTMLElement | null>) {
       setLayout((l) =>
         clampLayout({ ...l, minimized: !l.minimized }, size.current),
       ),
-    reset: () => {
-      previous.current = null;
-      setLayout(defaultLayout(size.current));
-    },
+    reset,
     maximize: () => {
       if (previous.current) {
         setLayout(clampLayout(previous.current, size.current));

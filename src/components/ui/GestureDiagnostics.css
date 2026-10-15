@@ -1,0 +1,103 @@
+.gesture-diagnostics.floating-diagnostics {
+  position: absolute;
+  z-index: 16;
+  right: auto;
+  bottom: auto;
+  padding: 0;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 1px solid var(--border, rgba(97, 213, 213, 0.25));
+  border-radius: 10px;
+  background: rgba(8, 20, 32, 0.96);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+  pointer-events: auto;
+}
+
+.diagnostics-title {
+  height: 53px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 0 8px 0 12px;
+  border-bottom: 1px solid rgba(97, 213, 213, 0.15);
+}
+
+.diagnostics-title button {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  padding: 0;
+  color: inherit;
+}
+
+.diagnostics-drag-handle {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 0;
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+}
+
+.diagnostics-drag-handle strong {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.01em;
+}
+
+.diagnostics-drag-handle small {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  color: #8fa8b8;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.diagnostics-body {
+  height: calc(100% - 54px);
+  box-sizing: border-box;
+  padding: 12px 12px 25px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.diagnostics-body[hidden] {
+  display: none;
+}
+
+.gesture-diagnostics .diagnostics-body dl {
+  margin: 0;
+}
+
+.gesture-diagnostics .diagnostics-body dd {
+  overflow-wrap: anywhere;
+}
+
+.diagnostics-resize {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: nwse-resize;
+  touch-action: none;
+}
+
+.diagnostics-drag-handle:focus-visible,
+.diagnostics-resize:focus-visible {
+  outline: 2px solid #39dcca;
+  outline-offset: 2px;
+}

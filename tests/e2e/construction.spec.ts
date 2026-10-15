@@ -196,7 +196,9 @@ test("live-style relaxed aim, progressive pinch and mixed release place once wit
   expect(
     (await page.evaluate(() => window.__HOLO_TEST__!.snapshot())).history,
   ).toBe(1);
-  await page.getByText("Gesture diagnostics", { exact: true }).click();
+  await page
+    .getByRole("button", { name: "Expand Gesture Diagnostics", exact: true })
+    .click();
   await expect(page.locator(".gesture-diagnostics")).toContainText(
     "Activate / release",
   );

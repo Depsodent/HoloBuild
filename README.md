@@ -85,3 +85,11 @@ Start camera; it now tracks up to two hands locally. Expand the camera window an
 - **Menu:** optional **Enable open-palm tool menu** is off by default. After a grab or closing tools, lower your hand or point for about five seconds to reset cooldown/rearm. Then show one steady open palm for about two seconds. Point at a card and pinch to confirm. Help and mouse clicks remain available; uncheck the setting to disable activation.
 
 The HUD and connecting guide remain visible when the camera window is minimized. Lost, overlapping/ambiguous or abruptly changing hands cancel previews; open pinches and reacquire before retrying. Model handedness scores are not tracking-confidence probabilities. Advanced modes/menu opt-in reset on reload, while your camera-window layout stays saved. No real-webcam acceptance is inferred from synthetic regression tests.
+
+## Milestone 6.1: adaptive workspace
+
+Gesture Input and Object Inspector share a resizable left sidebar with independently scrolling bodies. Construction tools are on the right. Drag the sidebar boundaries or left split divider; keyboard arrows resize a focused divider (Shift for larger steps). Collapse controls release more canvas space; the construction icon rail retains shapes, transforms and snapping.
+
+The camera header provides minimize/expand and Undock/Dock. An undocked camera retains drag, resize, maximize/restore and layout reset. These actions keep its existing capture/tracker mounted. Diagnostics has a separate draggable/resizable/minimizable window; close/reopen it with the header waveform button. The adjacent layout button resets all UI layouts without clearing the scene or stopping capture. Geometry and panel preferences are stored locally, with safe defaults if storage is unavailable or corrupt.
+
+Small screens use compact rails and one overlay drawer at a time; the chosen drawer is remembered on refresh. Mode instructions occupy a single footer line, with full text available through its tooltip and Help. Camera controls can scroll within the available panel height. Physical testing of this layout and advanced gestures is pending user acceptance; see `docs/MANUAL_TESTS.md`. Milestone 7 is not started.

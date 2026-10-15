@@ -291,6 +291,9 @@ test("opted-in palm menu stays closed during camera window dragging and after re
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
+  await page
+    .getByRole("button", { name: "Undock Gesture Input", exact: true })
+    .click();
   await page.getByLabel("Enable open-palm tool menu", { exact: true }).check();
   await hold(page, poseAt("open-palm", start.cursor), 600);
   const header = (await page
