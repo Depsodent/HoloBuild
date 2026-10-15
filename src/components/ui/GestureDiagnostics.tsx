@@ -11,6 +11,10 @@ import { useFloatingPanel } from "../camera/useFloatingPanel";
 import { clampLayout } from "../camera/panelLayout";
 import type { WorkspaceSize } from "../camera/panelLayout";
 import "./GestureDiagnostics.css";
+import { Accordion } from "./Accordion";
+import { PerformanceReadings } from "./PerformanceReadings";
+import { useShallow } from "zustand/react/shallow";
+import { useSceneStore } from "../../scene/sceneStore";
 
 function diagnosticLayout(size: WorkspaceSize) {
   return clampLayout(
@@ -34,10 +38,20 @@ export function GestureDiagnostics() {
   const visible = useWorkspaceLayout((s) => s.layout.diagnosticsVisible);
   const updateLayout = useWorkspaceLayout((s) => s.update);
   const g = useGestureStore();
-  const i = useInteractionStore();
+  const i = useInteractionStore(
+    useShallow((s) => ({
+      hoveredId: s.hoveredId,
+      rayTarget: s.rayTarget,
+      phase: s.phase,
+      rejection: s.rejection,
+    })),
+  );
   const t = useTrackingStore();
   const hands = useHandsStore();
   const advanced = useAdvancedStore();
+  const selectedName = useSceneStore(
+    (s) => s.objects.find((o) => o.id === s.selectedId)?.name,
+  );
   return (
     <section
       ref={panel}
@@ -59,7 +73,7 @@ export function GestureDiagnostics() {
         >
           <strong>Gesture Diagnostics</strong>
           <small>
-            {g.gesture} · {t.status}
+            {g.gesture} · {t.status} · {t.inferenceHz} Hz · {advanced.mode}
           </small>
         </div>
         <button
@@ -84,73 +98,89 @@ export function GestureDiagnostics() {
         </button>
       </div>
       <div className="diagnostics-body" hidden={floating.layout.minimized}>
-        <dl>
-          <dt>Gesture / candidate</dt>
-          <dd>
-            {g.gesture} / {g.candidate}
-          </dd>
-          <dt>Pinch distance</dt>
-          <dd>{g.pinchRatio?.toFixed(3) ?? "unavailable"}</dd>
-          <dt>Activate / release</dt>
-          <dd>
-            {GESTURE_CONFIG.pinchOn.toFixed(2)} /{" "}
-            {GESTURE_CONFIG.pinchOff.toFixed(2)}
-          </dd>
-          <dt>Pinch state</dt>
-          <dd>
-            {g.pinchActive ? "active" : "inactive"}
-            {g.pinchStable ? " · stable" : " · debouncing"}
-          </dd>
-          <dt>Threshold latch</dt>
-          <dd>{g.pinchCandidate ? "closed" : "open"}</dd>
-          <dt>Targeted object</dt>
-          <dd>{i.hoveredId ?? "none"}</dd>
-          <dt>Selectable ray hit</dt>
-          <dd>{i.rayTarget ?? "none"}</dd>
-          <dt>Grab state</dt>
-          <dd>{i.phase}</dd>
-          <dt>Grab / cancel reason</dt>
-          <dd>{i.rejection}</dd>
-          <dt>Interaction mode</dt>
-          <dd>
-            {advanced.mode} · {advanced.active ? "active" : "ready"}
-          </dd>
-          <dt>Scale / rotation</dt>
-          <dd>
-            {advanced.factor.toFixed(2)}× / {advanced.angle.toFixed(1)}°
-          </dd>
-          <dt>Interaction status</dt>
-          <dd>{advanced.message}</dd>
-          <dt>Tracking</dt>
-          <dd>
-            {t.status} · {g.cursor ? "21 landmarks" : "no hand"} ·{" "}
-            {t.inferenceHz} Hz
-          </dd>
-          <dt>Confidence</dt>
-          <dd>Not exposed by the detector</dd>
-          <dt>Tracked hands</dt>
-          <dd>
-            {hands.hands.length}
-            {hands.ambiguous ? " · ambiguous" : ""}
-          </dd>
-          {hands.hands.map((h) => (
-            <div className="hand-diagnostic" key={h.id}>
-              <dt>Hand {h.id}</dt>
-              <dd>
-                {h.gesture.gesture} · pinch{" "}
-                {h.gesture.pinchRatio?.toFixed(2) ?? "unavailable"}
-                {h.handedness
-                  ? ` · model ${h.handedness} (${h.handednessScore !== undefined ? `${(h.handednessScore * 100).toFixed(0)}% handedness` : "score unavailable"})`
-                  : ""}
-              </dd>
-            </div>
-          ))}
-        </dl>
-        <p>
-          Aim until an object highlights, then pinch. Distance must stay below{" "}
-          {GESTURE_CONFIG.pinchOn} for {GESTURE_CONFIG.pinchDwellMs} ms. Keep
-          each interacting hand fully visible.
-        </p>
+        <Accordion id="diagnostics.gesture" title="Gesture State">
+          <dl>
+            <dt>Gesture / candidate</dt>
+            <dd>
+              {g.gesture} / {g.candidate}
+            </dd>
+          </dl>
+        </Accordion>
+        <Accordion id="diagnostics.pinch" title="Pinch and Selection">
+          <dl>
+            <dt>Pinch distance</dt>
+            <dd>{g.pinchRatio?.toFixed(3) ?? "unavailable"}</dd>
+            <dt>Activate / release</dt>
+            <dd>
+              {GESTURE_CONFIG.pinchOn.toFixed(2)} /{" "}
+              {GESTURE_CONFIG.pinchOff.toFixed(2)}
+            </dd>
+            <dt>Pinch state</dt>
+            <dd>
+              {g.pinchActive ? "active" : "inactive"}
+              {g.pinchStable ? " · stable" : " · debouncing"}
+            </dd>
+            <dt>Threshold latch</dt>
+            <dd>{g.pinchCandidate ? "closed" : "open"}</dd>
+            <dt>Targeted object</dt>
+            <dd>{i.hoveredId ?? "none"}</dd>
+            <dt>Selectable ray hit</dt>
+            <dd>{i.rayTarget ?? "none"}</dd>
+            <dt>Grab state</dt>
+            <dd>{i.phase}</dd>
+            <dt>Grab / cancel reason</dt>
+            <dd>{i.rejection}</dd>
+          </dl>
+        </Accordion>
+        <Accordion id="diagnostics.two-hand" title="Two-Hand Interaction">
+          <dl>
+            <dt>Interaction mode</dt>
+            <dd>
+              {advanced.mode} · {advanced.active ? "active" : "ready"}
+            </dd>
+            <dt>Scale / rotation</dt>
+            <dd>
+              {advanced.factor.toFixed(2)}× / {advanced.angle.toFixed(1)}°
+            </dd>
+            <dt>Interaction status</dt>
+            <dd>{advanced.message}</dd>
+            <dt>Prepared hands</dt>
+            <dd>{advanced.readyHands} / 2 · 4 s activation window</dd>
+            <dt>Selected object</dt>
+            <dd>{selectedName ?? "none"}</dd>
+          </dl>
+        </Accordion>
+        <Accordion id="diagnostics.tracking" title="Tracking Status">
+          <dl>
+            <dt>Tracking</dt>
+            <dd>
+              {t.status} · {g.cursor ? "21 landmarks" : "no hand"} ·{" "}
+              {t.inferenceHz} Hz
+            </dd>
+            <dt>Confidence</dt>
+            <dd>Not exposed by the detector</dd>
+            <dt>Tracked hands</dt>
+            <dd>
+              {hands.hands.length}
+              {hands.ambiguous ? " · ambiguous" : ""}
+            </dd>
+            {hands.hands.map((h) => (
+              <div className="hand-diagnostic" key={h.id}>
+                <dt>Hand {h.id}</dt>
+                <dd>
+                  {h.gesture.gesture} · pinch{" "}
+                  {h.gesture.pinchRatio?.toFixed(2) ?? "unavailable"}
+                  {h.handedness
+                    ? ` · model ${h.handedness} (${h.handednessScore !== undefined ? `${(h.handednessScore * 100).toFixed(0)}% handedness` : "score unavailable"})`
+                    : ""}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </Accordion>
+        <Accordion id="diagnostics.performance" title="Performance Metrics">
+          <PerformanceReadings />
+        </Accordion>
       </div>
       {!floating.layout.minimized && (
         <button

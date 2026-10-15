@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../helpers/editorTest";
 import { hold, poseAt, livePoseAt, target } from "../helpers/gestureInput";
 test("open palm never opens tools; explicit Help opens tools for point/pinch selection", async ({
   page,

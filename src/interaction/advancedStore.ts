@@ -3,15 +3,16 @@ export type AdvancedMode = "move" | "scale" | "rotate" | "navigate";
 export const MODE_INSTRUCTIONS: Record<AdvancedMode, string> = {
   move: "Point at an object, pinch to grab, move, then release.",
   scale:
-    "Select an object. Open both pinches, then pinch both. Apart enlarges, together shrinks; release to confirm.",
+    "Keep the selected object. Show each hand open once, then pinch both within 4 s. Release to confirm.",
   rotate:
-    "Select an object. Open both pinches, then pinch both. Tilt the line between hands to rotate around world Y; release to confirm.",
+    "Keep the selected object. Open each pinch once, then pinch both within 4 s. Tilt the hand line; release to confirm.",
   navigate:
     "Use one hand. Open pinch, then pinch and move to pan the camera. Release confirms; hand loss restores the starting view.",
 };
 export const useAdvancedStore = create<{
   mode: AdvancedMode;
   active: boolean;
+  readyHands: number;
   menuEnabled: boolean;
   factor: number;
   angle: number;
@@ -21,6 +22,7 @@ export const useAdvancedStore = create<{
 }>(() => ({
   mode: "move",
   active: false,
+  readyHands: 0,
   menuEnabled: false,
   factor: 1,
   angle: 0,

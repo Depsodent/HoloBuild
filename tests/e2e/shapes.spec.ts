@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../helpers/editorTest";
 import { hold, poseAt, target } from "../helpers/gestureInput";
 const kinds = ["cube", "sphere", "cylinder", "cone", "wall", "floor"] as const;
 for (const kind of kinds) {
@@ -97,11 +97,12 @@ test("palette creates every shape and JSON restores the mixed collection", async
     mimeType: "application/json",
     buffer: Buffer.from(saved),
   });
-  expect(
-    (await page.evaluate(() => window.__HOLO_TEST__!.scene())).map(
-      (o) => o.type,
-    ),
-  ).toEqual(kinds);
+  // File reading and project validation finish asynchronously after selection.
+  await expect
+    .poll(() =>
+      page.evaluate(() => window.__HOLO_TEST__!.scene().map((o) => o.type)),
+    )
+    .toEqual(kinds);
   await page.screenshot({ path: "test-results/milestone-5-shapes.png" });
 });
 

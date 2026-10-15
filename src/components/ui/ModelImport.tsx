@@ -6,10 +6,29 @@ import { useSceneStore } from "../../scene/sceneStore";
 import { importFiles, pruneModelResources } from "../../assets/modelRegistry";
 import { loadProject } from "../../assets/projectIO";
 export function ModelImport({ compact }: { compact: boolean }) {
+  const objects = useSceneStore((s) => s.objects);
+  const models = objects.filter((o) => o.model);
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   return (
     <div className="model-import">
+      {!compact && models.length > 0 && (
+        <div className="imported-assets" aria-label="Imported assets in scene">
+          {[...new Set(models.map((o) => o.model!.assetId))].map((id) => {
+            const instances = models.filter((o) => o.model!.assetId === id);
+            return (
+              <button
+                key={id}
+                title={`Select ${instances[0].name}`}
+                onClick={() => useSceneStore.getState().select(instances[0].id)}
+              >
+                {instances[0].name} · {instances.length} instance
+                {instances.length === 1 ? "" : "s"}
+              </button>
+            );
+          })}
+        </div>
+      )}
       <button
         aria-label="Import 3D Model"
         title="Import GLB/GLTF (10 MiB including dependencies)"

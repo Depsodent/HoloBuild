@@ -37,7 +37,9 @@ export function GestureInteraction() {
             rect.left + cursor.x * rect.width,
             rect.top + cursor.y * rect.height,
           )
-          ?.closest(".webcam-panel, .gesture-diagnostics");
+          ?.closest(
+            ".webcam-panel, .gesture-diagnostics, .workspace-left, .workspace-right",
+          );
       },
       menuHit(cursor) {
         const rect = gl.domElement.getBoundingClientRect();
@@ -122,6 +124,14 @@ export function GestureInteraction() {
         instance.update(frame);
     });
     const offHands = handsStream.subscribe((frame) => {
+      const mode = useAdvancedStore.getState().mode;
+      if (
+        !mouseActive &&
+        (mode === "scale" || mode === "rotate") &&
+        !useSceneStore.getState().selectedId &&
+        frame.hands.length === 1
+      )
+        instance.update(frame.hands[0].gesture, true);
       if (!mouseActive) two.update(frame);
       if (!mouseActive) nav.update(frame);
       if (!mouseActive) menu.update(frame);
@@ -134,6 +144,7 @@ export function GestureInteraction() {
         nav.cancel("Mode changed. Open pinch before navigating.");
         useAdvancedStore.setState({
           active: false,
+          readyHands: 0,
           factor: 1,
           angle: 0,
           message: MODE_INSTRUCTIONS[state.mode],
@@ -171,12 +182,28 @@ export function GestureInteraction() {
         event.button === 0 &&
         event.target instanceof Element &&
         event.target.closest(
-          "[data-layout-handle], .sidebar-heading, .panel-section-heading",
+          "[data-layout-handle], .sidebar-heading, .panel-section-heading, summary",
         )
+      )
+        cancelOnMouse();
+      else if (
+        event.target instanceof Element &&
+        event.target.closest(
+          ".workspace-left, .workspace-right, .webcam-panel, .gesture-diagnostics",
+        ) &&
+        (instance.dragging || two.active || nav.active)
       )
         cancelOnMouse();
     };
     const panelKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest("summary") &&
+        ["Enter", " "].includes(event.key)
+      ) {
+        cancelOnMouse();
+        mouseUp();
+      }
       if (
         event.target instanceof Element &&
         event.target.closest("[data-layout-handle]") &&

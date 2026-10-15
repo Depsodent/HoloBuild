@@ -3,6 +3,7 @@ import { landmarkStream } from "./landmarkStream";
 import { HandRecognizer } from "./handRecognizer";
 import { handsStream, useHandsStore } from "./handsStream";
 import type { GestureFrame } from "./gestureTypes";
+import { performanceMetrics } from "./performanceStore";
 const empty: GestureFrame = {
   gesture: "none",
   candidate: "none",
@@ -49,10 +50,20 @@ export function startGesturePipeline() {
         : (hand?.gesture ?? { ...empty, timestamp: frame.timestamp });
     next.recognitionMs = performance.now() - start;
     const changed = next.gesture !== current.gesture;
+    const visibilityChanged =
+      !!next.cursor !== !!current.cursor ||
+      result.hands.length !== useHandsStore.getState().hands.length;
     current = next;
     listeners.forEach((fn) => fn(next));
     handsStream.publish(result);
-    if (changed || frame.timestamp - lastUi >= 150 || !next.cursor) {
+    if (frame.source === "camera")
+      performanceMetrics.gesture(
+        frame.timestamp,
+        performance.now(),
+        frame.captureTime,
+        start,
+      );
+    if (changed || visibilityChanged || frame.timestamp - lastUi >= 150) {
       useGestureStore.setState(next);
       useHandsStore.setState(result);
       lastUi = frame.timestamp;

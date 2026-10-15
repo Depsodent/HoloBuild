@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../helpers/editorTest";
 test("real local MediaPipe processes a synthetic video and releases its stream", async ({
   page,
 }) => {

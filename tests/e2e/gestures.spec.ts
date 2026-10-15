@@ -1,5 +1,5 @@
 import { hold } from "../helpers/gestureInput";
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../helpers/editorTest";
 import { hand } from "../fixtures/landmarks";
 test("mock landmarks exercise smoothing, dwell, classification and hand loss", async ({
   page,

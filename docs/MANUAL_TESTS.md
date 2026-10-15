@@ -80,7 +80,7 @@ Do not mark physical retesting complete based on automated synthetic camera or l
 
 ## Milestone 6 physical webcam checklist — accepted by user on 2026-10-15
 
-Use **http://127.0.0.1:5175/** without `?testInput`. Start the camera, keep the tab visible, and verify both skeletons/hand IDs in even front lighting. Keep wrists apart; crossing/occlusion may cancel safely. Expand/scroll the camera panel to access Gesture mode.
+Use **http://127.0.0.1:5175/** without `?testInput`. Start the camera, keep the tab visible, and verify both skeletons/hand IDs in even front lighting. Keep wrists apart; crossing/occlusion may cancel safely. In 7.1, access Gesture mode under Construction Tools → Gesture Controls.
 
 1. **Two-hand scale:** Select one isolated cube. Choose Two-hand scale. Show both hands with thumb/index apart for about half a second, then pinch both. Move apart and together; inspect the factor, ghost and unchanged inspector values during preview. Release a pinch to confirm. Undo once, Redo once. Repeat with sphere, cylinder, cone, wall and floor. Hide a hand mid-operation; the original transform must remain unchanged.
 2. **Two-hand rotation:** Select an object and choose Two-hand yaw rotation. Open both pinches, pinch both, then tilt the connecting line by raising one hand and lowering the other. Keep separation comfortable. Confirm the angle/ghost changes without scaling. Release; Undo restores the original orientation. Try a previously tilted object and a nearby obstacle; invalid red previews must not commit.
@@ -104,7 +104,7 @@ Open http://127.0.0.1:5175/ without test input. Gesture Input is now above Objec
 
 Report any failure with screen dimensions, mode, camera/tracking status, inference Hz/FPS, pinch ratio, target/ray hit and rejection text. Physical webcam acceptance must be supplied by the user.
 
-## Milestone 7 physical webcam and rendering acceptance — pending
+## Milestone 7 physical webcam and rendering acceptance — accepted by user on 2026-10-15
 
 Use the real localhost app without `?testInput`. Earlier Milestone 6/6.1 acceptance does not substitute for testing these new surfaces/models.
 
@@ -116,3 +116,17 @@ Use the real localhost app without `?testInput`. Earlier Milestone 6/6.1 accepta
 6. Minimize/dock/collapse the camera and resize panels during tracking. Verify mouse controls and gestures remain usable, and material edits do not stop capture. Save project, reload, Restore local project, then load the downloaded JSON on another browser/origin to confirm imported models are present.
 
 Report model format/size, preset/settings, mode, tracking diagnostics, target/ray hit/rejection, FPS/inference Hz and any failing step. Static bounding proxies deliberately select empty/concave areas and can reject close curved/rotated placements. Do not claim measured physical performance from software-rendered browser tests. Milestone 8 requires explicit user acceptance first.
+
+## Milestone 7.1 physical acceptance — pending
+
+The user confirmed Milestone 7 passed real-world acceptance. The following checks apply to the new 7.1 changes; automated landmark sequences and synthetic camera inference do not establish physical reliability or speed.
+
+1. Open **http://127.0.0.1:5175/** without `?testInput`. Start the laptop webcam. In One-hand move, point, pinch, move, release and Undo once. Confirm there is no unwanted popup. Repeat on a textured primitive and an imported model.
+2. Select an object once with the mouse or a one-hand pinch. Switch to Two-hand scale; selection must remain. Open the first pinch, then close it while bringing in the second hand within four seconds. Let the second hand stabilize, open then pinch it. Neither hand needs to aim at the selected object. Read the waiting/prepared/active status. The initial preview must not jump. Move hands apart/together, release and Undo once, then Redo.
+3. Switch that same selection to Two-hand yaw rotation. Prepare the two hands independently, pinch both, tilt the connecting line and release. Undo once. Also deselect, enter Rotate and use a single hand to select once before bringing in the second. Hide a hand during an active transform: the preview must cancel without committing. A held pinch after cancellation must not restart an operation without opening again.
+4. Expand diagnostics Performance Metrics. Record browser, hardware, scene/model size, negotiated capture dimensions, render FPS/p95/std deviation, camera presentation FPS, inference Hz/mean/p95, gesture Hz and processing-to-render time. Capture-to-render and skipped frames may read unavailable; do not report them as zero. Repeat under the same conditions with Balanced and Performance; optionally Quality. Switching a profile must keep the camera active and safely cancel an active preview. Actual laptop measurements, not synthetic values, decide which mode feels smoother.
+5. Optional worker comparison: Stop camera, select Experimental worker CPU in Camera settings, restart and repeat step 4. Compare tracking and render rates separately; if gestures cancel or inference slows, return to main-thread CPU. The software-rendered experiment improved rendering but worsened inference. It is not the default.
+6. Expand/collapse each right-side construction and inspector group using pointer and keyboard Enter/Space. Keep several groups open, reload and confirm independent remembered states. Selected-object information should remain visible. Resize/collapse the sidebars, minimize/dock/undock the camera and hide its preview while tracking. Verify the header **Stop camera** remains reachable and turns off the laptop camera indicator even when the camera panel is collapsed.
+7. Move/resize/minimize diagnostics; confirm the compact status and expanded groups. Interacting with panels must not orbit the scene or commit a gesture preview. Check materials/textures, duplicate/delete, snapping, mouse gizmos and portable JSON save/load still work.
+
+Report the exact step, mode, selected object, hand IDs/readiness, pinch state, cancellation/rejection text and Performance readings for any failure. Milestone 7.1 awaits the user's physical acceptance. Do not begin Milestone 8, voice commands or AI integration beforehand.

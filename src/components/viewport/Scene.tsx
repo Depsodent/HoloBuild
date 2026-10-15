@@ -9,9 +9,11 @@ import { BuildingObject } from "./BuildingObject";
 import { ViewportBoundary } from "./ViewportBoundary";
 import { GestureInteraction, PlacementPreview } from "./GestureInteraction";
 import { SurfaceResources } from "./SurfaceMaterial";
+import { performanceMetrics } from "../../vision/performanceStore";
 function Metrics() {
   const timer = useRef({ elapsed: 0, frames: 0 });
   useFrame(({ gl }, delta) => {
+    performanceMetrics.render(performance.now(), delta * 1000);
     timer.current.elapsed += delta;
     timer.current.frames++;
     if (timer.current.elapsed >= 1) {

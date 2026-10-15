@@ -206,6 +206,103 @@ main > header {
   overscroll-behavior: contain;
   scrollbar-width: thin;
 }
+.workspace-accordion {
+  border-top: 1px solid #223a48;
+  margin-top: 10px;
+  min-width: 0;
+}
+.workspace-accordion > summary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 0;
+  cursor: pointer;
+  list-style: none;
+  color: #afd6df;
+  font-size: 11px;
+  font-weight: 600;
+  user-select: none;
+}
+.workspace-accordion > summary::-webkit-details-marker {
+  display: none;
+}
+.workspace-accordion > summary > svg {
+  transition: transform 160ms ease;
+  flex-shrink: 0;
+}
+.workspace-accordion[open] > summary > svg {
+  transform: rotate(90deg);
+}
+.workspace-accordion > summary:focus-visible {
+  outline: 2px solid #64eadc;
+  outline-offset: -2px;
+  border-radius: 3px;
+}
+.workspace-accordion[open] > .accordion-content {
+  animation: accordion-reveal 150ms ease;
+}
+.accordion-content {
+  padding-bottom: 8px;
+  min-width: 0;
+}
+.accordion-content .field {
+  margin-top: 10px;
+  gap: 5px;
+}
+.accordion-content .muted {
+  font-size: 10px;
+  line-height: 1.5;
+}
+.object-reference,
+.selected-object-hint {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.inspector .object-actions {
+  margin-top: 10px;
+}
+.compact-tools .workspace-accordion {
+  border: 0;
+  margin-top: 0;
+}
+.compact-tools .workspace-accordion > summary {
+  display: none;
+}
+.compact-tools .accordion-content {
+  padding: 0;
+}
+.stop-camera {
+  color: #ff9da5;
+  border-color: #79414b;
+}
+.webcam-panel .workspace-accordion {
+  margin-top: 8px;
+}
+.webcam-panel .workspace-accordion .field {
+  margin-top: 5px;
+}
+.diagnostics-body .workspace-accordion:first-child {
+  margin-top: 0;
+}
+@keyframes accordion-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace-accordion[open] > .accordion-content {
+    animation: none;
+  }
+  .workspace-accordion > summary > svg {
+    transition: none;
+  }
+}
 .workspace-right .tools > .eyebrow {
   display: none;
 }

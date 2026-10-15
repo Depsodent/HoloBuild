@@ -39,7 +39,15 @@ Use **Import 3D Model** for glTF 2.0 GLB/GLTF files. Select local BIN/image depe
 
 Imported bundles live in IndexedDB for the current browser origin. **Save project** exports self-contained JSON, including assets, for portability and keeps only small metadata/references in Local Storage. **Restore local project** restores the last local save; changing origin/port or clearing browser storage breaks local references, so retain exported JSON backups. **Load** validates embedded assets before changing the scene. Legacy primitive-only version-1 scenes still load. Project assets are capped at 20 MiB (30 MiB JSON). See [development details and budgets](docs/DEVELOPMENT.md) and [manual tests](docs/MANUAL_TESTS.md).
 
-Milestones 6/6.1 were accepted by the user, including physical two-hand scaling/rotation. Milestone 7 physical-webcam acceptance remains pending; automation does not establish that acceptance. Milestone 8 has not started.
+Milestones 6/6.1 and 7 were accepted by the user. Milestone 7.1 physical-webcam acceptance remains pending; automation does not establish that acceptance. Milestone 8 has not started.
+
+## Reliability and workspace refinements (Milestone 7.1)
+
+Select an object once by mouse or one-hand pinch, then choose Scale/Rotate in **Construction → Gesture Controls**. Each hand can open independently; pinch both within four seconds. Neither hand needs to aim at the object again. If no object is selected in Scale/Rotate, a one-hand pinch can select it without dragging. Status shows waiting/prepared/active states. Release confirms one undoable transform; tracking loss or UI takeover cancels.
+
+Construction, inspector, camera settings/calibration readings and floating diagnostics use independent collapsible groups with keyboard activation and remembered states. Existing dock/minimize/resize and mobile sidebars remain. **Stop Camera is always in the top bar while capture is starting/running**, including with collapsed panels.
+
+Gesture Diagnostics separates renderer FPS, camera presentation FPS, inference/gesture rates and processing timings. Camera settings offer Balanced/Performance/Quality profiles. Default CPU inference uses fresh video frames; an experimental worker path is available while stopped, with fallback when unsupported. Worker rendering can be smoother while tracking becomes slower, so compare actual inference Hz/latency rather than renderer FPS. See [measured tradeoffs](docs/PERFORMANCE.md) and [physical acceptance steps](docs/MANUAL_TESTS.md).
 
 ## Gesture construction (Milestone 4)
 
@@ -87,7 +95,7 @@ Satin metal is opaque with stronger metallic reflections and moderate roughness.
 
 ## Milestone 6: advanced gestures
 
-Start camera; it now tracks up to two hands locally. Expand the camera window and scroll to **Gesture mode**. Existing one-hand move is the default.
+Start camera; it tracks up to two hands locally. Find **Gesture mode** under **Construction Tools → Gesture Controls**. Existing one-hand move is the default.
 
 - **Scale:** select an isolated object, choose Two-hand scale, open both pinches, then pinch both while keeping hands separated. Apart enlarges; together shrinks. Release to place once; Undo restores the original transform.
 - **Rotate:** choose Two-hand yaw rotation. Open then pinch both hands; tilt their connecting line to rotate around world Y. Separation changes do not scale in this mode. Rotation sensitivity is adjustable before grabbing.
@@ -102,4 +110,4 @@ Gesture Input and Object Inspector share a resizable left sidebar with independe
 
 The camera header provides minimize/expand and Undock/Dock. An undocked camera retains drag, resize, maximize/restore and layout reset. These actions keep its existing capture/tracker mounted. Diagnostics has a separate draggable/resizable/minimizable window; close/reopen it with the header waveform button. The adjacent layout button resets all UI layouts without clearing the scene or stopping capture. Geometry and panel preferences are stored locally, with safe defaults if storage is unavailable or corrupt.
 
-Small screens use compact rails and one overlay drawer at a time; the chosen drawer is remembered on refresh. Mode instructions occupy a single footer line, with full text available through its tooltip and Help. Camera controls can scroll within the available panel height. Physical testing of this layout and advanced gestures is pending user acceptance; see `docs/MANUAL_TESTS.md`. Milestone 7 is not started.
+Small screens use compact rails and one overlay drawer at a time; the chosen drawer is remembered on refresh. Mode instructions occupy a single footer line, with full text available through its tooltip and Help. Camera controls can scroll within the available panel height. Milestones 6, 6.1 and 7 have been accepted by the user. Milestone 7.1 awaits physical testing; see `docs/MANUAL_TESTS.md`. Milestone 8 is not started.

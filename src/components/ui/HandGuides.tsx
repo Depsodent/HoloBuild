@@ -59,12 +59,6 @@ export function HandGuides() {
           </span>
           {state.mode === "scale" && <b>{state.factor.toFixed(2)}× scale</b>}
           {state.mode === "rotate" && <b>{state.angle.toFixed(1)}° yaw</b>}
-          {hands.hands.map((h) => (
-            <small key={h.id}>
-              Hand {h.id}: {h.gesture.gesture} ·{" "}
-              {h.gesture.pinchActive ? "pinched" : "open"}
-            </small>
-          ))}
         </div>
       )}
     </>

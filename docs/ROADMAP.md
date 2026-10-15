@@ -6,8 +6,8 @@
 4. Interaction implemented: camera raycasting, pinch grab, planar drag, snapped/validated preview, single-command release and loss cancellation. Physical webcam acceptance confirmed by the user on 2026-10-14.
 5. Construction implemented: six primitives, shared transforms/appearance/history, shape-aware conservative collision, ground alignment, free-space spawning, and mixed-shape version-1 persistence. Additional-shape physical acceptance pending; automatic stacking remains future work.
 6. Advanced gestures and adaptive workspace (6.1) complete and accepted by the user with their real webcam: two-hand scale/yaw, opt-in menu and camera pan, docked split panels, resizable/collapsible sidebars and floating diagnostics.
-7. Advanced materials, procedural textures, adjustable lighting, static GLB/GLTF import, shared manipulation and portable browser-local asset persistence. Automated verification and user acceptance tracked in DEVELOPMENT.md. Physical Milestone 7 acceptance is pending.
-8. Future text/voice or LLM work requires the user's explicit approval after Milestone 7. No implementation started.
+7. Advanced materials, procedural textures, adjustable lighting, static GLB/GLTF import, shared manipulation and portable browser-local asset persistence: accepted by the user. Refinement 7.1 adds independent two-hand readiness/selection, separate pipeline measurements, fresh-frame scheduling, optional worker execution and persistent collapsible groups. Physical acceptance of 7.1 is pending; details in DEVELOPMENT.md.
+8. Future text/voice or LLM work requires the user's explicit approval after Milestone 7.1 physical acceptance. No implementation started.
 9. Physical benchmarks, browser matrix and portfolio polish.
 10. GitHub repository and verified frontend deployment after stability gates.
 

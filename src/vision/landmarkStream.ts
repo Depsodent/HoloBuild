@@ -9,6 +9,8 @@ export interface TrackingFrame {
   timestamp: number;
   inferenceMs: number;
   aspectRatio?: number;
+  source?: "camera";
+  captureTime?: number;
 }
 type Listener = (frame: TrackingFrame) => void;
 const listeners = new Set<Listener>();

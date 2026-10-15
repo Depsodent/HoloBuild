@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../helpers/editorTest";
 test("invalid imports preserve the scene and show recovery advice", async ({
   page,
 }) => {

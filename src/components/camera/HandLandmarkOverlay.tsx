@@ -23,11 +23,12 @@ const connections = [
   [18, 19],
   [19, 20],
 ];
-export function HandLandmarkOverlay() {
+export function HandLandmarkOverlay({ active = true }: { active?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(
     () =>
       handsStream.subscribe(({ hands }) => {
+        if (!active) return;
         const canvas = ref.current;
         const ctx = canvas?.getContext("2d");
         if (!canvas || !ctx) return;
@@ -56,7 +57,7 @@ export function HandLandmarkOverlay() {
           }
         }
       }),
-    [],
+    [active],
   );
   return (
     <canvas

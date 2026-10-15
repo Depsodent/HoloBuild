@@ -1,4 +1,5 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect } from "../helpers/editorTest";
+import type { Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { modelFixture, checkerPng } from "../fixtures/models";
 import { hold, poseAt, target } from "../helpers/gestureInput";

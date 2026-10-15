@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../helpers/editorTest";
 import { target, hold, poseAt } from "../helpers/gestureInput";
 
 test("floating camera drag/resize/keyboard/persistence do not orbit or edit the scene", async ({

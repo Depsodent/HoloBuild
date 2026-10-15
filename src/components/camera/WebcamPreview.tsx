@@ -1,9 +1,15 @@
 import { GestureStatus } from "../ui/GestureStatus";
-import { AdvancedGestures } from "../ui/AdvancedGestures";
+import { Accordion } from "../ui/Accordion";
+import {
+  CAMERA_PROFILES,
+  useCameraSettings,
+  saveCameraExecution,
+  type CameraProfile,
+} from "../../vision/cameraSettings";
+import { GESTURE_CONFIG } from "../../vision/calibration";
 import { useEffect, useRef, useState } from "react";
 import {
   Camera,
-  CameraOff,
   Eye,
   EyeOff,
   Minus,
@@ -40,6 +46,8 @@ export function WebcamPreview() {
   const [device, setDevice] = useState("");
   const [visible, setVisible] = useState(true);
   const [overlay, setOverlay] = useState(true);
+  const settings = useCameraSettings();
+  const [applying, setApplying] = useState(false);
   useEffect(() => {
     const instance = new HandTracker();
     tracker.current = instance;
@@ -50,8 +58,11 @@ export function WebcamPreview() {
         );
     };
     document.addEventListener("visibilitychange", hide);
+    const stop = () => instance.stop();
+    window.addEventListener("holobuild:stop-camera", stop);
     return () => {
       document.removeEventListener("visibilitychange", hide);
+      window.removeEventListener("holobuild:stop-camera", stop);
       instance.stop();
     };
   }, []);
@@ -112,7 +123,9 @@ export function WebcamPreview() {
             title={`${handCount} tracked hands · ${gesture === "none" ? "No hand" : gesture}`}
           >
             {handCount > 0 && <span>{handCount}H</span>}
-            <span>{gesture === "none" ? "No hand" : gesture.replace("-", " ")}</span>
+            <span>
+              {gesture === "none" ? "No hand" : gesture.replace("-", " ")}
+            </span>
           </span>
         )}
         <button
@@ -123,7 +136,9 @@ export function WebcamPreview() {
           {docked ? <ExternalLink size={14} /> : <PanelLeft size={14} />}
         </button>
         <button
-          aria-label={minimized ? "Expand Gesture Input" : "Minimize Gesture Input"}
+          aria-label={
+            minimized ? "Expand Gesture Input" : "Minimize Gesture Input"
+          }
           title={minimized ? "Expand Gesture Input" : "Minimize Gesture Input"}
           onClick={() => update({ cameraMinimized: !minimized })}
         >
@@ -136,37 +151,75 @@ export function WebcamPreview() {
           style={{ display: visible && active ? "block" : "none" }}
         >
           <video ref={video} muted playsInline aria-label="Webcam preview" />
-          {overlay && <HandLandmarkOverlay />}
+          {overlay && (
+            <HandLandmarkOverlay
+              active={
+                visible && !minimized && (!layout.leftCollapsed || !docked)
+              }
+            />
+          )}
         </div>
         <p className="camera-message" role="status">
           {state.message}
         </p>
-        {devices.length > 1 && (
-          <select
-            aria-label="Camera device"
-            disabled={active}
-            value={device}
-            onChange={(e) => setDevice(e.target.value)}
-          >
-            <option value="">Default camera</option>
-            {devices.map((d, i) => (
-              <option key={d.deviceId} value={d.deviceId}>
-                {d.label || `Camera ${i + 1}`}
-              </option>
-            ))}
-          </select>
-        )}
-        <div className="camera-actions">
-          {active ? (
-            <button onClick={() => tracker.current?.stop()}>
-              <CameraOff size={14} />
-              Stop camera
-            </button>
-          ) : (
-            <button className="primary" onClick={start}>
-              <Camera size={14} />
-              Start camera
-            </button>
+        <Accordion id="camera.settings" title="Camera settings">
+          <label className="field">
+            Tracking quality
+            <select
+              aria-label="Tracking quality"
+              value={settings.profile}
+              disabled={applying}
+              title="Changing quality cancels uncommitted gestures but keeps capture running"
+              onChange={async (e) => {
+                setApplying(true);
+                try {
+                  await tracker.current?.setProfile(
+                    e.target.value as CameraProfile,
+                  );
+                } finally {
+                  setApplying(false);
+                }
+              }}
+            >
+              {Object.entries(CAMERA_PROFILES).map(([key, p]) => (
+                <option key={key} value={key}>
+                  {p.label} · {p.width}×{p.height} · up to {p.hz} Hz
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="field">
+            Inference execution
+            <select
+              aria-label="Inference execution"
+              value={settings.execution}
+              disabled={active}
+              onChange={(e) =>
+                saveCameraExecution(e.target.value as "main" | "worker")
+              }
+            >
+              <option value="main">Main thread CPU (default)</option>
+              <option value="worker">Worker CPU (experimental)</option>
+            </select>
+          </label>
+          <p className="muted">
+            Stop capture to switch execution. Compare inference Hz and latency;
+            a faster renderer does not imply faster tracking.
+          </p>
+          {devices.length > 1 && (
+            <select
+              aria-label="Camera device"
+              disabled={active}
+              value={device}
+              onChange={(e) => setDevice(e.target.value)}
+            >
+              <option value="">Default camera</option>
+              {devices.map((d, i) => (
+                <option key={d.deviceId} value={d.deviceId}>
+                  {d.label || `Camera ${i + 1}`}
+                </option>
+              ))}
+            </select>
           )}
           <label>
             <input
@@ -176,6 +229,14 @@ export function WebcamPreview() {
             />
             Landmarks
           </label>
+        </Accordion>
+        <div className="camera-actions">
+          {!active && (
+            <button className="primary" onClick={start}>
+              <Camera size={14} />
+              Start camera
+            </button>
+          )}
         </div>
         <div className="camera-view-actions">
           <button
@@ -206,7 +267,9 @@ export function WebcamPreview() {
           )}
         </div>
         <GestureStatus />
-        <AdvancedGestures />
+        <Accordion id="camera.calibration" title="Pinch calibration">
+          <PinchCalibrationReadings />
+        </Accordion>
         <div className="camera-meta">
           {state.status === "running"
             ? `${handCount ? `${handCount} hands · ${handCount * 21} landmarks` : "No hand"} · ${state.inferenceHz} Hz · ${state.inferenceMs} ms`
@@ -225,5 +288,16 @@ export function WebcamPreview() {
         </button>
       )}
     </section>
+  );
+}
+function PinchCalibrationReadings() {
+  const pinchRatio = useGestureStore((s) => s.pinchRatio);
+  return (
+    <p className="muted">
+      Palm-normalized distance: {pinchRatio?.toFixed(3) ?? "unavailable"}.
+      Activate below {GESTURE_CONFIG.pinchOn}; release above{" "}
+      {GESTURE_CONFIG.pinchOff}. Dwell {GESTURE_CONFIG.pinchDwellMs} ms.
+      Thresholds are unchanged.
+    </p>
   );
 }

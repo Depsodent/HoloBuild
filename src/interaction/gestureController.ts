@@ -38,7 +38,7 @@ export class GestureController {
       ...(wasDragging ? { message } : {}),
     });
   }
-  update(frame: GestureFrame) {
+  update(frame: GestureFrame, selectionOnly = false) {
     const cursor = frame.cursor;
     if (!cursor || !isOnViewport(cursor) || frame.gesture === "none") {
       this.cancel(
@@ -178,6 +178,16 @@ export class GestureController {
         useInteractionStore.setState({
           rejection:
             "Ray missed: aim at the cube, then close pinch without moving away.",
+        });
+        return;
+      }
+      if (selectionOnly) {
+        useSceneStore.getState().select(object.id);
+        useInteractionStore.setState({
+          phase: "idle",
+          hoveredId: object.id,
+          rejection: "none",
+          message: `Object selected: ${object.name}. Show the second hand.`,
         });
         return;
       }

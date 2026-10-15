@@ -13,6 +13,7 @@ import {
   RotateCcw,
   PanelsTopLeft,
   Activity,
+  CameraOff,
 } from "lucide-react";
 import { Scene } from "./components/viewport/Scene";
 import { useSceneStore } from "./scene/sceneStore";
@@ -27,7 +28,11 @@ import { HandGuides } from "./components/ui/HandGuides";
 import { WorkspaceLayout } from "./workspace/WorkspaceLayout";
 import { CompactHint } from "./workspace/CompactHint";
 import { useWorkspaceLayout } from "./workspace/layoutStore";
+import { useTrackingStore } from "./vision/trackingStore";
 export default function App() {
+  const cameraActive = useTrackingStore(
+    (s) => s.status === "running" || s.status === "starting",
+  );
   useEffect(startGesturePipeline, []);
   useEffect(startModelCleanup, []);
   const s = useSceneStore(
@@ -110,6 +115,18 @@ export default function App() {
           Untitled workspace <span className="badge">LOCAL</span>
         </div>
         <nav aria-label="Project actions">
+          {cameraActive && (
+            <button
+              className="stop-camera"
+              aria-label="Stop camera"
+              title="Stop camera immediately"
+              onClick={() =>
+                window.dispatchEvent(new Event("holobuild:stop-camera"))
+              }
+            >
+              <CameraOff size={17} />
+            </button>
+          )}
           <button
             title="Undo (Ctrl+Z)"
             aria-label="Undo"
@@ -235,7 +252,9 @@ export default function App() {
           <span className="status-dot" />
           {s.status}
         </span>
-        <span>{s.fps} FPS</span>
+        <span title="Three.js rendering only; camera and inference rates are in Gesture Diagnostics">
+          {s.fps} RENDER FPS
+        </span>
         <span>{s.objects.length} OBJECTS</span>
         <span>{s.tool.toUpperCase()}</span>
         <CompactHint />

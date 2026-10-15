@@ -1,4 +1,5 @@
-import { test, expect, type Locator } from "@playwright/test";
+import { test, expect } from "../helpers/editorTest";
+import type { Locator } from "@playwright/test";
 import { target, hold, poseAt } from "../helpers/gestureInput";
 
 const LAYOUT_KEY = "holobuild.workspace.v1";
