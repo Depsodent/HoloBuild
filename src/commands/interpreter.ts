@@ -9,6 +9,9 @@ export interface CommandResult {
   confirmation?: boolean;
 }
 export class CommandInterpreter {
+  get awaitingConfirmation() {
+    return this.pending !== null;
+  }
   private pending: {
     command: Command;
     objects: ReturnType<typeof useSceneStore.getState>["objects"];

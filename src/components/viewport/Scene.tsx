@@ -10,6 +10,7 @@ import { ViewportBoundary } from "./ViewportBoundary";
 import { GestureInteraction, PlacementPreview } from "./GestureInteraction";
 import { SurfaceResources } from "./SurfaceMaterial";
 import { performanceMetrics } from "../../vision/performanceStore";
+import { GenerationPreview } from "./GenerationPreview";
 function Metrics() {
   const timer = useRef({ elapsed: 0, frames: 0 });
   useFrame(({ gl }, delta) => {
@@ -51,6 +52,7 @@ export function Scene() {
         <Metrics />
         <GestureInteraction />
         <PlacementPreview />
+        <GenerationPreview />
         <SurfaceResources>
           {objects.map((object) => (
             <BuildingObject key={object.id} object={object} />

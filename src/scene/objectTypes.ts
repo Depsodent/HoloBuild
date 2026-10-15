@@ -28,6 +28,22 @@ export const objectSchema = z
     ]),
     color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
     material: z.enum(MATERIAL_IDS),
+    construction: z
+      .object({
+        structureId: z.string().uuid(),
+        partId: z.string().regex(/^[a-zA-Z0-9_-]{1,48}$/),
+        role: z.enum([
+          "floor",
+          "wall",
+          "roof",
+          "pillar",
+          "door",
+          "window",
+          "beam",
+        ]),
+      })
+      .strict()
+      .optional(),
     model: z
       .object({
         assetId: z.string().regex(/^[a-f0-9]{64}$/),

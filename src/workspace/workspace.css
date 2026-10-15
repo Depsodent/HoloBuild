@@ -565,3 +565,49 @@ main > footer .credit {
 .command-error {
   color: #ffb3ac;
 }
+.structure-generator {
+  display: grid;
+  gap: 9px;
+  font-size: 12px;
+}
+.structure-generator label {
+  display: grid;
+  gap: 5px;
+}
+.structure-generator textarea,
+.structure-generator input,
+.structure-generator select {
+  width: 100%;
+  min-width: 0;
+}
+.structure-generator textarea {
+  resize: vertical;
+  min-height: 70px;
+  max-height: 200px;
+  background: #0c1723;
+  border: 1px solid #2b4355;
+  border-radius: 5px;
+  color: #dceaf1;
+  padding: 8px;
+  font: inherit;
+}
+.structure-generator .component-list {
+  max-height: 160px;
+  overflow: auto;
+  overflow-wrap: anywhere;
+  padding-left: 18px;
+}
+.construction-review {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #2a665f;
+  border-radius: 6px;
+  padding: 9px;
+}
+.construction-review p {
+  overflow-wrap: anywhere;
+}
+.structure-examples {
+  display: grid;
+  gap: 7px;
+}

@@ -4,6 +4,7 @@ import { createObject, SHAPES } from "./objectFactory";
 import { useSceneStore } from "./sceneStore";
 import { appendHistory } from "./historyManager";
 import { bounds, placement, findFreePosition } from "../interaction/placement";
+import { validateBatch } from "../generation/engine";
 const sceneSchema = z
   .array(objectSchema)
   .max(200)
@@ -14,6 +15,7 @@ const sceneSchema = z
 export type Command =
   | { type: "create"; objectType?: ObjectType }
   | { type: "import"; object: SceneObject }
+  | { type: "construct"; objects: SceneObject[]; contacts?: [string, string][] }
   | {
       type: "update";
       id: string;
@@ -27,7 +29,12 @@ export function execute(command: Command): boolean {
   try {
     let objects = structuredClone(s.objects);
     let selectedId = s.selectedId;
-    if (command.type === "import") {
+    if (command.type === "construct") {
+      if (s.preview) throw Error("Finish the active manipulation first.");
+      const batch = validateBatch(command.objects, objects, command.contacts);
+      objects.push(...batch);
+      selectedId = batch[0].id;
+    } else if (command.type === "import") {
       const model = objectSchema.parse(command.object);
       if (model.type !== "model") throw Error("Expected model");
       const free = findFreePosition(model, objects);
@@ -103,6 +110,8 @@ export function execute(command: Command): boolean {
         const free = findFreePosition(copy, objects);
         if (!free) throw Error("No free placement");
         copy.position = free;
+        if (copy.construction)
+          copy.construction = { ...copy.construction, partId: copy.id };
         objects.push(copy);
         selectedId = copy.id;
       }
