@@ -13,6 +13,7 @@ const sceneSchema = z
   );
 export type Command =
   | { type: "create"; objectType?: ObjectType }
+  | { type: "import"; object: SceneObject }
   | {
       type: "update";
       id: string;
@@ -26,7 +27,15 @@ export function execute(command: Command): boolean {
   try {
     let objects = structuredClone(s.objects);
     let selectedId = s.selectedId;
-    if (command.type === "create") {
+    if (command.type === "import") {
+      const model = objectSchema.parse(command.object);
+      if (model.type !== "model") throw Error("Expected model");
+      const free = findFreePosition(model, objects);
+      if (!free) throw Error("No free placement");
+      model.position = free;
+      objects.push(model);
+      selectedId = model.id;
+    } else if (command.type === "create") {
       const kind = command.objectType ?? "cube";
       const cube = createObject(kind, [
         (objects.length * 1.5) % 9,

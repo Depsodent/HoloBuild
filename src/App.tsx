@@ -17,7 +17,9 @@ import {
 import { Scene } from "./components/viewport/Scene";
 import { useSceneStore } from "./scene/sceneStore";
 import { execute, undo, redo } from "./scene/commandManager";
-import { serialize, deserialize } from "./scene/sceneSerializer";
+import { exportProject, loadProject } from "./assets/projectIO";
+import { MAX_PROJECT_CHARS } from "./assets/assetTypes";
+import { startModelCleanup } from "./assets/modelRegistry";
 import type { Tool } from "./scene/objectTypes";
 import { startGesturePipeline } from "./vision/gesturePipeline";
 import { useInteractionStore } from "./interaction/interactionStore";
@@ -27,6 +29,7 @@ import { CompactHint } from "./workspace/CompactHint";
 import { useWorkspaceLayout } from "./workspace/layoutStore";
 export default function App() {
   useEffect(startGesturePipeline, []);
+  useEffect(startModelCleanup, []);
   const s = useSceneStore(
     useShallow(({ objects, past, future, status, fps, tool }) => ({
       objects,
@@ -64,10 +67,15 @@ export default function App() {
     window.addEventListener("keydown", keys);
     return () => window.removeEventListener("keydown", keys);
   }, []);
-  function save() {
+  async function save() {
     try {
-      const json = serialize(s.objects);
-      localStorage.setItem("holobuild.scene", json);
+      const { json, local } = await exportProject(s.objects);
+      let stored = true;
+      try {
+        localStorage.setItem("holobuild.scene", local);
+      } catch {
+        stored = false;
+      }
       const url = URL.createObjectURL(
         new Blob([json], { type: "application/json" }),
       );
@@ -77,11 +85,13 @@ export default function App() {
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       useSceneStore.setState({
-        status: "Saved locally and exported scene JSON.",
+        status: stored
+          ? "Saved locally and exported self-contained project JSON."
+          : "Exported project JSON. Local metadata storage is unavailable.",
       });
-    } catch {
+    } catch (error) {
       useSceneStore.setState({
-        status: "Could not save. Check browser storage permissions.",
+        status: `Could not save: ${error instanceof Error ? error.message : "Check storage permissions."}`,
       });
     }
   }
@@ -176,16 +186,16 @@ export default function App() {
             try {
               const f = e.target.files?.[0];
               if (f) {
-                if (f.size > 1_000_000) throw Error();
-                execute({
-                  type: "replace",
-                  objects: deserialize(await f.text()),
+                if (f.size > MAX_PROJECT_CHARS)
+                  throw Error("Project exceeds 30 MiB.");
+                useSceneStore.setState({
+                  status: "Loading project and model assets…",
                 });
+                await loadProject(await f.text());
               }
-            } catch {
+            } catch (error) {
               useSceneStore.setState({
-                status:
-                  "Invalid scene file. Load a HoloBuild version 1 JSON with valid object values.",
+                status: `Invalid scene file: ${error instanceof Error ? error.message : "Load valid HoloBuild JSON."}`,
               });
             }
             e.target.value = "";

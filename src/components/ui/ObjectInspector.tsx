@@ -1,10 +1,11 @@
-import { SHAPES } from "../../scene/objectFactory";
+import { objectSize } from "../../scene/objectFactory";
 import { Copy, Trash2, RotateCcw } from "lucide-react";
 import { useSceneStore } from "../../scene/sceneStore";
 import { execute } from "../../scene/commandManager";
 import type { Vec3 } from "../../scene/objectTypes";
 import { MATERIAL_IDS, MATERIAL_PRESETS } from "../../scene/materialPresets";
 import type { MaterialId } from "../../scene/materialPresets";
+import { surfaceControls } from "../../scene/surface";
 export function ObjectInspector() {
   const objects = useSceneStore((s) => s.objects);
   const id = useSceneStore((s) => s.selectedId);
@@ -71,6 +72,34 @@ export function ObjectInspector() {
             </fieldset>
           ))}
           <div className="section-label">APPEARANCE</div>
+          {object.model && (
+            <label className="toggle">
+              <input
+                type="checkbox"
+                aria-label="Use original model materials"
+                checked={object.model.originalMaterials}
+                onChange={(e) =>
+                  execute({
+                    type: "update",
+                    id: object.id,
+                    patch: {
+                      model: {
+                        ...object.model!,
+                        originalMaterials: e.target.checked,
+                      },
+                    },
+                  })
+                }
+              />{" "}
+              Original model materials
+            </label>
+          )}
+          {object.model?.originalMaterials && (
+            <p className="muted">
+              Imported PBR surfaces are active. Choose a preset to override
+              them; re-enable originals here.
+            </p>
+          )}
           <label className="color-field">
             Surface color
             <input
@@ -81,7 +110,12 @@ export function ObjectInspector() {
                 execute({
                   type: "update",
                   id: object.id,
-                  patch: { color: e.target.value },
+                  patch: {
+                    color: e.target.value,
+                    ...(object.model
+                      ? { model: { ...object.model, originalMaterials: false } }
+                      : {}),
+                  },
                 })
               }
             />
@@ -90,15 +124,28 @@ export function ObjectInspector() {
             Material
             <select
               aria-label="Material"
-              value={object.material}
+              value={
+                object.model?.originalMaterials ? "original" : object.material
+              }
               onChange={(e) =>
                 execute({
                   type: "update",
                   id: object.id,
-                  patch: { material: e.target.value as MaterialId },
+                  patch: {
+                    material: e.target.value as MaterialId,
+                    surface: {},
+                    ...(object.model
+                      ? { model: { ...object.model, originalMaterials: false } }
+                      : {}),
+                  },
                 })
               }
             >
+              {object.model?.originalMaterials && (
+                <option value="original" disabled>
+                  Original model surfaces
+                </option>
+              )}
               {MATERIAL_IDS.map((id) => (
                 <option key={id} value={id}>
                   {MATERIAL_PRESETS[id].label}
@@ -106,6 +153,53 @@ export function ObjectInspector() {
               ))}
             </select>
           </label>
+          {!object.model?.originalMaterials &&
+            surfaceControls(object).map((control) => (
+              <label className="field" key={control.key}>
+                {control.label}
+                <input
+                  aria-label={control.label}
+                  type="number"
+                  min={control.min}
+                  max={control.max}
+                  step={control.step}
+                  value={control.value}
+                  onChange={(e) => {
+                    if (e.target.value !== "")
+                      execute({
+                        type: "update",
+                        id: object.id,
+                        patch: {
+                          surface: {
+                            ...object.surface,
+                            [control.key]: Number(e.target.value),
+                          },
+                        },
+                      });
+                  }}
+                />
+              </label>
+            ))}
+          {!object.model?.originalMaterials && (
+            <button
+              onClick={() =>
+                execute({
+                  type: "update",
+                  id: object.id,
+                  patch: { surface: {} },
+                })
+              }
+            >
+              Reset material defaults
+            </button>
+          )}
+          {MATERIAL_PRESETS[object.material].texture &&
+            !object.model?.originalMaterials && (
+              <p className="muted">
+                Surface color tints the texture. Use white to see its native
+                colors.
+              </p>
+            )}
           <div className="object-actions">
             <button
               onClick={() => execute({ type: "duplicate", id: object.id })}
@@ -128,7 +222,7 @@ export function ObjectInspector() {
                   type: "update",
                   id: object.id,
                   patch: {
-                    position: [0, SHAPES[object.type].size[1] / 2, 0],
+                    position: [0, objectSize(object)[1] / 2, 0],
                     rotation: [0, 0, 0],
                     scale: [1, 1, 1],
                   },

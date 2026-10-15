@@ -139,7 +139,7 @@ for (const type of ["cube", "sphere", "cylinder", "cone", "wall", "floor"]) {
     await page.goto("/?testInput");
     await target(page);
     const base = await page.evaluate(() => window.__HOLO_TEST__!.scene()[0]);
-    await page.locator("input[type=file]").setInputFiles({
+    await page.locator("input[type=file][accept='.json']").setInputFiles({
       name: "material.json",
       mimeType: "application/json",
       buffer: Buffer.from(
@@ -202,7 +202,7 @@ for (const type of ["cube", "sphere", "cylinder", "cone", "wall", "floor"]) {
     const saved = await page.evaluate(() =>
       localStorage.getItem("holobuild.scene")!,
     );
-    await page.locator("input[type=file]").setInputFiles({
+    await page.locator("input[type=file][accept='.json']").setInputFiles({
       name: "saved.json",
       mimeType: "application/json",
       buffer: Buffer.from(saved),

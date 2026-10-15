@@ -1,5 +1,6 @@
 import { ObjectGeometry } from "./ObjectGeometry";
-import { MATERIAL_PRESETS, presetValues } from "../../scene/materialPresets";
+import { SurfaceMaterial } from "./SurfaceMaterial";
+import { ImportedModel } from "./ImportedModel";
 import { useRef, useState } from "react";
 import { Edges, TransformControls } from "@react-three/drei";
 import { Mesh } from "three";
@@ -45,7 +46,7 @@ export function BuildingObject({ object }: { object: SceneObject }) {
         position={object.position}
         rotation={object.rotation}
         scale={object.scale}
-        castShadow
+        castShadow={object.type !== "model"}
         receiveShadow
         userData={{ objectId: object.id }}
         onClick={(e) => {
@@ -58,23 +59,39 @@ export function BuildingObject({ object }: { object: SceneObject }) {
         }}
         onPointerOut={() => setHover(false)}
       >
-        <ObjectGeometry type={object.type} />
-        <meshPhysicalMaterial
-          {...presetValues(object.material)}
-          color={object.color}
-          transparent={grabbed || MATERIAL_PRESETS[object.material].transparent}
-          opacity={grabbed ? 0.2 : MATERIAL_PRESETS[object.material].opacity}
-          emissive={object.color}
-          emissiveIntensity={
-            (MATERIAL_PRESETS[object.material].emissiveIntensity ?? 0) +
-            (hover || gestureHover ? 0.15 : 0)
-          }
-        />
+        <ObjectGeometry type={object.type} size={object.model?.size} />
+        {object.type === "model" ? (
+          <>
+            <meshBasicMaterial
+              transparent
+              opacity={0}
+              depthWrite={false}
+              colorWrite={false}
+            />
+            <ImportedModel
+              object={object}
+              grabbed={grabbed}
+              highlight={hover || gestureHover}
+            />
+          </>
+        ) : (
+          <SurfaceMaterial
+            object={object}
+            grabbed={grabbed}
+            highlight={hover || gestureHover}
+          />
+        )}
         <Edges
           color={
-            selected ? "#b8fff5" : hover || gestureHover ? "#64f7e6" : "#267f85"
+            selected
+              ? "#b8fff5"
+              : hover || gestureHover
+                ? "#64f7e6"
+                : object.material === "holographic"
+                  ? "#00dfff"
+                  : "#267f85"
           }
-          lineWidth={selected ? 2 : 1}
+          lineWidth={selected ? 2 : object.material === "holographic" ? 1.5 : 1}
         />
       </mesh>
       {selected && tool !== "select" && (

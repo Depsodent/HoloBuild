@@ -78,7 +78,7 @@ Record object type, camera conditions, diagnostics and any failure. Milestone 5 
 
 Do not mark physical retesting complete based on automated synthetic camera or landmark tests.
 
-## Milestone 6 physical webcam acceptance — pending
+## Milestone 6 physical webcam checklist — accepted by user on 2026-10-15
 
 Use **http://127.0.0.1:5175/** without `?testInput`. Start the camera, keep the tab visible, and verify both skeletons/hand IDs in even front lighting. Keep wrists apart; crossing/occlusion may cancel safely. Expand/scroll the camera panel to access Gesture mode.
 
@@ -90,7 +90,7 @@ Use **http://127.0.0.1:5175/** without `?testInput`. Start the camera, keep the 
 
 Report mode, hand count/IDs, factor/angle, diagnostics/rejection text, FPS/inference Hz, lighting and any failure. The developer's simulated landmark/model-video tests do not establish physical reliability. Do not begin further gesture/voice/LLM work before accepting this milestone.
 
-## Milestone 6.1 physical layout acceptance — pending
+## Milestone 6.1 physical layout checklist — accepted by user on 2026-10-15
 
 Open http://127.0.0.1:5175/ without test input. Gesture Input is now above Object Inspector on the left; construction tools are on the right. Use the header waveform button to reopen diagnostics and the layout button to reset panel geometry.
 
@@ -103,3 +103,16 @@ Open http://127.0.0.1:5175/ without test input. Gesture Input is now above Objec
 7. Shrink the browser. On small screens use the side rail expand controls to open one drawer at a time; verify camera and Undo/Redo remain reachable, the page does not scroll horizontally and footer hints stay on one line (hover/focus Help for full instructions).
 
 Report any failure with screen dimensions, mode, camera/tracking status, inference Hz/FPS, pinch ratio, target/ray hit and rejection text. Physical webcam acceptance must be supplied by the user.
+
+## Milestone 7 physical webcam and rendering acceptance — pending
+
+Use the real localhost app without `?testInput`. Earlier Milestone 6/6.1 acceptance does not substitute for testing these new surfaces/models.
+
+1. On a sphere, compare matte plastic, glossy plastic, satin metal and polished metal. On a wall/floor, compare wood, brick and concrete. Set surface color to white for native texture colors; change texture repeats/metre and nonuniform scale, and verify density rather than excessive stretching. Try glass and holographic on the six shapes. Verify bright outlines and cursor targeting remain visible.
+2. Edit roughness/metalness/opacity/emission where shown, reset defaults, then Undo/Redo. Original base colors should persist. Expand Studio lighting and test ambient/key/fill/reflection/shadow controls and reset. Save/Load should preserve the surface and lighting settings.
+3. Import a small static GLB, then a GLTF with its BIN/images selected together. Check original PBR surfaces, choose a preset override and restore original materials. Select from viewport/list; mouse move/rotate/scale, duplicate/delete and Undo/Redo. Missing dependencies, an OBJ or an oversized model should give an error without changing the scene.
+4. Start your physical webcam. In One-hand move, point at an imported model, pinch, move and release. The bounding preview must place once and Undo must restore its position. Repeat with a textured primitive. Hand loss or invalid overlap must cancel. Release must not open unrelated menus.
+5. Select the model, choose Two-hand scale, open both pinches, pinch both, move apart/together and release. Undo once. Repeat Two-hand yaw rotation; Undo once. Keep wrists apart and check the same diagnostics if an operation cancels.
+6. Minimize/dock/collapse the camera and resize panels during tracking. Verify mouse controls and gestures remain usable, and material edits do not stop capture. Save project, reload, Restore local project, then load the downloaded JSON on another browser/origin to confirm imported models are present.
+
+Report model format/size, preset/settings, mode, tracking diagnostics, target/ray hit/rejection, FPS/inference Hz and any failing step. Static bounding proxies deliberately select empty/concave areas and can reject close curved/rotated placements. Do not claim measured physical performance from software-rendered browser tests. Milestone 8 requires explicit user acceptance first.

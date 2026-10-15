@@ -1,4 +1,4 @@
-import { SHAPES } from "../scene/objectFactory";
+import { objectSize } from "../scene/objectFactory";
 import { Box3, Euler, Matrix4, Quaternion, Vector3 } from "three";
 import type { SceneObject, Vec3 } from "../scene/objectTypes";
 import { snapCoordinate } from "./coordinateMapping";
@@ -36,8 +36,8 @@ export function bounds(object: SceneObject, position = object.position) {
     return new Box3(min, max);
   }
   return new Box3(
-    new Vector3(...SHAPES[object.type].size).multiplyScalar(-0.5),
-    new Vector3(...SHAPES[object.type].size).multiplyScalar(0.5),
+    new Vector3(...objectSize(object)).multiplyScalar(-0.5),
+    new Vector3(...objectSize(object)).multiplyScalar(0.5),
   ).applyMatrix4(matrix);
 }
 export function placement(

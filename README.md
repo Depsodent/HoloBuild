@@ -31,6 +31,16 @@ npm.cmd run test:e2e
 
 Create a cube, sphere, cylinder, cone, wall, or floor from Construction. Click an object or its scene-list row to select it. V selects, G moves, R rotates, S scales. The inspector edits precise coordinates, degrees, scale and color. Use the 3D handles for mouse transforms. Drag empty space to orbit, right-drag to pan and scroll to zoom. Delete removes the selection. Ctrl+Z undoes; Ctrl+Shift+Z redoes. Save project exports versioned JSON and writes a local copy. Load validates a JSON file before replacing the scene. Reset can be undone.
 
+## Materials and imported models (Milestone 7)
+
+The inspector offers matte/glossy plastic, satin/polished metal, glass, holographic, wood, brick and concrete. Relevant optical controls and procedural texture density are undoable. Surface color tints textures; choose white for native texture colors. Construction Tools → Studio lighting adjusts ambient/key/fill/reflections/shadows and restores defaults. Lighting is a persisted view preference, outside object Undo/Redo.
+
+Use **Import 3D Model** for glTF 2.0 GLB/GLTF files. Select local BIN/image dependencies together with a GLTF. Bundles are limited to 10 MiB/250,000 triangles; models normalize to a 2 m envelope and work with inspector/gizmos, one-hand move, two-hand scale/yaw, duplicate/delete and history. Imported PBR materials are preserved until you choose an override. Selection, gesture previews and placement use conservative bounding boxes. Static meshes are supported; skinned/morph/instanced meshes, animation playback, Draco/Meshopt/KTX2 compression and remote references are unsupported.
+
+Imported bundles live in IndexedDB for the current browser origin. **Save project** exports self-contained JSON, including assets, for portability and keeps only small metadata/references in Local Storage. **Restore local project** restores the last local save; changing origin/port or clearing browser storage breaks local references, so retain exported JSON backups. **Load** validates embedded assets before changing the scene. Legacy primitive-only version-1 scenes still load. Project assets are capped at 20 MiB (30 MiB JSON). See [development details and budgets](docs/DEVELOPMENT.md) and [manual tests](docs/MANUAL_TESTS.md).
+
+Milestones 6/6.1 were accepted by the user, including physical two-hand scaling/rotation. Milestone 7 physical-webcam acceptance remains pending; automation does not establish that acceptance. Milestone 8 has not started.
+
 ## Gesture construction (Milestone 4)
 
 1. Click **Start camera**, allow access, and keep one hand clearly visible for Move mode.

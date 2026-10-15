@@ -15,6 +15,8 @@ import {
 import { useSceneStore } from "../../scene/sceneStore";
 import { execute } from "../../scene/commandManager";
 import type { Tool, ObjectType } from "../../scene/objectTypes";
+import { LightingControls } from "./LightingControls";
+import { ModelImport } from "./ModelImport";
 const shapeIcons = {
   cube: Box,
   sphere: Circle,
@@ -88,6 +90,8 @@ export function Toolbar({ compact = false }: { compact?: boolean }) {
         <span className="snap-description">Snap to grid</span>{" "}
         <span>0.5 m</span>
       </label>
+      <LightingControls compact={compact} />
+      <ModelImport compact={compact} />
       <div className="tip">
         <span>BUILD WITH INTENTION</span>
         <p>

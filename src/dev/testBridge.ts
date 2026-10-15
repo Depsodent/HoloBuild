@@ -18,6 +18,12 @@ declare global {
       };
       scene: () => ReturnType<typeof useSceneStore.getState>["objects"];
       project?: (id: string) => { x: number; y: number } | null;
+      rendered?: () => {
+        id: string;
+        roughness: number;
+        metalness: number;
+        opacity: number;
+      }[];
     };
   }
 }

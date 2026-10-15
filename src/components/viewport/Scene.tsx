@@ -8,6 +8,7 @@ import { CameraController } from "./CameraController";
 import { BuildingObject } from "./BuildingObject";
 import { ViewportBoundary } from "./ViewportBoundary";
 import { GestureInteraction, PlacementPreview } from "./GestureInteraction";
+import { SurfaceResources } from "./SurfaceMaterial";
 function Metrics() {
   const timer = useRef({ elapsed: 0, frames: 0 });
   useFrame(({ gl }, delta) => {
@@ -48,9 +49,11 @@ export function Scene() {
         <Metrics />
         <GestureInteraction />
         <PlacementPreview />
-        {objects.map((object) => (
-          <BuildingObject key={object.id} object={object} />
-        ))}
+        <SurfaceResources>
+          {objects.map((object) => (
+            <BuildingObject key={object.id} object={object} />
+          ))}
+        </SurfaceResources>
         <mesh
           rotation={[-Math.PI / 2, 0, 0]}
           position={[0, -0.03, 0]}

@@ -2,7 +2,7 @@ import { ObjectGeometry } from "./ObjectGeometry";
 import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Edges } from "@react-three/drei";
-import { Vector3, PerspectiveCamera } from "three";
+import { Vector3, PerspectiveCamera, Mesh, MeshStandardMaterial } from "three";
 import { NavigationController } from "../../interaction/navigationController";
 import { gestureStream } from "../../vision/gesturePipeline";
 import { handsStream } from "../../vision/handsStream";
@@ -244,6 +244,39 @@ export function GestureInteraction() {
         const p = new Vector3(...o.position).project(camera);
         return { x: (p.x + 1) / 2, y: (1 - p.y) / 2 };
       };
+      window.__HOLO_TEST__.rendered = () => {
+        const result: {
+          id: string;
+          roughness: number;
+          metalness: number;
+          opacity: number;
+        }[] = [];
+        scene.traverse((node) => {
+          if (node instanceof Mesh && node.userData.objectId) {
+            let material =
+              node.material instanceof MeshStandardMaterial
+                ? node.material
+                : null;
+            if (!material)
+              node.traverse((child) => {
+                if (
+                  !material &&
+                  child instanceof Mesh &&
+                  child.material instanceof MeshStandardMaterial
+                )
+                  material = child.material;
+              });
+            if (material)
+              result.push({
+                id: node.userData.objectId,
+                roughness: material.roughness,
+                metalness: material.metalness,
+                opacity: material.opacity,
+              });
+          }
+        });
+        return result;
+      };
     }
   });
   return null;
@@ -259,7 +292,7 @@ export function PlacementPreview() {
       rotation={preview.rotation ?? object.rotation}
       scale={preview.scale ?? object.scale}
     >
-      <ObjectGeometry type={object.type} />
+      <ObjectGeometry type={object.type} size={object.model?.size} />
       <meshBasicMaterial
         color={preview.valid ? "#79ffe0" : "#ff6c83"}
         transparent

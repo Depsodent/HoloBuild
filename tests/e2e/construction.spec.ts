@@ -124,7 +124,7 @@ test("overlapping placement is rejected and the preview is cleared on release", 
       { ...a, id: "obstacle", name: "Obstacle", position: [2, 0.5, 0] },
     ];
   });
-  await page.locator("input[type=file]").setInputFiles({
+  await page.locator("input[type=file][accept='.json']").setInputFiles({
     name: "collision.json",
     mimeType: "application/json",
     buffer: Buffer.from(JSON.stringify({ version: 1, objects })),

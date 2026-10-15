@@ -25,3 +25,8 @@ export function createObject(type: ObjectType, position?: Vec3): SceneObject {
 export function createCube(position?: Vec3): SceneObject {
   return createObject("cube", position);
 }
+export function objectSize(object: SceneObject): Vec3 {
+  return object.type === "model"
+    ? object.model!.size
+    : SHAPES[object.type].size;
+}

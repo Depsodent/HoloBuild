@@ -11,7 +11,7 @@ for (const kind of kinds) {
     await target(page);
     const base = await page.evaluate(() => window.__HOLO_TEST__!.scene()[0]);
     const position = [0, kind === "wall" ? 1 : kind === "floor" ? 0.1 : 0.5, 0];
-    await page.locator("input[type=file]").setInputFiles({
+    await page.locator("input[type=file][accept='.json']").setInputFiles({
       name: "shape.json",
       mimeType: "application/json",
       buffer: Buffer.from(
@@ -92,7 +92,7 @@ test("palette creates every shape and JSON restores the mixed collection", async
   );
   page.on("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "Reset scene", exact: true }).click();
-  await page.locator("input[type=file]").setInputFiles({
+  await page.locator("input[type=file][accept='.json']").setInputFiles({
     name: "mixed.json",
     mimeType: "application/json",
     buffer: Buffer.from(saved),
@@ -111,7 +111,7 @@ test("mouse placement validation rejects overlap, supports snapping and keyboard
   await page.goto("/?testInput");
   await target(page);
   const base = await page.evaluate(() => window.__HOLO_TEST__!.scene()[0]);
-  await page.locator("input[type=file]").setInputFiles({
+  await page.locator("input[type=file][accept='.json']").setInputFiles({
     name: "validation.json",
     mimeType: "application/json",
     buffer: Buffer.from(

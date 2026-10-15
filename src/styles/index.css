@@ -13,6 +13,40 @@
 body {
   margin: 0;
 }
+.model-import {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.model-import button {
+  width: 100%;
+  font-size: 11px;
+  justify-content: center;
+}
+.model-import p {
+  font-size: 10px;
+  line-height: 1.5;
+  margin: 0;
+}
+.lighting-controls {
+  margin-top: 16px;
+  font-size: 11px;
+}
+.lighting-controls summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #9bd9d5;
+}
+.lighting-controls input[type="number"] {
+  width: 100%;
+}
+.lighting-controls .field {
+  margin-top: 10px;
+  gap: 4px;
+}
 button,
 input,
 select {
