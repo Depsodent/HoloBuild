@@ -208,6 +208,8 @@ export function offlinePlan(
       "Explicit parameter controls override corresponding prompt values.",
     );
   const objects: PlanPart[] = [];
+  let currentLevel: number | undefined;
+  let levelPart = 0;
   function add(
     role: PlanPart["role"],
     name: string,
@@ -225,7 +227,11 @@ export function offlinePlan(
         "Openings leave a component too small. Use fewer openings or a wider structure.",
       );
     objects.push({
-      id: `part-${objects.length + 1}`,
+      id:
+        currentLevel === undefined
+          ? `part-${objects.length + 1}`
+          : `level-${currentLevel + 1}-${++levelPart}`,
+      ...(currentLevel === undefined ? {} : { level: currentLevel }),
       name,
       role,
       type,
@@ -269,6 +275,8 @@ export function offlinePlan(
   } else {
     const floorT = 0.2;
     for (let level = 0; level < floors; level++) {
+      currentLevel = level;
+      levelPart = 0;
       const y = level * (h + floorT);
       add(
         "floor",
@@ -385,7 +393,8 @@ export function offlinePlan(
         );
       }
     }
-    if (roof === "flat")
+    currentLevel = undefined;
+    if (roof === "flat") {
       add(
         "roof",
         "Flat roof",
@@ -403,6 +412,8 @@ export function offlinePlan(
                   ? "solid"
                   : material,
       );
+      objects.at(-1)!.id = "roof";
+    }
     warnings.push(
       "Openings are segmented wall geometry; no interior stairs, hinges or engineering simulation.",
     );
@@ -411,6 +422,18 @@ export function offlinePlan(
     version: 1,
     name: `${kind[0].toUpperCase() + kind.slice(1)} · ${floors} level${floors === 1 ? "" : "s"}`,
     units: "meters",
+    template: {
+      kind,
+      width: w,
+      depth: d,
+      height: h,
+      floors,
+      thickness: t,
+      doors,
+      windows,
+      material,
+      roof,
+    },
     objects,
     contacts: [],
     warnings,

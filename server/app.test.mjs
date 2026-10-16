@@ -231,3 +231,90 @@ test("client cancellation propagates to provider; connection checks do not invok
   await new Promise((resolve) => setTimeout(resolve, 20));
   assert.equal(providerSignal.aborted, true);
 });
+
+const editContext = {
+  selected: "00000000-0000-4000-8000-000000000001",
+  structures: [
+    {
+      id: "00000000-0000-4000-8000-000000000001",
+      name: "House",
+      type: "house",
+      count: 8,
+      floors: 1,
+    },
+  ],
+};
+const editPost = (url, body) =>
+  fetch(url + "/api/planner/edit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+test("edit adapter uses compatible provider and strict intent schema, never scene mutations", async (t) => {
+  let sent;
+  const plan = {
+    version: 1,
+    target: editContext.selected,
+    operation: { type: "material", role: "wall", material: "brick" },
+  };
+  const url = await fixture(t, async (endpoint, init) => {
+    sent = JSON.parse(init.body);
+    return Response.json({
+      choices: [{ message: { content: JSON.stringify(plan) } }],
+    });
+  });
+  const r = await editPost(url, {
+    prompt: "Make the house walls brick",
+    context: editContext,
+  });
+  assert.equal(r.status, 200);
+  assert.deepEqual((await r.json()).plan, plan);
+  assert.ok(sent.messages[0].content.includes("clarify"));
+  assert.deepEqual(JSON.parse(sent.messages[1].content).context, editContext);
+  assert.equal(
+    (
+      await editPost(url, {
+        prompt: "edit house",
+        context: editContext,
+        execute: "delete",
+      })
+    ).status,
+    422,
+  );
+});
+test("edit endpoint rejects invalid context, executable output, unknown material, and malformed JSON", async (t) => {
+  let content = "{}",
+    calls = 0;
+  const url = await fixture(t, async () => {
+    calls++;
+    return Response.json({ choices: [{ message: { content } }] });
+  });
+  assert.equal(
+    (
+      await editPost(url, {
+        prompt: "edit house",
+        context: { ...editContext, secret: "x" },
+      })
+    ).status,
+    422,
+  );
+  assert.equal(calls, 0);
+  for (const plan of [
+    { version: 1, operation: { type: "material", material: "lava" } },
+    { version: 1, operation: { type: "delete" }, objects: [] },
+    { version: 1, operation: { type: "execute", code: "run" } },
+  ]) {
+    content = JSON.stringify(plan);
+    assert.equal(
+      (await editPost(url, { prompt: "edit house", context: editContext }))
+        .status,
+      422,
+    );
+  }
+  content = "not json";
+  assert.equal(
+    (await editPost(url, { prompt: "edit house", context: editContext }))
+      .status,
+    422,
+  );
+});

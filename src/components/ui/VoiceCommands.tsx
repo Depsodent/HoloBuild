@@ -1,3 +1,12 @@
+import { StructureEditReview } from "./StructureEditReview";
+import { isStructureEdit } from "../../generation/editPlanner";
+import {
+  requestEdit,
+  useEditStore,
+  cancelEdit,
+} from "../../generation/editStore";
+import { useSceneStore } from "../../scene/sceneStore";
+import { cancelGeneration } from "../../generation/generationStore";
 import { useEffect, useRef, useState } from "react";
 import { Mic, MicOff } from "lucide-react";
 import type { PlannerMode } from "../../generation/planner";
@@ -23,6 +32,7 @@ import {
 } from "../../generation/generationStore";
 export function VoiceCommands() {
   const generation = useGenerationStore();
+  const editStatus = useEditStore((s) => s.status);
   const input = generation.prompt;
   const [commandsOnly, setCommandsOnly] = useState(false);
   const [heard, setHeard] = useState(""),
@@ -45,6 +55,26 @@ export function VoiceCommands() {
 
   async function dispatch(text: string): Promise<CommandResult> {
     const route = routeInput(text);
+    if (
+      isStructureEdit(text, !!useSceneStore.getState().selectedStructureId) ||
+      (!commandsOnly && generation.mode !== "offline" && route === "clarify")
+    ) {
+      if (interpreter.awaitingConfirmation)
+        return {
+          ok: false,
+          confirmation: true,
+          message: "Confirm or cancel the pending quick command first.",
+        };
+      cancelGeneration("");
+      const settings = useGenerationStore.getState();
+      await requestEdit(text, {
+        mode: commandsOnly ? "offline" : settings.mode,
+        model: settings.model,
+        timeoutMs: settings.timeoutMs,
+      });
+      return { ok: useEditStore.getState().status !== "error", message: "" };
+    }
+    cancelEdit();
     if (route === "structure" && !commandsOnly) {
       if (interpreter.awaitingConfirmation)
         return {
@@ -170,7 +200,12 @@ export function VoiceCommands() {
           </label>
           <button
             type="submit"
-            disabled={busy || generation.status === "planning" || !input.trim()}
+            disabled={
+              busy ||
+              generation.status === "planning" ||
+              editStatus === "planning" ||
+              !input.trim()
+            }
           >
             Send request
           </button>
@@ -208,12 +243,14 @@ export function VoiceCommands() {
             </button>
           </div>
         )}
+        <StructureEditReview />
         <StructureGenerator />
         <Accordion id="tools.voice-help" title="Help & examples">
           <p>
             Create a cube · Move it right by 2 meters · Rotate it by 45 degrees
             · Make it red · Apply wood material · Undo · Save the scene · Build
-            a house.
+            a house. Select the whole house · Move the entire house right by 2
+            meters · Change all walls to brick · Add another floor.
           </p>
           <p>
             Quick commands always use the deterministic interpreter. Structure

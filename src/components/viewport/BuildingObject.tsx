@@ -12,6 +12,8 @@ export function BuildingObject({ object }: { object: SceneObject }) {
   const ref = useRef<Mesh>(null);
   const [hover, setHover] = useState(false);
   const selected = useSceneStore((s) => s.selectedId === object.id);
+  const group = useSceneStore((s) => s.selectedStructureId);
+  const groupSelected = !!group && object.construction?.structureId === group;
   const tool = useSceneStore((s) => s.tool);
   const snap = useSceneStore((s) => s.snap);
   const gestureHover = useInteractionStore((s) => s.hoveredId === object.id);
@@ -83,18 +85,26 @@ export function BuildingObject({ object }: { object: SceneObject }) {
         )}
         <Edges
           color={
-            selected
-              ? "#b8fff5"
-              : hover || gestureHover
-                ? "#64f7e6"
-                : object.material === "holographic"
-                  ? "#00dfff"
-                  : "#267f85"
+            groupSelected
+              ? "#ffd782"
+              : selected
+                ? "#b8fff5"
+                : hover || gestureHover
+                  ? "#64f7e6"
+                  : object.material === "holographic"
+                    ? "#00dfff"
+                    : "#267f85"
           }
-          lineWidth={selected ? 2 : object.material === "holographic" ? 1.5 : 1}
+          lineWidth={
+            selected || groupSelected
+              ? 2
+              : object.material === "holographic"
+                ? 1.5
+                : 1
+          }
         />
       </mesh>
-      {selected && tool !== "select" && (
+      {selected && !group && tool !== "select" && (
         <TransformControls
           object={ref as React.RefObject<Mesh>}
           mode={tool}

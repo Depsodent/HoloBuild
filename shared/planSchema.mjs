@@ -23,11 +23,34 @@ export const roles = [
 ];
 const id = z.string().regex(/^[a-zA-Z0-9_-]{1,48}$/);
 export const contactsSchema = z.array(z.tuple([id, id])).max(240);
+export const templateSchema = z
+  .object({
+    kind: z.enum([
+      "house",
+      "room",
+      "tower",
+      "office",
+      "warehouse",
+      "shed",
+      "bridge",
+    ]),
+    width: z.number().min(3).max(20),
+    depth: z.number().min(2).max(20),
+    height: z.number().min(2.5).max(5),
+    floors: z.number().int().min(1).max(6),
+    thickness: z.number().min(0.1).max(0.4),
+    doors: z.number().int().min(0).max(2),
+    windows: z.number().int().min(0).max(4),
+    material: z.enum(materials),
+    roof: z.enum(["flat", "none"]),
+  })
+  .strict();
 export const planSchema = z
   .object({
     version: z.literal(1),
     name: z.string().trim().min(1).max(80),
     units: z.literal("meters"),
+    template: templateSchema.optional(),
     objects: z
       .array(
         z
@@ -35,6 +58,7 @@ export const planSchema = z
             id,
             name: z.string().trim().min(1).max(60),
             role: z.enum(roles),
+            level: z.number().int().min(0).max(5).optional(),
             type: z.enum(shapes),
             position: z.tuple([
               z.number().finite().min(-30).max(30),

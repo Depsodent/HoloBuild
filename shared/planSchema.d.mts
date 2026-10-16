@@ -5,6 +5,7 @@ export interface PlanPart {
   id: string;
   name: string;
   role: "floor" | "wall" | "roof" | "pillar" | "door" | "window" | "beam";
+  level?: number;
   type: ObjectType;
   position: Vec3;
   rotation: Vec3;
@@ -12,10 +13,24 @@ export interface PlanPart {
   material: MaterialId;
   color: string;
 }
+export interface BuildingTemplate {
+  kind: "house" | "room" | "tower" | "office" | "warehouse" | "shed" | "bridge";
+  width: number;
+  depth: number;
+  height: number;
+  floors: number;
+  thickness: number;
+  doors: number;
+  windows: number;
+  material: MaterialId;
+  roof: "flat" | "none";
+}
+export const templateSchema: z.ZodType<BuildingTemplate>;
 export interface ConstructionPlan {
   version: 1;
   name: string;
   units: "meters";
+  template?: BuildingTemplate;
   objects: PlanPart[];
   contacts: [string, string][];
   warnings: string[];

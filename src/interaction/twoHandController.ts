@@ -1,7 +1,7 @@
 import type { HandsFrame } from "../vision/handRecognizer";
 import type { SceneObject } from "../scene/objectTypes";
 import { useSceneStore } from "../scene/sceneStore";
-import { execute } from "../scene/commandManager";
+import { groupPreview, commitPlacement } from "./structureInteraction";
 import { useInteractionStore } from "./interactionStore";
 import { useAdvancedStore } from "./advancedStore";
 import { isOnViewport } from "./coordinateMapping";
@@ -137,17 +137,7 @@ export class TwoHandController {
         this.ready.clear();
         useAdvancedStore.setState({ active: false, readyHands: 0 });
         const history = useSceneStore.getState().past.length;
-        const committed =
-          preview?.valid &&
-          execute({
-            type: "update",
-            id: s.object.id,
-            patch: {
-              position: preview.position,
-              scale: preview.scale,
-              rotation: preview.rotation,
-            },
-          });
+        const committed = preview?.valid && commitPlacement(preview);
         useSceneStore.setState({ preview: null });
         useInteractionStore.setState({ phase: "idle", hoveredId: null });
         useAdvancedStore.setState({
@@ -191,8 +181,14 @@ export class TwoHandController {
         useSceneStore.getState().objects,
         useSceneStore.getState().snap,
       );
+      const grouped = groupPreview(
+        s.object.id,
+        s.mode === "scale"
+          ? { type: "scale", factors: [s.factor, s.factor, s.factor] }
+          : { type: "rotate", angle: s.angle },
+      );
       useSceneStore.setState({
-        preview: {
+        preview: grouped ?? {
           id: s.object.id,
           position: result.position,
           scale,
@@ -201,12 +197,13 @@ export class TwoHandController {
         },
       });
       useInteractionStore.setState({
-        phase: result.valid ? "dragging" : "invalid",
+        phase: (grouped?.valid ?? result.valid) ? "dragging" : "invalid",
         hoveredId: s.object.id,
       });
-      const message = result.valid
-        ? `${s.mode === "scale" ? "Scaling active" : "Rotating active"} · Release to confirm.`
-        : "Blocked transform: collision or workspace bounds.";
+      const message =
+        (grouped?.valid ?? result.valid)
+          ? `${s.mode === "scale" ? "Scaling active" : "Rotating active"} · Release to confirm.`
+          : "Blocked transform: collision or workspace bounds.";
       if (
         frame.timestamp - this.lastUi >= 100 ||
         message !== useAdvancedStore.getState().message

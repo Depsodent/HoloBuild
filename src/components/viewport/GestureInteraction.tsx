@@ -156,6 +156,8 @@ export function GestureInteraction() {
         (instance.dragging || two.active || nav.active) &&
         (state.objects !== previous.objects ||
           state.selectedId !== previous.selectedId ||
+          state.selectedStructureId !== previous.selectedStructureId ||
+          state.selectionMode !== previous.selectionMode ||
           state.tool !== previous.tool)
       ) {
         instance.cancel(
@@ -313,8 +315,31 @@ export function PlacementPreview() {
   const objects = useSceneStore((s) => s.objects);
   const object = objects.find((o) => o.id === preview?.id);
   if (!preview || !object) return null;
+  if (preview.structure)
+    return (
+      <group>
+        {preview.structure.objects.map((o) => (
+          <mesh
+            key={o.id}
+            position={o.position}
+            rotation={o.rotation}
+            scale={o.scale}
+            raycast={() => {}}
+          >
+            <ObjectGeometry type={o.type} size={o.model?.size} />
+            <meshBasicMaterial
+              wireframe
+              color={preview.valid ? "#79ffe0" : "#ff6c83"}
+              transparent
+              opacity={0.4}
+            />
+          </mesh>
+        ))}
+      </group>
+    );
   return (
     <mesh
+      raycast={() => {}}
       position={preview.position}
       rotation={preview.rotation ?? object.rotation}
       scale={preview.scale ?? object.scale}

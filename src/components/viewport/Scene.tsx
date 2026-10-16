@@ -1,3 +1,4 @@
+import { StructureControls } from "./StructureControls";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import { useSceneStore } from "../../scene/sceneStore";
@@ -52,6 +53,7 @@ export function Scene() {
         <Metrics />
         <GestureInteraction />
         <PlacementPreview />
+        <StructureControls />
         <GenerationPreview />
         <SurfaceResources>
           {objects.map((object) => (

@@ -13,7 +13,10 @@ import {
 } from "../scene/objectTypes";
 import { bounds, placement } from "../interaction/placement";
 const sizeOf = (box: Box3) => box.getSize(new Vector3());
-function geometry(objects: SceneObject[], contacts: [string, string][] = []) {
+export function geometry(
+  objects: SceneObject[],
+  contacts: [string, string][] = [],
+) {
   const boxes = objects.map((o) => bounds(o)),
     whole = new Box3();
   boxes.forEach((b) => whole.union(b));
@@ -94,7 +97,21 @@ export function materializePlan(input: unknown) {
       scale: part.dimensions.map((v, i) => v / SHAPES[part.type].size[i]),
       material: part.material,
       color: part.color,
-      construction: { structureId, partId: part.id, role: part.role },
+      construction: {
+        structureId,
+        partId: part.id,
+        role: part.role,
+        level: part.level,
+        structure: {
+          name: plan.name.slice(0, 60),
+          type: plan.template?.kind ?? "generated",
+          position: [0, 0, 0],
+          yaw: 0,
+          scale: [1, 1, 1],
+          contacts: plan.contacts,
+          template: plan.template,
+        },
+      },
     }),
   );
   const summary = geometry(objects, plan.contacts);
@@ -151,6 +168,13 @@ export function preparePlan(input: ConstructionPlan, existing: SceneObject[]) {
         if (ring && Math.max(Math.abs(x), Math.abs(z)) !== ring) continue;
         const objects = built.objects.map((o) => ({
           ...o,
+          construction: {
+            ...o.construction!,
+            structure: {
+              ...o.construction!.structure!,
+              position: [x * step, 0, z * step] as Vec3,
+            },
+          },
           position: [
             o.position[0] + x * step,
             o.position[1],

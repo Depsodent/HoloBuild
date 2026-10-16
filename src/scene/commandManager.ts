@@ -1,3 +1,10 @@
+import {
+  applyStructure,
+  invalidateTemplate,
+  validateStructure,
+  type StructureResult,
+} from "./structures";
+import type { StructureOperation } from "../../shared/editSchema.mjs";
 import { z } from "zod";
 import { objectSchema, type SceneObject, type ObjectType } from "./objectTypes";
 import { createObject, SHAPES } from "./objectFactory";
@@ -11,8 +18,40 @@ const sceneSchema = z
   .refine(
     (objects) => new Set(objects.map((o) => o.id)).size === objects.length,
     "Duplicate object IDs",
-  );
+  )
+  .superRefine((objects, ctx) => {
+    const groups = new Map<string, { parts: Set<string>; metadata: string }>();
+    for (const o of objects) {
+      const c = o.construction;
+      if (!c) continue;
+      const metadata = JSON.stringify(c.structure),
+        group = groups.get(c.structureId);
+      if (group && (group.parts.has(c.partId) || group.metadata !== metadata))
+        ctx.addIssue({
+          code: "custom",
+          message:
+            "Duplicate part identity or inconsistent structure metadata.",
+        });
+      if (
+        c.structure?.floorLayouts &&
+        c.structure.floorLayouts.length !== c.structure.template?.floors
+      )
+        ctx.addIssue({
+          code: "custom",
+          message: "Floor relationship metadata is inconsistent.",
+        });
+      if (group) group.parts.add(c.partId);
+      else groups.set(c.structureId, { parts: new Set([c.partId]), metadata });
+    }
+  });
 export type Command =
+  | {
+      type: "structure";
+      structureId: string;
+      operation: StructureOperation;
+      base?: SceneObject[];
+      prepared?: StructureResult;
+    }
   | { type: "create"; objectType?: ObjectType }
   | { type: "import"; object: SceneObject }
   | { type: "construct"; objects: SceneObject[]; contacts?: [string, string][] }
@@ -27,9 +66,74 @@ export type Command =
 export function execute(command: Command): boolean {
   const s = useSceneStore.getState();
   try {
+    if (
+      (command.type === "delete" || command.type === "duplicate") &&
+      s.selectedStructureId &&
+      s.objects.find((o) => o.id === command.id)?.construction?.structureId ===
+        s.selectedStructureId
+    )
+      return execute({
+        type: "structure",
+        structureId: s.selectedStructureId,
+        operation: { type: command.type },
+      });
     let objects = structuredClone(s.objects);
     let selectedId = s.selectedId;
-    if (command.type === "construct") {
+    let selectedStructureId = s.selectedStructureId;
+    if (command.type === "structure") {
+      if (command.base && command.base !== s.objects)
+        throw Error("Scene changed. Review a new preview.");
+      const result =
+        command.prepared ??
+        applyStructure(
+          s.objects,
+          command.structureId,
+          command.operation,
+          s.snap,
+        );
+      if (command.prepared) {
+        if (!command.base || command.base !== s.objects)
+          throw Error("Stale structure preview.");
+        const originalIds = new Set(
+          s.objects
+            .filter((o) => o.construction?.structureId === command.structureId)
+            .map((o) => o.id),
+        );
+        const untouched = s.objects.filter((o) => !originalIds.has(o.id));
+        if (
+          command.operation.type !== "delete" &&
+          command.operation.type !== "ungroup"
+        )
+          validateStructure(
+            result.parts,
+            command.operation.type === "duplicate" ? s.objects : untouched,
+          );
+        if (
+          untouched.some(
+            (o) =>
+              JSON.stringify(result.objects.find((p) => p.id === o.id)) !==
+              JSON.stringify(o),
+          )
+        )
+          throw Error("Edit touches unrelated objects.");
+      }
+      objects = result.objects;
+      selectedId = result.parts[0]?.id ?? null;
+      selectedStructureId =
+        command.operation.type === "ungroup" ||
+        command.operation.type === "delete"
+          ? null
+          : result.structureId;
+      if (command.operation.type === "select") {
+        useSceneStore.setState({
+          selectedId,
+          selectedStructureId,
+          selectionMode: "structure",
+          preview: null,
+        });
+        return true;
+      }
+    } else if (command.type === "construct") {
       if (s.preview) throw Error("Finish the active manipulation first.");
       const batch = validateBatch(command.objects, objects, command.contacts);
       objects.push(...batch);
@@ -90,9 +194,21 @@ export function execute(command: Command): boolean {
           candidate.position = result.position;
         }
         objects[index] = candidate;
+        if (
+          command.patch.position ||
+          command.patch.rotation ||
+          command.patch.scale ||
+          command.patch.construction
+        )
+          objects = invalidateTemplate(
+            objects,
+            original.construction?.structureId,
+          );
       }
       if (command.type === "delete") {
+        const group = objects[index].construction?.structureId;
         objects.splice(index, 1);
+        objects = invalidateTemplate(objects, group);
         if (selectedId === command.id) selectedId = null;
       }
       if (command.type === "duplicate") {
@@ -110,27 +226,31 @@ export function execute(command: Command): boolean {
         const free = findFreePosition(copy, objects);
         if (!free) throw Error("No free placement");
         copy.position = free;
-        if (copy.construction)
-          copy.construction = { ...copy.construction, partId: copy.id };
+        delete copy.construction;
         objects.push(copy);
         selectedId = copy.id;
       }
     }
     objects = sceneSchema.parse(objects);
+    if (command.type !== "structure") selectedStructureId = null;
     if (JSON.stringify(objects) === JSON.stringify(s.objects)) return true;
     useSceneStore.setState({
       objects,
       selectedId,
+      selectedStructureId,
+      selectionMode: selectedStructureId ? "structure" : s.selectionMode,
       past: appendHistory(s.past, s.objects),
       future: [],
       preview: null,
       status: `${command.type[0].toUpperCase() + command.type.slice(1)} complete.`,
     });
     return true;
-  } catch {
+  } catch (error) {
     useSceneStore.setState({
       status:
-        "Action rejected: check overlap, ground/workspace bounds (±50 m), scale (0.1–20), selection and object limit (200).",
+        error instanceof Error
+          ? `Action rejected: ${error.message.slice(0, 240)}`
+          : "Action rejected: invalid placement or scene limits.",
     });
     return false;
   }
@@ -144,6 +264,7 @@ export function undo() {
       past: s.past.slice(0, -1),
       future: [s.objects, ...s.future],
       selectedId: null,
+      selectedStructureId: null,
       preview: null,
       status: "Undid last action.",
     });
@@ -157,6 +278,7 @@ export function redo() {
       past: appendHistory(s.past, s.objects),
       future: s.future.slice(1),
       selectedId: null,
+      selectedStructureId: null,
       preview: null,
       status: "Redid action.",
     });

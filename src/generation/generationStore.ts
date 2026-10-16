@@ -1,3 +1,4 @@
+import { cancelEdit, useEditStore } from "./editStore";
 import { create } from "zustand";
 import { preparePlan, type PreparedPlan } from "./engine";
 import { generatePlan, type PlannerMode } from "./planner";
@@ -39,16 +40,23 @@ export function updateGeneration(patch: {
   model?: string;
   timeoutMs?: number;
 }) {
+  cancelEdit();
   cancelGeneration("Settings changed. Generate a new preview.");
   useGenerationStore.setState(patch);
 }
 export function cancelUnconfirmedGeneration() {
+  if (
+    useEditStore.getState().prepared ||
+    useEditStore.getState().status === "planning"
+  )
+    cancelEdit();
   const s = useGenerationStore.getState();
   if (s.prepared || s.status === "planning") cancelGeneration();
 }
 export async function planStructure(
   prompt = useGenerationStore.getState().prompt,
 ) {
+  cancelEdit();
   cancelGeneration();
   const version = ++request,
     abort = new AbortController();

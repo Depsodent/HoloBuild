@@ -1,3 +1,4 @@
+import { useEditStore } from "../../generation/editStore";
 import { useMemo, useEffect } from "react";
 import {
   BoxGeometry,
@@ -49,6 +50,7 @@ export function GenerationPreview() {
     window.addEventListener("holobuild:fit-structure", fit);
     return () => window.removeEventListener("holobuild:fit-structure", fit);
   }, [camera, controls]);
+  const edit = useEditStore((s) => s.prepared);
   const prepared = useGenerationStore((s) => s.prepared),
     visible = useGenerationStore((s) => s.ghost);
   const pool = useMemo(
@@ -80,10 +82,11 @@ export function GenerationPreview() {
     },
     [pool, material],
   );
-  if (!prepared || !visible) return null;
+  const parts = edit?.result.parts ?? prepared?.objects;
+  if (!parts || !visible) return null;
   return (
     <group>
-      {prepared.objects.map((o) => (
+      {parts.map((o) => (
         <mesh
           key={o.id}
           position={o.position}

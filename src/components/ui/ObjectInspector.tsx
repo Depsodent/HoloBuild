@@ -1,3 +1,4 @@
+import { SelectionMode, StructureInspector } from "./StructureInspector";
 import { objectSize } from "../../scene/objectFactory";
 import { Copy, Trash2, RotateCcw } from "lucide-react";
 import { useSceneStore } from "../../scene/sceneStore";
@@ -14,6 +15,9 @@ export function ObjectInspector() {
   const objects = useSceneStore((s) => s.objects),
     id = useSceneStore((s) => s.selectedId),
     object = objects.find((o) => o.id === id);
+  const group = useSceneStore((s) => s.selectedStructureId);
+  if (group && objects.some((o) => o.construction?.structureId === group))
+    return <StructureInspector key={group} id={group} />;
   function parameter(control: ReturnType<typeof surfaceControls>[number]) {
     if (!object) return null;
     return (
@@ -46,6 +50,7 @@ export function ObjectInspector() {
   return (
     <aside className="panel inspector">
       <div className="eyebrow">OBJECT INSPECTOR</div>
+      <SelectionMode />
       <h2>{object ? object.name : "Nothing selected"}</h2>
       {object ? (
         <>

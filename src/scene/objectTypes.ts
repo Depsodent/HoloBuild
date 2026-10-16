@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { templateSchema, contactsSchema } from "../../shared/planSchema.mjs";
 import { MATERIAL_IDS } from "./materialPresets";
 export const vectorSchema = z.tuple([
   z.number().finite().min(-100).max(100),
@@ -6,6 +7,27 @@ export const vectorSchema = z.tuple([
   z.number().finite().min(-100).max(100),
 ]);
 export type Vec3 = z.infer<typeof vectorSchema>;
+export const structureMetadataSchema = z
+  .object({
+    name: z.string().trim().min(1).max(60),
+    type: z.string().min(1).max(40),
+    position: vectorSchema,
+    yaw: z.number().finite().min(-Math.PI).max(Math.PI),
+    scale: z.tuple([
+      z.number().min(0.1).max(20),
+      z.number().min(0.1).max(20),
+      z.number().min(0.1).max(20),
+    ]),
+    template: templateSchema.optional(),
+    floorLayouts: z
+      .array(z.enum(["ground", "upper"]))
+      .min(1)
+      .max(6)
+      .optional(),
+    contacts: contactsSchema.default([]),
+  })
+  .strict();
+export type StructureMetadata = z.infer<typeof structureMetadataSchema>;
 export const objectSchema = z
   .object({
     id: z.string().min(1).max(100),
@@ -31,6 +53,8 @@ export const objectSchema = z
     construction: z
       .object({
         structureId: z.string().uuid(),
+        structure: structureMetadataSchema.optional(),
+        level: z.number().int().min(0).max(5).optional(),
         partId: z.string().regex(/^[a-zA-Z0-9_-]{1,48}$/),
         role: z.enum([
           "floor",

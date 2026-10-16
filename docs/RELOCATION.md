@@ -1,6 +1,8 @@
+> Cleanup update, 16 October 2026: the explicitly authorized original C: HoloBuild directory has now been deleted. D:\Projects\HoloBuild is the only active project. The relocation evidence below is historical; see the final cleanup record at the end.
+
 # HoloBuild relocation to D: — 2026-10-16
 
-The active development checkout is **`D:\Projects\HoloBuild`**. Open that folder in VS Code and use it as the working directory for all future terminals and development. The former `C:\Users\AARYAN DESHPANDE\OneDrive\Desktop\HoloBuild` is retained as an untouched backup pending the user's explicit deletion approval. Do not develop in the old backup. Milestone 10 has not begun.
+The active development checkout is **`D:\Projects\HoloBuild`**. Open that folder in VS Code and use it as the working directory for all future terminals and development. The former `C:\Users\AARYAN DESHPANDE\OneDrive\Desktop\HoloBuild` was retained during relocation verification, then removed after explicit user authorization as recorded below. Milestone 10 development now uses D: exclusively.
 
 ## Copy and integrity
 
@@ -59,4 +61,11 @@ Automated gesture/browser checks and synthetic video do not establish physical w
 - `npm.cmd run build`: passed; all 15 regenerated production files match the C: build's SHA-256 and sizes.
 - Real local Qwen preview → confirm → Undo: passed separately, one component/one history entry, zero page errors; tested with the existing 120-second UI setting.
 
-The active frontend and planner remain running from D:. No application or test code was changed. Original C: cleanup remains blocked on the user's explicit approval, as requested; no deletion has been attempted.
+The active frontend and planner remain running from D:. No application or test code was changed. At the end of relocation verification, original C: cleanup was pending explicit approval. That approval and subsequent cleanup are recorded in the following section.
+## Authorized cleanup completed — 16 October 2026
+
+The user explicitly authorized removal of **only** `C:\Users\AARYAN DESHPANDE\OneDrive\Desktop\HoloBuild`. Before deletion, verified the D: working tree was clean on master at `61a74a1`, required package/source/server/Git/private environment files existed, and `git fsck --full` passed. The old source remained clean at its original `096c7aa` checkpoint. Inspected active processes: frontend/esbuild were using D:, with no old C: project process found. Both project roots were ordinary, distinct directories with no junction/symlink target; recursively checked the old project for actual directory links. The Desktop ancestor carries OneDrive cloud reparse metadata (tag `0x9000601a`), not a junction or symbolic-link target; neither project root is linked.
+
+Used native PowerShell `Remove-Item -LiteralPath` against the exact authorized old directory after resolving/checking both absolute paths. No parent directory, unrelated project, Codex configuration, Ollama installation/model, or browser storage was removed. Verified old directory absent and D: project/Git/private environment intact, with clean checkpoint `61a74a1` immediately afterward.
+
+Removed **496,247,498 logical bytes** (about **473 MiB**). C: free space increased by **528,445,440 bytes** (about **504 MiB**) during the operation; allocation and concurrent filesystem activity can differ from logical file sizes. All subsequent Milestone 10 development and validation use D: exclusively.

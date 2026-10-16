@@ -1,9 +1,10 @@
+import { moveGroupPreview, commitPlacement } from "./structureInteraction";
 import type { GestureFrame } from "../vision/gestureTypes";
 import type { Vec3 } from "../scene/objectTypes";
 import { useSceneStore } from "../scene/sceneStore";
 import { isOnViewport, type Cursor } from "./coordinateMapping";
 import { placement } from "./placement";
-import { placeObject, runMenuAction } from "./intentMapper";
+import { runMenuAction } from "./intentMapper";
 import { useInteractionStore, type MenuAction } from "./interactionStore";
 interface InputGeometry {
   pick: (cursor: Cursor) => string | undefined;
@@ -82,7 +83,8 @@ export class GestureController {
           return;
         }
         const pos = point.map((v, i) => v + this.grab!.offset[i]) as Vec3;
-        const result = placement(object, pos, s.objects, s.snap);
+        const grouped = moveGroupPreview(object.id, pos);
+        const result = grouped ?? placement(object, pos, s.objects, s.snap);
         useSceneStore.setState({ preview: { id: object.id, ...result } });
         useInteractionStore.setState({
           phase: result.valid ? "dragging" : "invalid",
@@ -101,7 +103,7 @@ export class GestureController {
         const committed =
           frame.candidate !== "fist" &&
           preview?.valid &&
-          placeObject(id, preview.position);
+          commitPlacement({ ...preview, id });
         useSceneStore.setState({ preview: null });
         useInteractionStore.setState({
           phase: "idle",

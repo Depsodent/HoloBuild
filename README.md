@@ -135,3 +135,6 @@ The app is running at **http://127.0.0.1:5175/** with optional backend **127.0.0
 Construction now uses four major groups: **Shapes**, **Tools**, **Ask HoloBuild**, and **Scene**. Opening a group collapses unpinned peers; pin and open preferences persist. One Ask field and adjacent microphone handle quick commands and structure planning. Inspector properties are grouped into Transform, Appearance and Scene Collection. Camera capture remains accessible while minimized, and diagnostics starts hidden. Existing editor, tracking and scene/history systems are preserved.
 
 See [WORKSPACE.md](docs/WORKSPACE.md) for controls, clean defaults and the physical acceptance checklist. Automated checks do not establish physical usability acceptance of this redesign.
+### Structure editing
+
+Select **Entire Structure** in the Inspector to move, yaw-rotate, scale, duplicate or ungroup generated buildings. Ask HoloBuild previews validated material/transform/floor edits before confirmation, with one-step Undo. See [structure editing](docs/STRUCTURE_EDITING.md) for supported templates, limits and physical acceptance checks.
