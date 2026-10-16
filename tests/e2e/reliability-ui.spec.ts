@@ -75,16 +75,13 @@ test("accordion defaults, keyboard expansion, independent persistence and compac
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
-  const materials = page.locator('[data-accordion-key="inspector.materials"]'),
-    appearance = page.locator('[data-accordion-key="inspector.appearance"]'),
+  const materials = page.locator('[data-accordion-key="inspector.appearance"]'),
     transform = page.locator('[data-accordion-key="inspector.transform"]');
   expect(await materials.getAttribute("open")).toBeNull();
   expect(await transform.getAttribute("open")).not.toBeNull();
   await materials.locator("summary").focus();
   await page.keyboard.press("Enter");
   await expect(page.getByLabel("Material", { exact: true })).toBeVisible();
-  await appearance.locator("summary").focus();
-  await page.keyboard.press("Space");
   await expect(page.getByLabel("Object color", { exact: true })).toBeVisible();
   const height = (await transform.boundingBox())!.height;
   await transform.locator("summary").click();
@@ -109,6 +106,8 @@ test("one-hand selection survives scale/rotate switching and staggered pinches n
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
+  await open(page, "tools.transform");
+  await open(page, "inspector.collection");
   await page.keyboard.press("Escape");
   await hold(page, poseAt("pointing", start.cursor));
   await hold(page, poseAt("pinch", start.cursor));
@@ -164,6 +163,8 @@ test("unselected objects can be pinched once in Rotate mode and panel clicks can
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
+  await open(page, "tools.transform");
+  await open(page, "inspector.collection");
   await page.keyboard.press("Escape");
   await page.getByLabel("Gesture mode", { exact: true }).selectOption("rotate");
   await hold(page, poseAt("pointing", start.cursor));
@@ -207,6 +208,7 @@ test("camera metrics, live quality, hidden preview and emergency Stop remain usa
   await open(page, "camera.settings");
   await page.getByLabel("Tracking quality").selectOption("performance");
   await expect(page.getByLabel("Tracking quality")).toHaveValue("performance");
+  await page.getByRole("button", {name:"Toggle Gesture Diagnostics", exact:true}).click();
   await page
     .getByRole("button", { name: "Expand Gesture Diagnostics", exact: true })
     .click();
@@ -247,6 +249,7 @@ test("unsupported worker/video callbacks fall back to CPU with honest unavailabl
   await expect(page.locator(".camera-meta")).toContainText(/[1-9]\d* Hz/, {
     timeout: 60000,
   });
+  await page.getByRole("button", {name:"Toggle Gesture Diagnostics", exact:true}).click();
   await page
     .getByRole("button", { name: "Expand Gesture Diagnostics", exact: true })
     .click();

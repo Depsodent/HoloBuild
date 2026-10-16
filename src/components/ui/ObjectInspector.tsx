@@ -125,7 +125,7 @@ export function ObjectInspector() {
               Reset transform
             </button>
           </Accordion>
-          <Accordion id="inspector.materials" title="Materials">
+          <Accordion id="inspector.appearance" title="Appearance">
             {object.model && (
               <label className="toggle">
                 <input
@@ -208,8 +208,6 @@ export function ObjectInspector() {
                 </button>
               </>
             )}
-          </Accordion>
-          <Accordion id="inspector.appearance" title="Appearance and Textures">
             <label className="color-field">
               Surface color
               <input
@@ -245,8 +243,6 @@ export function ObjectInspector() {
                   Color tints the texture; white shows its native colors.
                 </p>
               )}
-          </Accordion>
-          <Accordion id="inspector.properties" title="Object Properties">
             <label className="field">
               Name
               <input

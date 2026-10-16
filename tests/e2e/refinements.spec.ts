@@ -67,7 +67,7 @@ test("floating camera drag/resize/keyboard/persistence do not orbit or edit the 
   await expect(panel).toContainText("No hand");
   await expect(
     page.getByRole("button", { name: "Start camera", exact: true }),
-  ).toBeHidden();
+  ).toBeVisible();
   await page.reload();
   await target(page);
   await expect(

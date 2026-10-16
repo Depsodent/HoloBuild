@@ -5,7 +5,7 @@ import type { OfflineOptions } from "./offline";
 import { execute } from "../scene/commandManager";
 import { useSceneStore } from "../scene/sceneStore";
 export const useGenerationStore = create(() => ({
-  prompt: "Build a small house with four walls and a roof",
+  prompt: "",
   mode: "offline" as PlannerMode,
   options: {} as OfflineOptions,
   model: "",

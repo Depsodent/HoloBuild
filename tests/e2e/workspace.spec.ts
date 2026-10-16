@@ -217,7 +217,7 @@ test("docked camera minimizes and undocks while the shared gesture path still mo
     .click();
   await expect(
     page.getByRole("button", { name: "Start camera", exact: true }),
-  ).toBeHidden();
+  ).toBeVisible();
   await hold(page, poseAt("pointing", start.cursor));
   await expect(page.locator(".camera-title")).toContainText("pointing");
   await hold(page, poseAt("pinch", start.cursor));
@@ -439,12 +439,15 @@ test("workspace state survives reload and reset restores the documented defaults
     rightWidth: 234,
     leftCollapsed: false,
     rightCollapsed: false,
-    cameraHeight: 360,
+    cameraHeight: 280,
     cameraMinimized: false,
     cameraDocked: true,
     inspectorMinimized: false,
-    diagnosticsVisible: true,
+    diagnosticsVisible: false,
   });
+  await page
+    .getByRole("button", { name: "Toggle Gesture Diagnostics", exact: true })
+    .click();
   expect((await box(diagnostics)).x).toBeGreaterThan(savedDiagnostics.x);
 });
 

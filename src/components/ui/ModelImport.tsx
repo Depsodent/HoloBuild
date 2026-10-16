@@ -39,10 +39,13 @@ export function ModelImport({ compact }: { compact: boolean }) {
         {!compact && <span>{busy ? "Loading model…" : "Import 3D Model"}</span>}
       </button>
       {!compact && (
-        <p className="muted">
-          GLB / GLTF · 10 MiB. Select BIN/images with the GLTF. Models fit a 2 m
-          envelope.
-        </p>
+        <details className="import-help">
+          <summary>Import help</summary>
+          <p className="muted">
+            GLB / GLTF · 10 MiB. Select BIN/images with the GLTF. Models fit a 2
+            m envelope.
+          </p>
+        </details>
       )}
       <input
         ref={input}

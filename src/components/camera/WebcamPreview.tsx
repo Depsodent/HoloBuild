@@ -1,4 +1,5 @@
 import { GestureStatus } from "../ui/GestureStatus";
+import { useAdvancedStore } from "../../interaction/advancedStore";
 import { Accordion } from "../ui/Accordion";
 import {
   CAMERA_PROFILES,
@@ -38,6 +39,7 @@ export function WebcamPreview() {
   const minimized = layout.cameraMinimized;
   const docked = layout.cameraDocked;
   const gesture = useGestureStore((s) => s.gesture);
+  const mode = useAdvancedStore((s) => s.mode);
   const handCount = useHandsStore((s) => s.hands.length);
   const video = useRef<HTMLVideoElement>(null);
   const tracker = useRef<HandTracker | null>(null);
@@ -122,12 +124,21 @@ export function WebcamPreview() {
             className="camera-compact-status"
             title={`${handCount} tracked hands · ${gesture === "none" ? "No hand" : gesture}`}
           >
-            {handCount > 0 && <span>{handCount}H</span>}
+            <span>{handCount} hands</span>
             <span>
               {gesture === "none" ? "No hand" : gesture.replace("-", " ")}
             </span>
+            <span title={`Active gesture mode: ${mode}`}>{mode}</span>
           </span>
         )}
+        <button
+          className="camera-capture"
+          aria-label={active ? "Stop Gesture Input camera" : "Start camera"}
+          title={active ? "Stop camera" : "Start camera"}
+          onClick={() => (active ? tracker.current?.stop() : void start())}
+        >
+          {active ? "Stop camera" : "Start"}
+        </button>
         <button
           aria-label={docked ? "Undock Gesture Input" : "Dock Gesture Input"}
           title={docked ? "Undock Gesture Input" : "Dock Gesture Input"}
@@ -230,14 +241,6 @@ export function WebcamPreview() {
             Landmarks
           </label>
         </Accordion>
-        <div className="camera-actions">
-          {!active && (
-            <button className="primary" onClick={start}>
-              <Camera size={14} />
-              Start camera
-            </button>
-          )}
-        </div>
         <div className="camera-view-actions">
           <button
             aria-label={visible ? "Hide camera preview" : "Show camera preview"}

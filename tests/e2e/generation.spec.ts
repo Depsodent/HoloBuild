@@ -9,17 +9,18 @@ async function open(page: Page, id: string) {
 async function ready(page: Page) {
   await page.goto("/?testInput");
   await target(page);
+  await page.getByRole("button", { name: "Pin Shapes", exact: true }).click();
   await open(page, "tools.voice");
-  await open(page, "tools.generator");
+  await page
+    .getByRole("button", { name: "Pin Ask HoloBuild", exact: true })
+    .click();
 }
 async function plan(
   page: Page,
   text = "Build a small house with four walls and a roof",
 ) {
-  await page.getByLabel("Structure request", { exact: true }).fill(text);
-  await page
-    .getByRole("button", { name: "Generate Plan", exact: true })
-    .click();
+  await page.getByLabel("Ask HoloBuild", { exact: true }).fill(text);
+  await page.getByRole("button", { name: "Send request", exact: true }).click();
   await expect(
     page.getByLabel("Construction plan preview", { exact: true }),
   ).toBeVisible();
@@ -60,6 +61,7 @@ test("live synthetic tracking continues with a generated multi-level structure a
   await page
     .getByRole("button", { name: "Confirm construction", exact: true })
     .click();
+  await open(page, "tools.scene");
   await page
     .getByRole("button", { name: "Fit structure in view", exact: true })
     .click();
@@ -88,7 +90,9 @@ test("live synthetic tracking continues with a generated multi-level structure a
   expect(
     await page.evaluate(() => window.__HOLO_TEST__!.scene().length),
   ).toBeGreaterThan(20);
-  await page.getByRole("button", { name: "Stop camera", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Stop Gesture Input camera", exact: true })
+    .click();
   await expect(page.locator("html")).toHaveAttribute(
     "data-generation-camera-stopped",
     "true",
@@ -138,13 +142,11 @@ test("offline preview is inert, Cancel preserves scene, confirmed batch undoes/r
   );
   page.on("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "Reset scene", exact: true }).click();
-  await page
-    .locator("input[type=file][accept='.json']")
-    .setInputFiles({
-      name: "generated.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(json),
-    });
+  await page.locator("input[type=file][accept='.json']").setInputFiles({
+    name: "generated.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(json),
+  });
   await expect
     .poll(() => page.evaluate(() => window.__HOLO_TEST__!.scene()))
     .toEqual(built);
@@ -176,6 +178,7 @@ test("two-story windows, parameter controls and component preview retain the ada
       .filter((o) => o.construction?.role === "wall")
       .every((o) => o.material === "brick"),
   ).toBe(true);
+  await open(page, "tools.scene");
   await page
     .getByRole("button", { name: "Fit structure in view", exact: true })
     .click();
@@ -198,11 +201,12 @@ test("two-story windows, parameter controls and component preview retain the ada
     .getByRole("button", { name: "Expand construction tools", exact: true })
     .click();
   await open(page, "tools.voice");
-  await open(page, "tools.generator");
   await expect(page.getByLabel("Generation result")).toContainText(
     "Constructed",
   );
-  await page.getByLabel("Structure request").scrollIntoViewIfNeeded();
+  await page
+    .getByLabel("Ask HoloBuild", { exact: true })
+    .scrollIntoViewIfNeeded();
   await page.screenshot({ path: "test-results/milestone-9-generated.png" });
 });
 test("scene changes invalidate reviewed placement; regeneration and rejected requests preserve edits", async ({
@@ -223,10 +227,10 @@ test("scene changes invalidate reviewed placement; regeneration and rejected req
   await page
     .getByRole("button", { name: "Cancel generation", exact: true })
     .click();
-  await page.getByLabel("Structure request").fill("Build a castle");
   await page
-    .getByRole("button", { name: "Generate Plan", exact: true })
-    .click();
+    .getByLabel("Ask HoloBuild", { exact: true })
+    .fill("Build a castle");
+  await page.getByRole("button", { name: "Send request", exact: true }).click();
   await expect(page.getByLabel("Generation result")).toContainText(
     "supported structure",
   );
@@ -269,9 +273,8 @@ test("invalid LLM output fails safely; Auto fallback is explicit and never calle
   );
   await ready(page);
   await page.getByLabel("Planner mode", { exact: true }).selectOption("llm");
-  await page
-    .getByRole("button", { name: "Generate Plan", exact: true })
-    .click();
+  await page.getByLabel("Ask HoloBuild", { exact: true }).fill("Build a house");
+  await page.getByRole("button", { name: "Send request", exact: true }).click();
   await expect(page.getByLabel("Generation result")).not.toContainText(
     "Planning…",
   );
@@ -307,9 +310,8 @@ test("Cancel aborts a pending model plan and late responses never create a previ
   });
   await ready(page);
   await page.getByLabel("Planner mode", { exact: true }).selectOption("llm");
-  await page
-    .getByRole("button", { name: "Generate Plan", exact: true })
-    .click();
+  await page.getByLabel("Ask HoloBuild", { exact: true }).fill("Build a house");
+  await page.getByRole("button", { name: "Send request", exact: true }).click();
   await expect.poll(() => received).toBe(true);
   await page
     .getByRole("button", { name: "Cancel generation", exact: true })
@@ -345,10 +347,8 @@ test("text and final voice route explicit structures to preview; simple commands
     });
   });
   await ready(page);
-  await page.getByLabel("Text command", { exact: true }).fill("Create a cube");
-  await page
-    .getByRole("button", { name: "Execute command", exact: true })
-    .click();
+  await page.getByLabel("Ask HoloBuild", { exact: true }).fill("Create a cube");
+  await page.getByRole("button", { name: "Send request", exact: true }).click();
   expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
     2,
   );

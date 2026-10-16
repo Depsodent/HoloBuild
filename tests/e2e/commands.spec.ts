@@ -1,15 +1,17 @@
 import { test, expect, type Page } from "@playwright/test";
 import { target } from "../helpers/gestureInput";
 async function command(page: Page, text: string) {
-  await page.getByLabel("Text command", { exact: true }).fill(text);
-  await page
-    .getByRole("button", { name: "Execute command", exact: true })
-    .click();
+  await page.getByLabel("Ask HoloBuild", { exact: true }).fill(text);
+  await page.getByRole("button", { name: "Send request", exact: true }).click();
 }
 async function ready(page: Page) {
   await page.goto("/?testInput");
   await target(page);
+  await page.getByRole("button", { name: "Pin Shapes", exact: true }).click();
   await page.locator('[data-accordion-key="tools.voice"] > summary').click();
+  await page
+    .getByRole("button", { name: "Pin Ask HoloBuild", exact: true })
+    .click();
 }
 async function mock(page: Page, unsupported = false) {
   await page.addInitScript(
@@ -147,22 +149,35 @@ test("command section remembers collapse and text typing preserves keyboard edit
   page,
 }) => {
   await ready(page);
-  await page.getByLabel("Text command").fill("rotate it 90");
+  await page.getByLabel("Ask HoloBuild", { exact: true }).fill("rotate it 90");
   expect(
     await page.evaluate(() => window.__HOLO_TEST__!.scene()[0].rotation),
   ).toEqual([0, 0, 0]);
-  await page.getByLabel("Text command").press("Enter");
+  await page.getByLabel("Ask HoloBuild", { exact: true }).press("Enter");
   await expect(page.getByLabel("Command result")).toContainText("Updated");
   const group = page.locator('[data-accordion-key="tools.voice"]');
   await group.locator(":scope > summary").click();
-  await expect(page.getByLabel("Text command")).not.toBeVisible();
+  await expect(
+    page.getByLabel("Ask HoloBuild", { exact: true }),
+  ).not.toBeVisible();
+  expect(
+    await page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem("holobuild.accordions.v1")!)[
+          "tools.voice"
+        ],
+    ),
+  ).toBe(false);
   await page.reload();
   await target(page);
+  await page.getByRole("button", { name: "Pin Shapes", exact: true }).click();
   expect(await group.getAttribute("open")).toBeNull();
   await group.locator(":scope > summary").focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByLabel("Text command")).toBeVisible();
-  await page.getByLabel("Text command").scrollIntoViewIfNeeded();
+  await expect(page.getByLabel("Ask HoloBuild", { exact: true })).toBeVisible();
+  await page
+    .getByLabel("Ask HoloBuild", { exact: true })
+    .scrollIntoViewIfNeeded();
   await page.screenshot({ path: "test-results/milestone-8-commands.png" });
 });
 test("interim transcripts never execute; repeated final results execute once; stop ignores late results", async ({

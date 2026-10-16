@@ -611,3 +611,102 @@ main > footer .credit {
   display: grid;
   gap: 7px;
 }
+.accordion-pin {
+  margin-left: auto;
+  padding: 5px;
+  display: inline-flex;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #7695a3;
+}
+.accordion-pin[aria-pressed="true"] {
+  color: #6ef3db;
+  border-color: #31564f;
+}
+.workspace-accordion > summary > span {
+  min-width: 0;
+}
+.ask-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 5px;
+}
+.ask-input-row button {
+  padding: 7px;
+}
+.ask-mode {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+.workspace-right :is(input, select, textarea) {
+  max-width: 100%;
+  min-width: 0;
+}
+.workspace-right .tools {
+  overflow-x: hidden;
+}
+.workspace-right .object-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+}
+.workspace-right .object-actions button {
+  min-width: 0;
+  padding-inline: 6px;
+}
+.workspace-right .shape small {
+  display: none;
+}
+.workspace-right .advanced-gestures {
+  margin-top: 12px;
+  font-size: 11px;
+}
+.workspace-right .advanced-gestures > label {
+  display: grid;
+  gap: 6px;
+}
+.workspace-right .advanced-gestures > p {
+  display: none;
+}
+.webcam-panel.minimized .camera-heading,
+.webcam-panel.minimized .camera-title > svg {
+  display: none;
+}
+.webcam-panel.minimized .camera-drag-handle {
+  flex: 0;
+  min-width: 14px;
+}
+.webcam-panel.minimized .camera-drag-handle strong {
+  font-size: 0;
+}
+.webcam-panel.minimized .camera-drag-handle::before {
+  content: "⠿";
+}
+.webcam-panel.minimized .camera-title {
+  gap: 4px;
+  padding-inline: 5px;
+}
+.webcam-panel .camera-capture {
+  padding: 4px 5px;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+.camera-compact-status {
+  flex: 1;
+  flex-wrap: wrap;
+  line-height: 1.2;
+  gap: 2px 5px;
+}
+.camera-compact-status > span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.webcam-panel .camera-title > .badge {
+  font-size: 8px;
+  padding-inline: 3px;
+}
+.adaptive-workspace .viewport-heading h1 {
+  font-size: clamp(16px, 1.6vw, 22px);
+}

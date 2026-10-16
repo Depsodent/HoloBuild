@@ -20,6 +20,7 @@ import { ModelImport } from "./ModelImport";
 import { AdvancedGestures } from "./AdvancedGestures";
 import { Accordion } from "./Accordion";
 import { VoiceCommands } from "./VoiceCommands";
+import { useGenerationStore } from "../../generation/generationStore";
 const shapeIcons = {
   cube: Box,
   sphere: Circle,
@@ -38,13 +39,20 @@ export function Toolbar({ compact = false }: { compact?: boolean }) {
   const active = useSceneStore((s) => s.tool);
   const snap = useSceneStore((s) => s.snap);
   const selected = useSceneStore((s) => s.selectedId);
+  const lastStructureId = useGenerationStore((s) => s.lastStructureId);
+  const pending = useGenerationStore((s) => !!s.prepared);
+  const hasStructure = useSceneStore(
+    (s) =>
+      !!lastStructureId &&
+      s.objects.some((o) => o.construction?.structureId === lastStructureId),
+  );
   return (
     <aside
       className={`panel tools ${compact ? "compact-tools" : ""}`}
       aria-label="Construction tools"
     >
       <div className="eyebrow">CONSTRUCTION</div>
-      <h2>Your building blocks</h2>
+      <h2>Construction</h2>
       <Accordion id="tools.shapes" title="Shapes" forceOpen={compact}>
         <div className="shape-palette" aria-label="Construction shapes">
           {(Object.entries(SHAPES) as [ObjectType, typeof SHAPES.cube][]).map(
@@ -70,11 +78,7 @@ export function Toolbar({ compact = false }: { compact?: boolean }) {
           )}
         </div>
       </Accordion>
-      <Accordion
-        id="tools.transform"
-        title="Transform Tools"
-        forceOpen={compact}
-      >
+      <Accordion id="tools.transform" title="Tools" forceOpen={compact}>
         <div className="tool-list">
           {tools.map(([id, label, Icon, key]) => (
             <button
@@ -122,20 +126,25 @@ export function Toolbar({ compact = false }: { compact?: boolean }) {
             </button>
           </div>
         )}
+        {!compact && <AdvancedGestures />}
       </Accordion>
       {compact ? (
         <ModelImport compact />
       ) : (
         <>
-          <Accordion id="tools.gestures" title="Gesture Controls">
-            <AdvancedGestures />
-          </Accordion>
           <VoiceCommands />
-          <Accordion id="tools.models" title="Imported Models">
+          <Accordion id="tools.scene" title="Scene">
             <ModelImport compact={false} />
-          </Accordion>
-          <Accordion id="tools.lighting" title="Scene & Lighting">
             <LightingControls compact={false} />
+            {hasStructure && !pending && (
+              <button
+                onClick={() =>
+                  window.dispatchEvent(new Event("holobuild:fit-structure"))
+                }
+              >
+                Fit structure in view
+              </button>
+            )}
           </Accordion>
         </>
       )}

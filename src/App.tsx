@@ -207,11 +207,7 @@ export default function App() {
           <div className="viewport-heading">
             <div>
               <span className="eyebrow">WORKSPACE / 01</span>
-              <h1>
-                A new dimension
-                <br />
-                <span>for your ideas.</span>
-              </h1>
+              <h1>3D Workspace</h1>
             </div>
             <span className="view-label">
               PERSPECTIVE <span>⌖</span>

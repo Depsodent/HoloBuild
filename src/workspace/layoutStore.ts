@@ -18,11 +18,11 @@ export const DEFAULT_WORKSPACE: WorkspacePreferences = {
   rightWidth: 234,
   leftCollapsed: false,
   rightCollapsed: false,
-  cameraHeight: 360,
+  cameraHeight: 280,
   cameraMinimized: false,
   cameraDocked: true,
   inspectorMinimized: false,
-  diagnosticsVisible: true,
+  diagnosticsVisible: false,
   mobileDrawer: null,
 };
 const bounded = (value: number, min: number, max: number) =>

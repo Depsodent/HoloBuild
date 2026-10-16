@@ -9,7 +9,6 @@ export function GestureStatus() {
       </strong>
       <small>
         {s.cursor ? (s.stable ? "Stable" : "Stabilizing…") : "Show one hand"}
-        {s.pinchRatio !== null ? ` · pinch ${s.pinchRatio.toFixed(2)}` : ""}
       </small>
     </div>
   );
