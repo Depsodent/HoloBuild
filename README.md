@@ -1,5 +1,7 @@
 # HOLOBUILD
 
+Active development folder: **D:\Projects\HoloBuild**. The former C: checkout is a retained backup; use D: for future work. See [relocation notes](docs/RELOCATION.md).
+
 **Gesture-Controlled 3D Spatial Construction Environment · Made by Aaryan**
 
 A local-first React/TypeScript construction editor for an AI/ML engineering portfolio. The project is developed in validated milestones. See [development progress](docs/DEVELOPMENT.md) for exact verification status; physical webcam results are never inferred from automated tests.
