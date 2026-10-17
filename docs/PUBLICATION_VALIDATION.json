@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-17",
+  "baseline": "f691848",
+  "typeScript": "passed (typecheck and production tsc -b)",
+  "eslint": "passed (full project plus focused final server/scripts checks)",
+  "unit": {
+    "passed": 249,
+    "files": 28
+  },
+  "backend": {
+    "passed": 32
+  },
+  "playwright": {
+    "passed": 114,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "durationMs": 987012.503,
+    "report": "playwright-report/publication-full.json",
+    "rerunAvoided": true
+  },
+  "build": {
+    "passed": true,
+    "viteSeconds": 27.85,
+    "mainJSKb": 1487.29,
+    "mainGzipKb": 424.19,
+    "warnings": [
+      "Existing Zod pure-annotation warnings",
+      "Main bundle exceeds 500 kB"
+    ]
+  },
+  "productionSmoke": "PRODUCTION_VALIDATION.json",
+  "accountModels": "GEMINI_MODELS.json",
+  "productionDependencyAudit": {
+    "vulnerabilities": 0
+  },
+  "securityAudit": "PUBLICATION_AUDIT.json",
+  "physicalCameraMicrophoneRetested": false,
+  "publicRepositoryCreated": false,
+  "pushed": false,
+  "deployed": false,
+  "milestone11Started": false,
+  "finalGeminiModel": "gemini-3.5-flash-lite",
+  "realGeminiEdit": "GEMINI_EDIT_VALIDATION.json",
+  "initialGeminiBackend": "GEMINI_LIVE_VALIDATION.json",
+  "finalRequestChanges": "Server-only Gemini3 request options; frontend build and114-case browser evidence unchanged;32 backend tests and final real production construction/edit smokes passed"
+}

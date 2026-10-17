@@ -10,3 +10,24 @@ playwright-report/
 public/vision/wasm/
 public/vision/*.task
 
+
+# Hosting metadata, credentials, local assets and archives
+.vercel/
+.netlify/
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.tsbuildinfo
+.cache/
+coverage/
+*.zip
+*.glb
+*.gltf
+*.bin
+*.onnx
+*.tflite
+*.safetensors
+*.gguf
+public/third-party-notices/

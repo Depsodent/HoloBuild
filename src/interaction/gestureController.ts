@@ -1,4 +1,8 @@
-import { moveGroupPreview, commitPlacement } from "./structureInteraction";
+import {
+  groupPreview,
+  moveGroupPreview,
+  commitPlacement,
+} from "./structureInteraction";
 import type { GestureFrame } from "../vision/gestureTypes";
 import type { Vec3 } from "../scene/objectTypes";
 import { useSceneStore } from "../scene/sceneStore";
@@ -217,7 +221,10 @@ export class GestureController {
         offset: object.position.map((v, i) => v - point[i]) as Vec3,
       };
       useSceneStore.setState({
-        preview: { id: object.id, position: [...object.position], valid: true },
+        preview: groupPreview(object.id, {
+          type: "move",
+          delta: [0, 0, 0],
+        }) ?? { id: object.id, position: [...object.position], valid: true },
       });
       useInteractionStore.setState({
         phase: "dragging",

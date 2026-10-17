@@ -326,3 +326,143 @@ test("mocked Ollama edit intents preview, unsupported/invalid requests and stale
   ).toHaveCount(0);
   expect(await scene(page)).toEqual(after);
 });
+
+async function roofAim(page: Page) {
+  await showTools(page, "scene");
+  await page
+    .getByRole("button", { name: "Fit structure in view", exact: true })
+    .click();
+  const id = await page.evaluate(
+    () =>
+      window
+        .__HOLO_TEST__!.scene()
+        .find((o) => o.construction?.role === "roof")!.id,
+  );
+  await expect
+    .poll(() =>
+      page.evaluate((id) => {
+        const p = window.__HOLO_TEST__!.project!(id)!,
+          r = document
+            .querySelector("canvas[data-engine]")!
+            .getBoundingClientRect();
+        return !!document
+          .elementFromPoint(r.left + p.x * r.width, r.top + p.y * r.height)
+          ?.closest("canvas[data-engine]");
+      }, id),
+    )
+    .toBe(true);
+  return {
+    id,
+    cursor: await page.evaluate(
+      (id) => window.__HOLO_TEST__!.project!(id)!,
+      id,
+    ),
+  };
+}
+test("Collection respects Part/Structure Target and group inspector transforms remain atomic", async ({
+  page,
+}) => {
+  await ready(page);
+  const original = await scene(page);
+  await page.getByLabel("Selection mode").selectOption("structure");
+  await showLeft(page, "collection");
+  await page.getByLabel("Search scene objects").fill("roof");
+  await page
+    .locator(".scene-list details button")
+    .filter({ hasText: "roof" })
+    .last()
+    .click();
+  await expect(page.getByLabel("Selection mode")).toHaveValue("structure");
+  await expect(
+    page.getByLabel("Structure Inspector", { exact: true }),
+  ).toBeVisible();
+  await page.getByLabel("Structure position X", { exact: true }).fill("15");
+  const moved = await scene(page),
+    parts = original.filter((o) => o.construction),
+    delta =
+      moved.find((o) => o.id === parts[0].id)!.position[0] -
+      parts[0].position[0];
+  expect(delta).not.toBe(0);
+  parts.forEach((o) =>
+    expect(
+      moved.find((p) => p.id === o.id)!.position[0] - o.position[0],
+    ).toBeCloseTo(delta),
+  );
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  expect(await scene(page)).toEqual(original);
+  await page.getByRole("button", { name: "Redo", exact: true }).click();
+  expect(await scene(page)).toEqual(moved);
+  await page.getByLabel("Selection mode").selectOption("component");
+  await showLeft(page, "collection");
+  await page
+    .locator(".scene-list details button")
+    .filter({ hasText: "roof" })
+    .last()
+    .click();
+  await expect(
+    page.getByLabel("Structure Inspector", { exact: true }),
+  ).toHaveCount(0);
+  await expect(page.getByLabel("position X", { exact: true })).toBeVisible();
+});
+test("mouse ray selection resolves the parent only in Structure mode and reveals its Inspector", async ({
+  page,
+}) => {
+  await ready(page);
+  const aim = await roofAim(page);
+  await page.getByLabel("Selection mode").selectOption("structure");
+  await showLeft(page, "gesture");
+  const canvas = (await page.locator("canvas[data-engine]").boundingBox())!;
+  await page.mouse.click(
+    canvas.x + aim.cursor.x * canvas.width,
+    canvas.y + aim.cursor.y * canvas.height,
+  );
+  await expect(
+    page.getByRole("tab", { name: "Inspector", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
+  await expect(
+    page.getByLabel("Structure Inspector", { exact: true }),
+  ).toBeVisible();
+  await page.getByLabel("Selection mode").selectOption("component");
+  await page.mouse.click(
+    canvas.x + aim.cursor.x * canvas.width,
+    canvas.y + aim.cursor.y * canvas.height,
+  );
+  await expect(
+    page.getByLabel("Structure Inspector", { exact: true }),
+  ).toHaveCount(0);
+  await expect(page.locator(".inspector h2")).toContainText(/roof/i);
+});
+test("first gesture pinch targets the whole parent before movement and releases one reversible action", async ({
+  page,
+}) => {
+  await ready(page);
+  const original = await scene(page),
+    aim = await roofAim(page);
+  await page.keyboard.press("Escape");
+  await page.getByLabel("Selection mode").selectOption("structure");
+  await hold(page, poseAt("pointing", aim.cursor), 700);
+  await hold(page, poseAt("pinch", aim.cursor), 500);
+  expect(
+    (await page.evaluate(() => window.__HOLO_TEST__!.snapshot().preview))
+      ?.structure?.objects,
+  ).toHaveLength(original.filter((o) => o.construction).length);
+  await expect(
+    page.getByLabel("Structure Inspector", { exact: true }),
+  ).toBeVisible();
+  const history = await page.evaluate(
+    () => window.__HOLO_TEST__!.snapshot().history,
+  );
+  const end = { x: aim.cursor.x + 0.07, y: aim.cursor.y };
+  await hold(page, poseAt("pinch", end), 700);
+  await hold(page, poseAt("pointing", end), 600);
+  expect(
+    await page.evaluate(() => window.__HOLO_TEST__!.snapshot().history),
+  ).toBe(history + 1);
+  const moved = await scene(page);
+  expect(moved).not.toEqual(original);
+  await hold(page, [], 50);
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  expect(await scene(page)).toEqual(original);
+  await page.getByRole("button", { name: "Redo", exact: true }).click();
+  expect(await scene(page)).toEqual(moved);
+});

@@ -1,0 +1,47 @@
+{
+  "testedAt": "2026-10-17T18:16:47.476Z",
+  "url": "http://127.0.0.1:5176",
+  "productionBuild": true,
+  "developmentBridgeAbsent": true,
+  "sameOriginEndpoints": true,
+  "provider": "Gemini",
+  "model": "gemini-3.5-flash-lite",
+  "realGeminiUI": true,
+  "previewMs": 2806.3405000000002,
+  "partsAdded": 2,
+  "inertPreview": true,
+  "oneStepExactUndo": true,
+  "exactRedo": true,
+  "portableSaveLoad": true,
+  "pageErrors": 0,
+  "generationRequests": 2,
+  "liveModelRequests": 1,
+  "injectedOutageRequests": 1,
+  "explicitOfflineFallback": true,
+  "fallbackCancelPreservesScene": true,
+  "timings": "First content token\n1.95 s\nProvider headers\n1.95 s\nProvider total\n2.38 s\nServer validation\n0.01 s\nBackend end to end\n2.40 s\nClient schema/materialization\n0.01 s\nClient request + validation\n2.42 s\nModel loading\nUnavailable on compatible transport\nResident before request\nunknown",
+  "assets": [
+    {
+      "path": "/vision/hand_landmarker.task",
+      "status": 200,
+      "contentType": ""
+    },
+    {
+      "path": "/vision/wasm/vision_wasm_internal.wasm",
+      "status": 200,
+      "contentType": "application/wasm"
+    },
+    {
+      "path": "/vision/wasm/vision_wasm_internal.js",
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    {
+      "path": "/third-party-notices/index.json",
+      "status": 200,
+      "contentType": "application/json"
+    }
+  ],
+  "physicalWebcamOrMicrophoneRetested": false,
+  "hostedDeploymentTested": false
+}

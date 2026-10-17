@@ -46,6 +46,7 @@ test("structure Collection resolves real groups and component selection", async 
     .getByRole("button", { name: "Confirm construction", exact: true })
     .click();
   await showLeft(page, "collection");
+  await page.getByLabel("Selection mode").selectOption("component");
   await page.getByLabel("Search scene objects").fill("roof");
   await expect(page.locator(".scene-list details")).toHaveCount(1);
   await page.locator(".scene-list details button").last().click();

@@ -1,3 +1,4 @@
+import { useLeftStore } from "../../workspace/leftStore";
 import { ObjectGeometry } from "./ObjectGeometry";
 import { SurfaceMaterial } from "./SurfaceMaterial";
 import { ImportedModel } from "./ImportedModel";
@@ -60,6 +61,8 @@ export const BuildingObject = memo(function BuildingObject({
         onClick={(e) => {
           e.stopPropagation();
           useSceneStore.getState().select(object.id);
+          if (useSceneStore.getState().selectedStructureId)
+            useLeftStore.getState().setTab("inspector");
         }}
         onPointerOver={(e) => {
           e.stopPropagation();

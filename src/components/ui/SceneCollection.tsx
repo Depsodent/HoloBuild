@@ -22,10 +22,13 @@ export function SceneCollection() {
   const row = (o: SceneObject) => (
     <button
       key={o.id}
-      className={selected === o.id ? "selected" : ""}
+      className={
+        (group ? o.construction?.structureId === group : selected === o.id)
+          ? "selected"
+          : ""
+      }
       onClick={() => {
         const s = useSceneStore.getState();
-        s.setSelectionMode("component");
         s.select(o.id);
         useLeftStore.getState().setTab("inspector");
       }}

@@ -1,0 +1,36 @@
+{
+  "auditedAt": "2026-10-17T18:18:26.885Z",
+  "baseline": "f691848c5ca2aa798a453db5ef593eb846ac1bee",
+  "workingFiles": 249,
+  "historicalBlobsScanned": 587,
+  "bundleFilesScanned": 84,
+  "findings": [],
+  "reviewedFixtures": [
+    {
+      "file": "history:d5c80f35528c:server/app.test.mjs",
+      "rule": "Credential URL",
+      "reason": "Intentional URL rejection fixture on reserved .example domain"
+    },
+    {
+      "file": "history:f43a50b7d0ba:server/app.test.mjs",
+      "rule": "Credential URL",
+      "reason": "Intentional URL rejection fixture on reserved .example domain"
+    },
+    {
+      "file": "history:97fd6e1c01b0:server/app.test.mjs",
+      "rule": "Credential URL",
+      "reason": "Intentional URL rejection fixture on reserved .example domain"
+    },
+    {
+      "file": "working:server/app.test.mjs",
+      "rule": "Credential URL",
+      "reason": "Intentional URL rejection fixture on reserved .example domain"
+    }
+  ],
+  "largeHistoricalBlobs": [],
+  "limitations": [
+    "Pattern-based audit is not a guarantee that every possible secret is detected.",
+    "Author credits, Git author metadata and historical local-path development notes are retained intentionally; no history was rewritten.",
+    "Ignored local environment files are excluded from publication and are never printed."
+  ]
+}

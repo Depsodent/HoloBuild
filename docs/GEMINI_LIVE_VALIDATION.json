@@ -1,0 +1,21 @@
+{
+  "testedAt": "2026-10-17T13:05:06.505Z",
+  "model": "gemini-3.8-flash",
+  "accountModelVerified": true,
+  "nativeStreaming": true,
+  "backendSchemaPassed": true,
+  "parts": 2,
+  "timings": {
+    "firstTokenMs": 5729.8889,
+    "headerMs": 5728.9617,
+    "providerMs": 6717.2289,
+    "validationMs": 12.329099999999926,
+    "totalMs": 6733.4681,
+    "modelLoadMs": null,
+    "residentBefore": null,
+    "residentVramBytes": null
+  },
+  "clientGeometryAndHistory": "Passed separately in the production browser smoke; see PRODUCTION_VALIDATION.json",
+  "provider": "Gemini",
+  "requests": 1
+}

@@ -1,3 +1,4 @@
+import { selectionForHit } from "./selection";
 import type { StructureOperation } from "../../shared/editSchema.mjs";
 import { create } from "zustand";
 import { createCube } from "./objectFactory";
@@ -47,22 +48,13 @@ export const useSceneStore = create<SceneState>((set) => ({
   drawCalls: 0,
   select: (selectedId) =>
     set((s) => ({
-      selectedId,
-      selectedStructureId:
-        s.selectionMode === "structure"
-          ? (s.objects.find((o) => o.id === selectedId)?.construction
-              ?.structureId ?? null)
-          : null,
+      ...selectionForHit(s.objects, selectedId, s.selectionMode),
       preview: null,
     })),
   setSelectionMode: (selectionMode) =>
     set((s) => ({
       selectionMode,
-      selectedStructureId:
-        selectionMode === "structure"
-          ? (s.objects.find((o) => o.id === s.selectedId)?.construction
-              ?.structureId ?? null)
-          : null,
+      ...selectionForHit(s.objects, s.selectedId, selectionMode),
       preview: null,
     })),
   setTool: (tool) => set({ tool }),

@@ -1,0 +1,48 @@
+# Structure selection and Gemini publication checkpoint
+
+Baseline: `f691848`. All 44 changed files are preserved below. No public push/deployment. Credentials, build/test output and generated model/runtime assets are ignored.
+
+- `.env.example`
+- `.gitignore`
+- `.vercelignore`
+- `README.md`
+- `THIRD_PARTY_NOTICES.md`
+- `api/planner/[action].mjs`
+- `docs/DEPLOYMENT.md`
+- `docs/DEVELOPMENT.md`
+- `docs/GEMINI_EDIT_VALIDATION.json`
+- `docs/GEMINI_LIVE_VALIDATION.json`
+- `docs/GEMINI_MODELS.json`
+- `docs/PRODUCTION_VALIDATION.json`
+- `docs/PUBLICATION_AUDIT.json`
+- `docs/PUBLICATION_CHANGES.md`
+- `docs/PUBLICATION_VALIDATION.json`
+- `docs/images/workspace.png`
+- `eslint.config.js`
+- `licenses/SOURCES.json`
+- `licenses/draco-LICENSE.txt`
+- `licenses/fiber-LICENSE.txt`
+- `licenses/maath-LICENSE.txt`
+- `licenses/mediapipe-LICENSE.txt`
+- `package-lock.json`
+- `package.json`
+- `scripts/audit-publication.mjs`
+- `scripts/check-gemini.mjs`
+- `scripts/prepare-licenses.mjs`
+- `scripts/smoke-gemini.mjs`
+- `scripts/smoke-production-edit.mjs`
+- `scripts/smoke-production.mjs`
+- `server/app.mjs`
+- `server/gemini.mjs`
+- `server/gemini.test.mjs`
+- `server/hostedGuard.mjs`
+- `server/providerStream.mjs`
+- `src/components/ui/SceneCollection.tsx`
+- `src/components/viewport/BuildingObject.tsx`
+- `src/interaction/gestureController.ts`
+- `src/scene/sceneStore.ts`
+- `src/scene/selection.ts`
+- `tests/e2e/left-navigation.spec.ts`
+- `tests/e2e/structures.spec.ts`
+- `tests/unit/selection.test.ts`
+- `vercel.json`

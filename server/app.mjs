@@ -1,3 +1,10 @@
+import {
+  geminiRequest,
+  geminiText,
+  verifyGeminiModel,
+  isGeminiModelVerified,
+} from "./gemini.mjs";
+import { hostedSecurity, createHostedGuard } from "./hostedGuard.mjs";
 import { providerSchema } from "./providerSchema.mjs";
 import { collectCompletion } from "./providerStream.mjs";
 import {
@@ -13,6 +20,15 @@ import {
   cleanPrompt,
 } from "../shared/planSchema.mjs";
 export function configuration(env = process.env) {
+  const provider = env.LLM_PROVIDER || "compatible";
+  if (!["compatible", "gemini"].includes(provider))
+    throw Error("Unsupported planner provider.");
+  const hosted = env.PLANNER_MODE === "hosted" || !!env.VERCEL;
+  if (hosted && provider !== "gemini")
+    throw Error(
+      "Hosted mode requires Gemini; local Ollama is never a public fallback.",
+    );
+  const security = hostedSecurity(env);
   const base = new URL(env.LLM_BASE_URL || "http://127.0.0.1:11434/v1");
   const local = ["localhost", "127.0.0.1", "[::1]"].includes(base.hostname);
   if (
@@ -27,7 +43,11 @@ export function configuration(env = process.env) {
     throw Error(
       "Provider URL must be loopback HTTP(S), or explicitly enabled remote HTTPS, without embedded credentials/query.",
     );
-  const models = (env.LLM_MODELS || env.LLM_MODEL || "")
+  const models = (
+    provider === "gemini"
+      ? env.GEMINI_MODEL || ""
+      : env.LLM_MODELS || env.LLM_MODEL || ""
+  )
     .split(",")
     .map((v) => v.trim())
     .filter(Boolean);
@@ -36,20 +56,54 @@ export function configuration(env = process.env) {
     models.some((m) => !m.match(/^[a-zA-Z0-9_.:/-]{1,120}$/))
   )
     throw Error("Invalid configured model list.");
-  const timeoutMs = Number(env.LLM_TIMEOUT_MS || (local ? 120000 : 30000));
+  if (provider === "gemini" && models.length > 1)
+    throw Error("Configure one exact Gemini model.");
+  if (
+    provider === "gemini" &&
+    models.some((m) => !/^gemini-[a-zA-Z0-9_.-]+$/.test(m))
+  )
+    throw Error(
+      "Use an exact Gemini model identifier, without a models/ prefix.",
+    );
+  const timeoutMs = Number(
+    env.LLM_TIMEOUT_MS || (provider === "compatible" && local ? 120000 : 30000),
+  );
   if (!Number.isInteger(timeoutMs) || timeoutMs < 1000 || timeoutMs > 120000)
     throw Error("Timeout must be 1000–120000 ms.");
   const origins = (
-    env.APP_ORIGINS || "http://127.0.0.1:5175,http://127.0.0.1:5173"
+    env.APP_ORIGINS ||
+    (hosted ? "" : "http://127.0.0.1:5175,http://127.0.0.1:5173")
   )
     .split(",")
     .map((v) => v.trim());
+  if (
+    hosted &&
+    (!origins.length ||
+      origins.some((origin) => {
+        try {
+          const u = new URL(origin);
+          return (
+            u.protocol !== "https:" ||
+            u.origin !== origin ||
+            u.username ||
+            u.password
+          );
+        } catch {
+          return true;
+        }
+      }))
+  )
+    throw Error("Hosted mode requires exact HTTPS app origins.");
   return {
+    provider,
+    hosted,
+    ...security,
     base: base.href.replace(/\/$/, ""),
     local,
     models,
     timeoutMs,
-    apiKey: env.LLM_API_KEY || "",
+    apiKey:
+      (provider === "gemini" ? env.GEMINI_API_KEY : env.LLM_API_KEY) || "",
     jsonMode: env.LLM_JSON_MODE !== "false",
     origins,
   };
@@ -85,10 +139,14 @@ async function boundedJson(response, max = 262144) {
   }
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
-export function createPlannerServer(config = configuration(), fetcher = fetch) {
+export function createPlannerHandler(
+  config = configuration(),
+  fetcher = fetch,
+) {
+  const guard = createHostedGuard(config, fetcher);
   let inFlight = 0;
   const recent = [];
-  return createServer(async (req, res) => {
+  return async (req, res) => {
     let eventMode = false;
     const wantsEvents = req.headers.accept?.includes("text/event-stream");
     const started = performance.now();
@@ -128,27 +186,48 @@ export function createPlannerServer(config = configuration(), fetcher = fetch) {
       res.end(JSON.stringify(data));
     };
     if (
-      !["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(
+      !config.hosted &&
+      (!["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(
         req.socket.remoteAddress,
       ) ||
-      ![
-        `127.0.0.1:${req.socket.localPort}`,
-        `localhost:${req.socket.localPort}`,
-      ].includes(req.headers.host) ||
-      (req.headers.origin && !config.origins.includes(req.headers.origin))
+        ![
+          `127.0.0.1:${req.socket.localPort}`,
+          `localhost:${req.socket.localPort}`,
+        ].includes(req.headers.host) ||
+        (req.headers.origin && !config.origins.includes(req.headers.origin)))
     )
       return send(403, {
         error: "Only the configured local app may use this service.",
       });
+    if (
+      config.hosted &&
+      (!config.origins.some(
+        (origin) => new URL(origin).host === req.headers.host,
+      ) ||
+        (req.headers.origin && !config.origins.includes(req.headers.origin)) ||
+        (req.method !== "GET" && !config.origins.includes(req.headers.origin)))
+    )
+      return send(403, {
+        error: "Only the configured app origin may use this service.",
+      });
     const url = new URL(req.url, "http://localhost");
+    const configured =
+      !!config.models.length &&
+      (config.provider !== "gemini" || !!config.apiKey) &&
+      (!config.hosted || config.publicEnabled);
     const status = {
-      configured: !!config.models.length,
+      configured,
+      modelVerified:
+        config.provider === "gemini" ? isGeminiModelVerified(config) : null,
       models: config.models,
       model: config.models[0] ?? "",
       timeoutMs: config.timeoutMs,
-      provider: config.local
-        ? "Local compatible endpoint"
-        : "Explicit remote HTTPS provider",
+      provider:
+        config.provider === "gemini"
+          ? "Gemini"
+          : config.local
+            ? "Local compatible endpoint"
+            : "Explicit remote HTTPS provider",
       connection: "not checked",
     };
     if (req.method === "GET" && url.pathname === "/api/planner/status")
@@ -162,10 +241,10 @@ export function createPlannerServer(config = configuration(), fetcher = fetch) {
       req.method !== "POST"
     )
       return send(404, { error: "Not found." });
-    if (!config.models.length)
+    if (!configured)
       return send(503, {
         error:
-          "No model configured. Set LLM_MODEL on the backend, or use Offline.",
+          "AI is not configured or enabled on this backend. Use Offline or configure the server.",
       });
     const now = Date.now();
     while (recent[0] < now - 60000) recent.shift();
@@ -181,16 +260,32 @@ export function createPlannerServer(config = configuration(), fetcher = fetch) {
     res.on("close", () => {
       if (!res.writableEnded) abort.abort();
     });
-    let timer;
+    let timer, release;
+    const disconnected = () => {
+      if (!res.writableEnded) abort.abort();
+    };
+    req.on("aborted", disconnected);
     try {
       let bytes = 0;
       const chunks = [];
-      for await (const chunk of req) {
-        bytes += chunk.length;
-        if (bytes > 8192) throw Error("Request exceeds 8 KiB.");
-        chunks.push(chunk);
-      }
-      const body = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+      if (req.body === undefined)
+        for await (const chunk of req) {
+          bytes += chunk.length;
+          if (bytes > 8192) throw Error("Request exceeds 8 KiB.");
+          chunks.push(chunk);
+        }
+      // Vercel may already parse JSON into req.body; local Node supplies a raw stream.
+      const parsedBody =
+        req.body === undefined
+          ? Buffer.concat(chunks).toString("utf8")
+          : typeof req.body === "string"
+            ? req.body
+            : Buffer.isBuffer(req.body)
+              ? req.body.toString("utf8")
+              : JSON.stringify(req.body);
+      if (Buffer.byteLength(parsedBody) > 8192)
+        throw Error("Request exceeds 8 KiB.");
+      const body = JSON.parse(parsedBody);
       const headers = {
         "Content-Type": "application/json",
         ...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {}),
@@ -201,6 +296,21 @@ export function createPlannerServer(config = configuration(), fetcher = fetch) {
           () => abort.abort(),
           Math.min(config.timeoutMs, 5000),
         );
+        if (config.hosted) {
+          release = await guard(req, false);
+          if (!release)
+            return send(429, {
+              error: "AI rate limit reached. Try later or use Offline.",
+            });
+        }
+        if (config.provider === "gemini") {
+          await verifyGeminiModel(config, fetcher, abort.signal);
+          return send(200, {
+            ...status,
+            modelVerified: true,
+            connection: "connected",
+          });
+        }
         const response = await fetcher(`${config.base}/models`, {
           headers,
           signal: abort.signal,
@@ -228,8 +338,27 @@ export function createPlannerServer(config = configuration(), fetcher = fetch) {
         () => abort.abort(),
         Math.min(args.timeoutMs ?? config.timeoutMs, config.timeoutMs),
       );
+      if (config.hosted) {
+        release = await guard(req, true);
+        if (!release)
+          return send(429, {
+            error:
+              "AI rate limit or daily request budget reached. Use Offline or try later.",
+          });
+      }
       progress("Connecting");
-      const ollama = config.local && new URL(config.base).port === "11434";
+      if (config.provider === "gemini")
+        await verifyGeminiModel(config, fetcher, abort.signal);
+      const ollama =
+        config.provider !== "gemini" &&
+        config.local &&
+        new URL(config.base).port === "11434";
+      const providerName =
+        config.provider === "gemini"
+          ? "Gemini"
+          : ollama
+            ? "Ollama"
+            : "Compatible LLM";
       let resident = null,
         residentVramBytes = null;
       if (wantsEvents && ollama) {
@@ -256,76 +385,101 @@ export function createPlannerServer(config = configuration(), fetcher = fetch) {
           resident === false
             ? "Model not resident; waiting includes loading and prompt processing."
             : "Waiting for model output; load timing unavailable on compatible transport.",
-        provider: ollama ? "Ollama" : "Compatible LLM",
+        provider: providerName,
       });
       const providerStarted = performance.now();
       let firstTokenMs = null,
         lastProgress = 0;
-      const response = await fetcher(`${config.base}/chat/completions`, {
-        method: "POST",
-        headers,
-        redirect: "error",
-        signal: abort.signal,
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: "system", content: editing ? editSystem : system },
-            {
-              role: "user",
-              content: editing
+      const gemini =
+        config.provider === "gemini"
+          ? geminiRequest(
+              config,
+              model,
+              editing ? editSystem : system,
+              editing
                 ? JSON.stringify({ request: prompt, context: args.context })
                 : prompt,
-            },
-          ],
-          stream: !!wantsEvents,
-          temperature: 0.2,
-          max_tokens: editing ? 768 : 10000,
-          ...(config.jsonMode
-            ? {
-                response_format:
-                  ollama && !editing
-                    ? {
-                        type: "json_schema",
-                        json_schema: {
-                          name: editing ? "holobuild_edit" : "holobuild_plan",
-                          strict: true,
-                          schema: providerSchema(
-                            z.toJSONSchema(
-                              editing ? editPlanSchema : planSchema,
+              z.toJSONSchema(editing ? editPlanSchema : planSchema),
+              editing,
+              !!wantsEvents,
+              abort.signal,
+            )
+          : null;
+      const response = await fetcher(
+        gemini?.url ?? `${config.base}/chat/completions`,
+        gemini?.init ?? {
+          method: "POST",
+          headers,
+          redirect: "error",
+          signal: abort.signal,
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: "system", content: editing ? editSystem : system },
+              {
+                role: "user",
+                content: editing
+                  ? JSON.stringify({ request: prompt, context: args.context })
+                  : prompt,
+              },
+            ],
+            stream: !!wantsEvents,
+            temperature: 0.2,
+            max_tokens: editing ? 768 : 10000,
+            ...(config.jsonMode
+              ? {
+                  response_format:
+                    ollama && !editing
+                      ? {
+                          type: "json_schema",
+                          json_schema: {
+                            name: editing ? "holobuild_edit" : "holobuild_plan",
+                            strict: true,
+                            schema: providerSchema(
+                              z.toJSONSchema(
+                                editing ? editPlanSchema : planSchema,
+                              ),
                             ),
-                          ),
-                        },
-                      }
-                    : { type: "json_object" },
-              }
-            : {}),
-        }),
-      });
+                          },
+                        }
+                      : { type: "json_object" },
+                }
+              : {}),
+          }),
+        },
+      );
       if (!response.ok) throw Error("Provider rejected the request.");
       const headerMs = performance.now() - providerStarted;
-      const data =
+      const streaming =
         wantsEvents &&
-        response.headers.get("content-type")?.includes("text/event-stream")
-          ? await collectCompletion(response, (characters) => {
+        response.headers.get("content-type")?.includes("text/event-stream");
+      const data = streaming
+        ? await collectCompletion(
+            response,
+            (characters) => {
               const now = performance.now();
               if (firstTokenMs === null) firstTokenMs = now - providerStarted;
               if (now - lastProgress > 500) {
                 lastProgress = now;
                 progress("Generating", { characters, firstTokenMs });
               }
-            })
-          : await boundedJson(response);
+            },
+            config.provider,
+          )
+        : await boundedJson(response);
       const providerMs = performance.now() - providerStarted,
         validationStarted = performance.now();
       progress("Validating");
       const plan = (editing ? parseModelEdit : parseModelPlan)(
-        data.choices?.[0]?.message?.content,
+        config.provider === "gemini" && !streaming
+          ? geminiText(data)
+          : data.choices?.[0]?.message?.content,
       );
       send(200, {
         source: "llm",
         model,
         plan,
-        provider: ollama ? "Ollama" : "Compatible LLM",
+        provider: providerName,
         timings: {
           firstTokenMs,
           headerMs,
@@ -359,7 +513,12 @@ export function createPlannerServer(config = configuration(), fetcher = fetch) {
       });
     } finally {
       clearTimeout(timer);
+      req.off("aborted", disconnected);
+      if (release) await release().catch(() => {});
       inFlight--;
     }
-  });
+  };
+}
+export function createPlannerServer(config = configuration(), fetcher = fetch) {
+  return createServer(createPlannerHandler(config, fetcher));
 }
