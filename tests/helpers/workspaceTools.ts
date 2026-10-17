@@ -40,8 +40,26 @@ export async function openWorkspaceSection(page: Page, key: string) {
     const b = page.getByRole("button", { name: "AI Help", exact: true });
     if ((await b.getAttribute("aria-pressed")) !== "true") await b.click();
   }
+  if (key === "inspector.collection" || key === "structure.components") {
+    await showLeft(page, "collection");
+    return;
+  }
+  if (key.startsWith("inspector.") || key.startsWith("structure."))
+    await showLeft(page, "inspector");
+  if (key.startsWith("camera.")) await showLeft(page, "gesture");
   const details = page.locator(`[data-accordion-key="${key}"]`);
   await expect(details).toBeAttached();
   if ((await details.getAttribute("open")) === null)
     await details.locator(":scope > summary").click();
+}
+
+export async function showLeft(
+  page: Page,
+  tab: "gesture" | "inspector" | "collection",
+) {
+  const b = page.getByRole("tab", {
+    name: tab[0].toUpperCase() + tab.slice(1),
+    exact: true,
+  });
+  if ((await b.getAttribute("aria-selected")) !== "true") await b.click();
 }

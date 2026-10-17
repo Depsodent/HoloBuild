@@ -1,3 +1,4 @@
+import { showLeft } from "../helpers/workspaceTools";
 import { showTools, openWorkspaceSection } from "../helpers/workspaceTools";
 import { test, expect, type Page } from "@playwright/test";
 import { target } from "../helpers/gestureInput";
@@ -23,6 +24,7 @@ test("group inspector defaults stay compact; keyboard sections and named materia
 }) => {
   await ready(page);
   await ask(page, "Select the whole house");
+  await showLeft(page, "inspector");
   const inspector = page.getByLabel("Structure Inspector", { exact: true });
   await expect(inspector).toBeVisible();
   await expect(inspector.locator("details[open]")).toHaveCount(0);
@@ -141,6 +143,7 @@ test("ambiguous/contradictory model targets and selection-mode changes cannot co
     .getByLabel("Selection mode", { exact: true })
     .selectOption("component");
   await open(page, "inspector.collection");
+  await showLeft(page, "collection");
   await page
     .locator(".scene-list button")
     .filter({ hasText: "slab" })

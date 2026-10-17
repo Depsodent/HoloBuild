@@ -57,8 +57,12 @@ export function ModelImport({
             <details className="import-help">
               <summary>Import help</summary>
               <p className="muted">
-                GLB / GLTF · 10 MiB. Select BIN/images with the GLTF. Models fit
-                a 2 m envelope.
+                GLB is recommended. GLTF requires selecting its local BIN/images
+                together; remote dependencies are blocked. Maximum 10 MiB
+                including dependencies; models fit a 2 m envelope. Imported
+                models can be selected, moved, rotated, scaled and saved with
+                the project. Large assets can reduce performance. FBX, OBJ and
+                BLEND are unsupported; export as GLB first.
               </p>
             </details>
           )}

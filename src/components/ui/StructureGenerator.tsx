@@ -1,3 +1,4 @@
+import { openLeft } from "../../workspace/leftStore";
 import { openTools } from "../../workspace/toolsStore";
 import { PlannerTimings } from "./PlannerActivity";
 import { useEffect, useRef, useState } from "react";
@@ -140,6 +141,7 @@ export function StructureGenerator({
                     )!.id,
                   );
                 openTools("edit");
+                openLeft("inspector");
               }}
             >
               Edit Structure

@@ -1,3 +1,4 @@
+import { showLeft } from "../helpers/workspaceTools";
 import { showTools, showGestureSettings } from "../helpers/workspaceTools";
 import { test, expect } from "../helpers/editorTest";
 import type { Page } from "@playwright/test";
@@ -64,6 +65,7 @@ test("whole/group selection, contextual controls and component mode remain disti
   await page.getByRole("button", { name: "Undo", exact: true }).click();
   expect(await scene(page)).toEqual(before);
   await page.getByLabel("Selection mode").selectOption("component");
+  await showLeft(page, "collection");
   await page
     .locator(".scene-list button")
     .filter({ hasText: "slab" })

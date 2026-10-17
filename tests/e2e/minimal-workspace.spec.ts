@@ -1,3 +1,4 @@
+import { showLeft } from "../helpers/workspaceTools";
 import { openWorkspaceSection } from "../helpers/workspaceTools";
 import { test, expect, type Page } from "@playwright/test";
 import { target, hold, poseAt } from "../helpers/gestureInput";
@@ -16,13 +17,12 @@ test("clean defaults expose four major groups and keep diagnostics and advanced 
   page,
 }) => {
   await ready(page);
-  await expect(page.getByRole("tab")).toHaveText([
-    "Build",
-    "Edit",
-    "AI",
-    "Scene",
-  ]);
-  await expect(page.getByRole("tabpanel")).toHaveCount(1);
+  await expect(
+    page
+      .getByRole("tablist", { name: "Construction categories" })
+      .getByRole("tab"),
+  ).toHaveText(["Build", "Edit", "AI", "Scene"]);
+  await expect(page.getByRole("tabpanel")).toHaveCount(2);
   await expect(page.getByLabel("Selection mode")).toBeVisible();
   await expect(page.getByTitle("Create Cube", { exact: true })).toBeVisible();
   await expect(
@@ -54,7 +54,7 @@ test("flat tabs are exclusive, keyboard accessible and remember the active categ
   await expect(
     page.getByRole("tab", { name: "Edit", exact: true }),
   ).toBeFocused();
-  await expect(page.getByRole("tabpanel")).toHaveCount(1);
+  await expect(page.getByRole("tabpanel")).toHaveCount(2);
   await page.keyboard.press("End");
   await expect(
     page.getByRole("tab", { name: "Scene", exact: true }),
@@ -73,10 +73,11 @@ test("Inspector is contextual and exposes transform, appearance and collection w
   page,
 }) => {
   await ready(page);
+  await showLeft(page, "inspector");
   await expect(page.locator(".inspector > h2")).toContainText("Cube");
   await expect(
     page.locator(".inspector > .workspace-accordion > summary > span"),
-  ).toHaveText(["Transform", "Appearance", "Scene Collection · 1"]);
+  ).toHaveText(["Transform", "Appearance"]);
   await open(page, "inspector.appearance");
   await expect(page.getByLabel("Material", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Object color", { exact: true })).toBeVisible();
@@ -86,7 +87,9 @@ test("Inspector is contextual and exposes transform, appearance and collection w
   await expect(group(page, "inspector.transform")).toHaveCount(0);
   await expect(group(page, "inspector.appearance")).toHaveCount(0);
   await open(page, "inspector.collection");
+  await showLeft(page, "collection");
   await page.locator(".scene-list button").click();
+  await showLeft(page, "inspector");
   await expect(page.locator(".inspector > h2")).toContainText("Cube");
 });
 
@@ -189,7 +192,7 @@ test("narrow sidebars fit all main controls and keyboard resizing persists while
         .locator(".tools")
         .evaluate((e) => e.scrollWidth - e.clientWidth),
     ).toBeLessThanOrEqual(1);
-    const buttons = page.getByRole("tabpanel").locator("button:visible");
+    const buttons = right.getByRole("tabpanel").locator("button:visible");
     for (const button of await buttons.all()) {
       const bounds = (await button.boundingBox())!;
       const parent = (await right.boundingBox())!;

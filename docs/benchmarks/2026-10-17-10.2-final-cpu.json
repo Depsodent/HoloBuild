@@ -1,0 +1,30 @@
+{
+  "mainThreadLongTasks": 20,
+  "mainThreadBlockedMs": 1261,
+  "renderFps": 12.817984618416103,
+  "renderP95Ms": 145.70000000018626,
+  "renderStdMs": 30.30690061453593,
+  "cameraFps": 18.35952265241104,
+  "inferenceHz": 11.389521640093312,
+  "inferenceMeanMs": 54.1130434780827,
+  "inferenceP95Ms": 60.299999999813735,
+  "transferMeanMs": 0,
+  "gestureHz": 11.389521640093312,
+  "gestureMeanMs": 0.21304347823657419,
+  "pipelineToRenderMs": 60.9217391303619,
+  "resultToRenderMs": 6.530434782616794,
+  "captureToRenderMs": null,
+  "skippedFrames": null,
+  "duplicatesAvoided": 0,
+  "scheduler": "video callback + RAF watchdog",
+  "engine": "main-thread CPU",
+  "width": 640,
+  "height": 480,
+  "reportedFps": 30,
+  "graphics": {
+    "renderer": "WebKit WebGL",
+    "reportedRenderer": "ANGLE (AMD, AMD Radeon 740M Graphics (0x00001901) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+    "hardwareRequested": true
+  }
+}

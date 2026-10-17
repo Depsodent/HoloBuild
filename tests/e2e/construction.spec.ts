@@ -1,3 +1,4 @@
+import { showLeft } from "../helpers/workspaceTools";
 import { test, expect } from "../helpers/editorTest";
 import { hold, poseAt, livePoseAt, target } from "../helpers/gestureInput";
 test("open palm never opens tools; explicit Help opens tools for point/pinch selection", async ({
@@ -80,6 +81,7 @@ test("real raycasting, pinch preview, release, single-step undo/redo and mouse e
   expect(
     await page.evaluate(() => window.__HOLO_TEST__!.scene()[0].position),
   ).toEqual(placed.object.position);
+  await showLeft(page, "collection");
   await page.locator(".scene-list button").first().click();
   await page.getByLabel("position X", { exact: true }).fill("3");
   await expect(page.getByLabel("position X", { exact: true })).toHaveValue("3");

@@ -1,3 +1,6 @@
+import { useLeftStore, type LeftTab } from "./leftStore";
+import { SceneCollection } from "../components/ui/SceneCollection";
+import { useTrackingStore } from "../vision/trackingStore";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import {
@@ -23,6 +26,8 @@ import {
 } from "./layoutStore";
 
 export function WorkspaceLayout({ children }: { children: ReactNode }) {
+  const { tab, setTab } = useLeftStore();
+  const tracking = useTrackingStore((s) => s.status);
   const root = useRef<HTMLDivElement>(null);
   const { layout, update } = useWorkspaceLayout();
   const [bounds, setBounds] = useState({
@@ -118,6 +123,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
             onClick={() => {
               if (small) setDrawer("left");
               else update({ leftCollapsed: false });
+              setTab("gesture");
               update({ cameraMinimized: false });
             }}
           >
@@ -129,20 +135,85 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
             onClick={() => {
               if (small) setDrawer("left");
               else update({ leftCollapsed: false });
+              setTab("inspector");
               update({ inspectorMinimized: false });
             }}
           >
             <SlidersHorizontal size={17} />
           </button>
         </div>
+        <div className="left-navigation" hidden={leftCollapsed}>
+          <div role="tablist" aria-label="Left workspace categories">
+            {(["gesture", "inspector", "collection"] as LeftTab[]).map(
+              (name, index) => (
+                <button
+                  key={name}
+                  id={`left-tab-${name}`}
+                  role="tab"
+                  aria-selected={tab === name}
+                  aria-controls={`left-panel-${name}`}
+                  tabIndex={tab === name ? 0 : -1}
+                  onClick={() => setTab(name)}
+                  onKeyDown={(e) => {
+                    const tabs: LeftTab[] = [
+                      "gesture",
+                      "inspector",
+                      "collection",
+                    ];
+                    let next = index;
+                    if (e.key === "ArrowRight") next = (index + 1) % 3;
+                    else if (e.key === "ArrowLeft") next = (index + 2) % 3;
+                    else if (e.key === "Home") next = 0;
+                    else if (e.key === "End") next = 2;
+                    else return;
+                    e.preventDefault();
+                    setTab(tabs[next]);
+                    document.getElementById(`left-tab-${tabs[next]}`)?.focus();
+                  }}
+                >
+                  {name[0].toUpperCase() + name.slice(1)}
+                </button>
+              ),
+            )}
+          </div>
+          {(tracking === "running" || tracking === "starting") &&
+            tab !== "gesture" && (
+              <div className="sidebar-camera-status">
+                <span>Camera · {tracking}</span>
+                <button
+                  aria-label="Stop sidebar camera"
+                  onClick={() =>
+                    window.dispatchEvent(new Event("holobuild:stop-camera"))
+                  }
+                >
+                  Stop Camera
+                </button>
+              </div>
+            )}
+        </div>
         <div
-          className="left-split"
+          className="left-split left-tab-content"
           style={{
-            gridTemplateRows: `${cameraRow}px ${layout.cameraDocked && !layout.cameraMinimized && !layout.inspectorMinimized ? 7 : 0}px ${layout.inspectorMinimized ? "40px" : "minmax(0,1fr)"}`,
+            gridTemplateRows:
+              tab === "gesture"
+                ? `${cameraRow}px ${layout.cameraDocked && !layout.cameraMinimized ? 7 : 0}px minmax(0,1fr)`
+                : "minmax(0,1fr)",
           }}
         >
-          <div className="camera-dock">
-            {!layout.cameraDocked && (
+          <div
+            id="left-panel-gesture"
+            role="tabpanel"
+            aria-labelledby="left-tab-gesture"
+            className={`camera-dock ${tab !== "gesture" && layout.cameraDocked ? "inactive-camera-tab" : ""}`}
+            style={
+              tab !== "gesture"
+                ? layout.cameraDocked
+                  ? { position: "absolute" }
+                  : { display: "contents" }
+                : undefined
+            }
+          >
+            {!layout.cameraDocked && tab === "gesture" && (
               <button
                 className="dock-placeholder"
                 aria-label="Restore docked Gesture Input"
@@ -155,7 +226,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
           </div>
           {layout.cameraDocked &&
           !layout.cameraMinimized &&
-          !layout.inspectorMinimized ? (
+          tab === "gesture" ? (
             <ResizeHandle
               label="Resize Gesture Input height"
               orientation="horizontal"
@@ -168,6 +239,10 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
             <div />
           )}
           <section
+            hidden={tab !== "inspector"}
+            id="left-panel-inspector"
+            role="tabpanel"
+            aria-labelledby="left-tab-inspector"
             className={`inspector-section ${layout.inspectorMinimized ? "minimized" : ""}`}
             aria-label="Object Inspector panel"
           >
@@ -197,6 +272,15 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
               <ObjectInspector />
             </div>
           </section>
+          <div
+            hidden={tab !== "collection"}
+            id="left-panel-collection"
+            role="tabpanel"
+            aria-labelledby="left-tab-collection"
+            className="inspector-scroll"
+          >
+            <SceneCollection />
+          </div>
         </div>
       </aside>
       <ResizeHandle

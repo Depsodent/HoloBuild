@@ -77,6 +77,7 @@ export const objectSchema = z
           z.number().finite().min(0.001).max(2.001),
         ]),
         originalMaterials: z.boolean().default(true),
+        tint: z.boolean().optional(),
       })
       .optional(),
     surface: z

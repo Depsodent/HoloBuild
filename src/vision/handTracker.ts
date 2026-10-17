@@ -1,3 +1,5 @@
+import { autoUsesGpu } from "./graphicsInfo";
+import { delegateDetector, serializedDetector } from "./delegateDetector";
 import type { HandLandmarker } from "@mediapipe/tasks-vision";
 import { landmarkStream } from "./landmarkStream";
 import { useTrackingStore } from "./trackingStore";
@@ -40,61 +42,72 @@ const defaults: TrackerDependencies = {
           : { facingMode: "user" }),
       },
     }),
-  async load(signal) {
-    if (
-      useCameraSettings.getState().execution === "worker" &&
-      typeof Worker !== "undefined" &&
-      typeof OffscreenCanvas !== "undefined" &&
-      typeof createImageBitmap === "function"
-    ) {
-      try {
-        const { WorkerDetector } = await import("./workerDetector");
-        return await WorkerDetector.create(signal);
-      } catch {
-        if (signal?.aborted)
-          throw Error(
-            "Camera stopped.",
-          ); /* Unsupported worker initialization uses the existing local CPU path. */
+  load(signal) {
+    const execution = useCameraSettings.getState().execution;
+    return serializedDetector(async () => {
+      if (signal?.aborted) throw Error("Camera stopped.");
+      if (
+        execution === "worker" &&
+        typeof Worker !== "undefined" &&
+        typeof OffscreenCanvas !== "undefined" &&
+        typeof createImageBitmap === "function"
+      ) {
+        try {
+          const { WorkerDetector } = await import("./workerDetector");
+          return await WorkerDetector.create(signal);
+        } catch {
+          if (signal?.aborted)
+            throw Error(
+              "Camera stopped.",
+            ); /* Unsupported worker initialization uses the existing local CPU path. */
+        }
       }
-    }
-    const { FilesetResolver, HandLandmarker } =
-      await import("@mediapipe/tasks-vision");
-    const files = await FilesetResolver.forVisionTasks("/vision/wasm");
-    const gpu = useCameraSettings.getState().execution === "gpu";
-    const options = {
-      baseOptions: {
-        modelAssetPath: "/vision/hand_landmarker.task",
-        delegate: "CPU" as "CPU" | "GPU",
-      },
-      runningMode: "VIDEO",
-      numHands: 2,
-      minHandDetectionConfidence: 0.6,
-      minHandPresenceConfidence: 0.6,
-      minTrackingConfidence: 0.6,
-    } as const;
-    let engine = "main-thread CPU";
-    let detector: HandLandmarker;
-    if (gpu) {
-      try {
-        detector = await HandLandmarker.createFromOptions(files, {
-          ...options,
-          baseOptions: { ...options.baseOptions, delegate: "GPU" },
-        });
-        engine = "main-thread GPU";
-      } catch {
-        if (signal?.aborted) throw Error("Camera stopped.");
-        detector = await HandLandmarker.createFromOptions(files, options);
-        engine = "main-thread CPU (GPU unavailable)";
-      }
-    } else detector = await HandLandmarker.createFromOptions(files, options);
-    return {
-      detectForVideo: detector.detectForVideo.bind(detector),
-      close: () => detector.close(),
-      engine:
-        useCameraSettings.getState().execution === "worker"
-          ? "main-thread CPU (worker unavailable)"
-          : engine,
-    };
+      const { FilesetResolver, HandLandmarker } =
+        await import("@mediapipe/tasks-vision");
+      const files = await FilesetResolver.forVisionTasks("/vision/wasm");
+      const gpu =
+        execution === "gpu" || (execution === "auto" && autoUsesGpu());
+      const options = {
+        baseOptions: {
+          modelAssetPath: "/vision/hand_landmarker.task",
+          delegate: "CPU" as "CPU" | "GPU",
+        },
+        runningMode: "VIDEO",
+        numHands: 2,
+        minHandDetectionConfidence: 0.6,
+        minHandPresenceConfidence: 0.6,
+        minTrackingConfidence: 0.6,
+      } as const;
+      const detector = await delegateDetector(
+        async (delegate) => {
+          const instance = await HandLandmarker.createFromOptions(files, {
+            ...options,
+            baseOptions: { ...options.baseOptions, delegate },
+          });
+          return {
+            detectForVideo: instance.detectForVideo.bind(instance),
+            close: () => instance.close(),
+          };
+        },
+        gpu,
+        signal,
+        () =>
+          landmarkStream.publish({
+            landmarks: [],
+            timestamp: performance.now(),
+            inferenceMs: 0,
+          }),
+      );
+      return {
+        detectForVideo: detector.detectForVideo.bind(detector),
+        close: () => detector.close(),
+        get engine() {
+          return execution === "worker"
+            ? "main-thread CPU (worker unavailable)"
+            : detector.engine;
+        },
+      };
+    });
   },
 };
 export function cameraError(error: unknown) {
@@ -137,6 +150,7 @@ export class HandTracker {
     this.stream = null;
     this.detector?.close();
     this.detector = null;
+    usePerformanceStore.setState({ engine: "off" });
     if (this.video) {
       this.video.pause();
       this.video.srcObject = null;
@@ -233,6 +247,15 @@ export class HandTracker {
             configuration !== this.configuration
           )
             return;
+          if (
+            usePerformanceStore.getState().engine !== detector.engine &&
+            detector.engine
+          ) {
+            usePerformanceStore.setState({ engine: detector.engine });
+            useTrackingStore.setState({
+              message: `Local tracking · ${detector.engine} · up to two hands`,
+            });
+          }
           const completed = performance.now();
           const inferenceMs = detector.inferenceMs ?? completed - started;
           performanceMetrics.inference(

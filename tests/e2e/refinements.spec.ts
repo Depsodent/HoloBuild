@@ -1,3 +1,4 @@
+import { showLeft } from "../helpers/workspaceTools";
 import { test, expect } from "../helpers/editorTest";
 import { target, hold, poseAt } from "../helpers/gestureInput";
 
@@ -6,6 +7,7 @@ test("floating camera drag/resize/keyboard/persistence do not orbit or edit the 
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Undock Gesture Input", exact: true })
     .click();
@@ -60,6 +62,7 @@ test("floating camera drag/resize/keyboard/persistence do not orbit or edit the 
   expect(
     (await page.evaluate(() => window.__HOLO_TEST__!.snapshot())).history,
   ).toBe(0);
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Minimize Gesture Input", exact: true })
     .click();
@@ -74,6 +77,7 @@ test("floating camera drag/resize/keyboard/persistence do not orbit or edit the 
     page.getByRole("button", { name: "Expand Gesture Input", exact: true }),
   ).toBeVisible();
   expect((await panel.boundingBox())!.x).toBeCloseTo(keyboard.x, 0);
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Expand Gesture Input", exact: true })
     .click();
@@ -116,6 +120,7 @@ test("minimized window shows gestures while construction still commits one move"
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Minimize Gesture Input", exact: true })
     .click();
@@ -160,6 +165,7 @@ for (const type of ["cube", "sphere", "cylinder", "cone", "wall", "floor"]) {
         }),
       ),
     });
+    await showLeft(page, "collection");
     await page.locator(".scene-list button").click();
     const beforeMaterial = (
       await page.evaluate(() => window.__HOLO_TEST__!.snapshot())
@@ -220,6 +226,7 @@ test("dragging the camera window cancels an active preview without placing the o
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Undock Gesture Input", exact: true })
     .click();

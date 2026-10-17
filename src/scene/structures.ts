@@ -1,3 +1,4 @@
+import { colorPatch } from "./colors";
 import { Box3, Euler, Matrix4, Quaternion, Vector3 } from "three";
 import {
   operationSchema,
@@ -252,6 +253,23 @@ export function applyStructure(
           }
         : o,
     );
+  } else if (operation.type === "color") {
+    const affected = parts.filter(
+      (o) =>
+        (!operation.role || o.construction!.role === operation.role) &&
+        (operation.level === undefined ||
+          o.construction!.level === operation.level),
+    );
+    if (!affected.length) throw Error("No components match that role/floor.");
+    const ids = new Set(affected.map((o) => o.id));
+    parts = parts.map((o) =>
+      ids.has(o.id)
+        ? {
+            ...o,
+            ...colorPatch(o, operation.color ?? "#ffffff", !!operation.reset),
+          }
+        : o,
+    );
   } else if (operation.type === "duplicate") {
     if (objects.length + parts.length > 200)
       throw Error("Duplicate exceeds the 200-object scene budget.");
@@ -440,17 +458,19 @@ export function applyStructure(
   const action =
     operation.type === "material"
       ? `${operation.role ?? "all components"}${operation.level === undefined ? "" : ` / floor ${operation.level + 1}`} to ${operation.material}`
-      : operation.type === "move"
-        ? `move by [${fmt(operation.delta)}] m; origin [${fmt(info.position)}] m`
-        : operation.type === "rotate"
-          ? `yaw ${Number(((operation.angle * 180) / Math.PI).toFixed(2))} degrees`
-          : operation.type === "scale"
-            ? `local scale factors [${fmt(operation.factors)}]`
-            : operation.type === "setTransform"
-              ? `origin [${fmt(info.position)}] m; yaw ${Number(((info.yaw * 180) / Math.PI).toFixed(2))} degrees; scale [${fmt(info.scale)}]`
-              : operation.type === "floors"
-                ? `${operation.action} floor${operation.level === undefined ? "" : ` ${operation.level + 1}`}; ${info.template!.floors} floors, ${info.template!.height} m storeys`
-                : operation.type;
+      : operation.type === "color"
+        ? `${operation.role ?? "all components"} color ${operation.reset ? "material default" : operation.color}`
+        : operation.type === "move"
+          ? `move by [${fmt(operation.delta)}] m; origin [${fmt(info.position)}] m`
+          : operation.type === "rotate"
+            ? `yaw ${Number(((operation.angle * 180) / Math.PI).toFixed(2))} degrees`
+            : operation.type === "scale"
+              ? `local scale factors [${fmt(operation.factors)}]`
+              : operation.type === "setTransform"
+                ? `origin [${fmt(info.position)}] m; yaw ${Number(((info.yaw * 180) / Math.PI).toFixed(2))} degrees; scale [${fmt(info.scale)}]`
+                : operation.type === "floors"
+                  ? `${operation.action} floor${operation.level === undefined ? "" : ` ${operation.level + 1}`}; ${info.template!.floors} floors, ${info.template!.height} m storeys`
+                  : operation.type;
   return {
     objects: result,
     parts,

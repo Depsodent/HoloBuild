@@ -14,6 +14,13 @@ export type StructureOperation =
       role?: PlanPart["role"];
       level?: number;
     }
+  | {
+      type: "color";
+      color?: string;
+      reset?: true;
+      role?: PlanPart["role"];
+      level?: number;
+    }
   | { type: "rename"; name: string }
   | {
       type: "floors";

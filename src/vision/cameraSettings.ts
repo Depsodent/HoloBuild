@@ -14,20 +14,22 @@ function initial(): CameraProfile {
   }
   return "balanced";
 }
-function initialExecution(): "main" | "worker" | "gpu" {
+function initialExecution(): "main" | "worker" | "gpu" | "auto" {
   try {
     const saved = localStorage.getItem("holobuild.camera-execution.v1");
-    if (saved === "gpu") return "gpu";
-    return saved === "worker" ? "worker" : "main";
+    if (saved === "gpu" || saved === "worker" || saved === "main") return saved;
+    return "auto";
   } catch {
-    return "main";
+    return "auto";
   }
 }
 export const useCameraSettings = create(() => ({
   profile: initial(),
   execution: initialExecution(),
 }));
-export function saveCameraExecution(execution: "main" | "worker" | "gpu") {
+export function saveCameraExecution(
+  execution: "main" | "worker" | "gpu" | "auto",
+) {
   useCameraSettings.setState({ execution });
   try {
     localStorage.setItem("holobuild.camera-execution.v1", execution);

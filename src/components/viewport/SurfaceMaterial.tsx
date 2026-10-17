@@ -1,3 +1,4 @@
+import { usePreviewColor } from "../../scene/colorPreview";
 import {
   createContext,
   useContext,
@@ -34,6 +35,7 @@ export function SurfaceMaterial({
   grabbed: boolean;
   highlight: boolean;
 }) {
+  const color = usePreviewColor(object.id) ?? object.color;
   const resources = useContext(Resources);
   const ref = useRef<MeshPhysicalMaterial>(null);
   const time = useMemo(() => ({ value: 0 }), []);
@@ -106,12 +108,12 @@ export function SurfaceMaterial({
       {...optics}
       color={
         preset.holographic
-          ? new Color(object.color).lerp(new Color("#28cbff"), 0.65)
-          : object.color
+          ? new Color(color).lerp(new Color("#28cbff"), 0.65)
+          : color
       }
       transparent={grabbed || preset.transparent}
       opacity={grabbed ? 0.2 : values.opacity}
-      emissive={preset.holographic ? "#25cfff" : object.color}
+      emissive={preset.holographic ? "#25cfff" : color}
       emissiveIntensity={
         (values.emissiveIntensity ?? 0) + (highlight ? 0.15 : 0)
       }

@@ -1089,3 +1089,51 @@ footer {
   overflow-wrap: anywhere;
   color: #79dfd2;
 }
+
+.color-editor {
+  min-width: 0;
+  margin: 12px 0;
+  padding: 8px;
+  border: 1px solid #29404c;
+  border-radius: 6px;
+}
+.color-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 6px 0 10px;
+}
+.color-swatches button {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  padding: 0;
+  border: 1px solid #91b9bd;
+  border-radius: 4px;
+}
+.color-swatches [aria-pressed="true"] {
+  outline: 2px solid #78ffe1;
+  outline-offset: 2px;
+}
+.color-inputs {
+  display: grid;
+  grid-template-columns: 55px minmax(0, 1fr);
+  gap: 8px;
+}
+.color-inputs label {
+  min-width: 0;
+  font-size: 10px;
+}
+.color-inputs input {
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+}
+.color-editor [aria-invalid="true"] {
+  border-color: #ff7891;
+}
+.color-editor .object-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}

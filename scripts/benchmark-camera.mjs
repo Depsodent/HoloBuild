@@ -5,7 +5,9 @@ import fs from "node:fs";
   const browser = await chromium.launch({
     channel: "msedge",
     headless: true,
-    args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
+    args: process.argv.includes("--hardware")
+      ? []
+      : ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
   });
   try {
     const page = await browser.newPage({
@@ -29,11 +31,13 @@ import fs from "node:fs";
           },
         });
       },
-      process.argv.includes("--gpu")
-        ? "gpu"
-        : process.argv.includes("--worker")
-          ? "worker"
-          : "main",
+      process.argv.includes("--auto")
+        ? "auto"
+        : process.argv.includes("--gpu")
+          ? "gpu"
+          : process.argv.includes("--worker")
+            ? "worker"
+            : "main",
     );
     await page.goto(process.env.HOLOBUILD_URL || "http://127.0.0.1:5175/");
     await page
@@ -54,12 +58,26 @@ import fs from "node:fs";
       { timeout: 60000 },
     );
     await page.waitForTimeout(10000);
-    const metrics = await page.evaluate(async () => {
+    const metrics = await page.evaluate(async (hardwareRequested) => {
       const entry = performance
         .getEntriesByType("resource")
         .find((e) => e.name.includes("/src/vision/performanceStore.ts"));
-      return (await import(entry.name)).usePerformanceStore.getState();
-    });
+      const gl = document
+        .querySelector("canvas[data-engine]")
+        .getContext("webgl2");
+      const extension = gl?.getExtension("WEBGL_debug_renderer_info");
+      return {
+        ...(await import(entry.name)).usePerformanceStore.getState(),
+        graphics: {
+          renderer: gl?.getParameter(gl.RENDERER),
+          reportedRenderer: extension
+            ? gl.getParameter(extension.UNMASKED_RENDERER_WEBGL)
+            : null,
+          userAgent: navigator.userAgent,
+          hardwareRequested,
+        },
+      };
+    }, process.argv.includes("--hardware"));
     console.log(JSON.stringify(metrics, null, 2));
     const output = process.argv.indexOf("--output");
     if (output >= 0 && process.argv[output + 1])

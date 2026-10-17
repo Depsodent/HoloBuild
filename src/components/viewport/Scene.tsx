@@ -1,3 +1,4 @@
+import { recordGraphics } from "../../vision/graphicsInfo";
 import { useLightingStore } from "../../scene/lightingStore";
 import { StructureControls } from "./StructureControls";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
@@ -28,6 +29,8 @@ function ShadowCache() {
   return null;
 }
 function Metrics() {
+  const gl = useThree((s) => s.gl);
+  useEffect(() => recordGraphics(gl.getContext()), [gl]);
   useEffect(() => {
     if (
       typeof PerformanceObserver === "undefined" ||

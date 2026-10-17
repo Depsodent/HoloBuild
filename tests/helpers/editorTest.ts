@@ -5,6 +5,10 @@ import { ACCORDION_DEFAULTS } from "../../src/workspace/accordionStore";
 export const test = base.extend({
   page: async ({ page }, runFixture) => {
     await page.addInitScript((keys) => {
+      if (!localStorage.getItem("holobuild.left-tab.v1"))
+        localStorage.setItem("holobuild.left-tab.v1", "inspector");
+      if (!localStorage.getItem("holobuild.camera-execution.v1"))
+        localStorage.setItem("holobuild.camera-execution.v1", "main");
       if (!localStorage.getItem("holobuild.pins.v1"))
         localStorage.setItem(
           "holobuild.pins.v1",

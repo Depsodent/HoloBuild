@@ -1,3 +1,5 @@
+import { ColorEditor } from "./ColorEditor";
+import { colorPatch } from "../../scene/colors";
 import { StructureInspector } from "./StructureInspector";
 import { objectSize } from "../../scene/objectFactory";
 import { Copy, Trash2, RotateCcw } from "lucide-react";
@@ -193,7 +195,9 @@ export function ObjectInspector() {
             </label>
             {object.model?.originalMaterials ? (
               <p className="muted">
-                Choose a preset to override imported PBR surfaces.
+                Color tints preserve imported textures and optics. Reset
+                restores original colors; a preset replaces the imported
+                surface.
               </p>
             ) : (
               <>
@@ -213,31 +217,25 @@ export function ObjectInspector() {
                 </button>
               </>
             )}
-            <label className="color-field">
-              Surface color
-              <input
-                aria-label="Object color"
-                type="color"
-                value={object.color}
-                onChange={(e) =>
-                  execute({
-                    type: "update",
-                    id: object.id,
-                    patch: {
-                      color: e.target.value,
-                      ...(object.model
-                        ? {
-                            model: {
-                              ...object.model,
-                              originalMaterials: false,
-                            },
-                          }
-                        : {}),
-                    },
-                  })
-                }
-              />
-            </label>
+            <ColorEditor
+              key={object.id}
+              objects={[object]}
+              label="Object color"
+              onApply={(color) =>
+                execute({
+                  type: "update",
+                  id: object.id,
+                  patch: colorPatch(object, color),
+                })
+              }
+              onReset={() =>
+                execute({
+                  type: "update",
+                  id: object.id,
+                  patch: colorPatch(object, "#ffffff", true),
+                })
+              }
+            />
             {!object.model?.originalMaterials &&
               surfaceControls(object)
                 .filter((c) => c.key === "textureScale")
@@ -272,27 +270,6 @@ export function ObjectInspector() {
           Point and pinch with one hand, or click an object to select it.
         </p>
       )}
-      <Accordion
-        id="inspector.collection"
-        title={`Scene Collection · ${objects.length}`}
-      >
-        <div className="scene-list">
-          {objects.map((o, i) => (
-            <button
-              className={id === o.id ? "selected" : ""}
-              key={o.id}
-              onClick={() => useSceneStore.getState().select(o.id)}
-            >
-              <span style={{ color: o.color }}>◇</span>
-              {o.name}
-              <small>{String(i + 1).padStart(2, "0")}</small>
-            </button>
-          ))}
-          {!objects.length && (
-            <p className="muted">Your next idea starts here.</p>
-          )}
-        </div>
-      </Accordion>
     </aside>
   );
 }

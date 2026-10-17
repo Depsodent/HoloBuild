@@ -1,3 +1,5 @@
+import { useLeftStore } from "../../workspace/leftStore";
+import { usePerformanceStore } from "../../vision/performanceStore";
 import { GestureStatus } from "../ui/GestureStatus";
 import { useAdvancedStore } from "../../interaction/advancedStore";
 import { Accordion } from "../ui/Accordion";
@@ -30,6 +32,8 @@ import { useTrackingStore } from "../../vision/trackingStore";
 import { HandLandmarkOverlay } from "./HandLandmarkOverlay";
 import "./WebcamPreview.css";
 export function WebcamPreview() {
+  const leftTab = useLeftStore((s) => s.tab);
+  const engine = usePerformanceStore((s) => s.engine);
   const panel = useRef<HTMLElement>(null);
   const { layout, update } = useWorkspaceLayout();
   const floating = useFloatingPanel(panel, {
@@ -165,7 +169,9 @@ export function WebcamPreview() {
           {overlay && (
             <HandLandmarkOverlay
               active={
-                visible && !minimized && (!layout.leftCollapsed || !docked)
+                visible &&
+                !minimized &&
+                (!docked || (!layout.leftCollapsed && leftTab === "gesture"))
               }
             />
           )}
@@ -200,20 +206,34 @@ export function WebcamPreview() {
             </select>
           </label>
           <label className="field">
-            Inference execution
+            MediaPipe delegate
             <select
-              aria-label="Inference execution"
+              aria-label="MediaPipe delegate"
               value={settings.execution}
               disabled={active}
               onChange={(e) =>
-                saveCameraExecution(e.target.value as "main" | "worker" | "gpu")
+                saveCameraExecution(
+                  e.target.value as "main" | "worker" | "gpu" | "auto",
+                )
               }
             >
-              <option value="main">Main thread CPU (default)</option>
+              <option value="auto">Auto · GPU when compatible</option>
+              <option value="main">CPU</option>
               <option value="gpu">GPU · CPU fallback</option>
               <option value="worker">Worker CPU (experimental)</option>
             </select>
           </label>
+          <p className="muted" aria-label="Active MediaPipe delegate">
+            Active: {active ? engine : "off"}
+          </p>
+          <button
+            onClick={() =>
+              update({ diagnosticsVisible: !layout.diagnosticsVisible })
+            }
+            aria-pressed={layout.diagnosticsVisible}
+          >
+            Performance diagnostics
+          </button>
           <p className="muted">
             Stop capture to switch execution. Compare inference Hz and latency;
             a faster renderer does not imply faster tracking.

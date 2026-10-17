@@ -1,11 +1,22 @@
+import { useGraphicsInfo } from "../../vision/graphicsInfo";
 import { usePerformanceStore } from "../../vision/performanceStore";
 export function PerformanceReadings() {
+  const graphics = useGraphicsInfo();
   const m = usePerformanceStore();
   const number = (v: number | null, digits = 1) =>
     v === null ? "unavailable" : v.toFixed(digits);
   return (
     <>
       <dl>
+        <dt>Browser-reported WebGL renderer</dt>
+        <dd style={{ overflowWrap: "anywhere" }}>{graphics.renderer}</dd>
+        <dt>WebGL acceleration indicators</dt>
+        <dd>
+          {graphics.webgl2 ? "WebGL 2" : "Not reported"} ·{" "}
+          {graphics.software
+            ? "software renderer detected"
+            : "no known software renderer reported"}
+        </dd>
         <dt>Render FPS</dt>
         <dd>{number(m.renderFps)}</dd>
         <dt>Render frame p95 / variation</dt>
@@ -54,10 +65,11 @@ export function PerformanceReadings() {
         </dd>
       </dl>
       <p className="muted">
-        Rates are separate two-second windows. Render timings exclude exposure,
-        smoothing, GPU presentation and physical hand motion. Capture time is
-        only estimated when the browser supplies it; hidden previews may not
-        report presentation FPS.
+        Renderer strings are browser reports, not proof of a physical adapter or
+        OS acceleration settings. Rates are separate two-second windows. Render
+        timings exclude exposure, smoothing, GPU presentation and physical hand
+        motion. Capture time is only estimated when the browser supplies it;
+        hidden previews may not report presentation FPS.
       </p>
     </>
   );

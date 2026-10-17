@@ -1,3 +1,4 @@
+import { showLeft } from "../helpers/workspaceTools";
 import { showGestureSettings } from "../helpers/workspaceTools";
 import { test, expect } from "../helpers/editorTest";
 import { hold, poseAt, target } from "../helpers/gestureInput";
@@ -101,6 +102,7 @@ test("lost hand and Undo during two-hand scaling cancel safely", async ({
   expect(
     (await page.evaluate(() => window.__HOLO_TEST__!.snapshot())).preview,
   ).toBeNull();
+  await showLeft(page, "collection");
   await page.locator(".scene-list button").click();
   await holdPair(page, 0.25, false);
   await holdPair(page, 0.25, true);
@@ -275,6 +277,7 @@ test("two-hand visual guides and transform feedback remain visible with the came
   await target(page);
   await showGestureSettings(page);
   await page.getByLabel("Gesture mode", { exact: true }).selectOption("scale");
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Minimize Gesture Input", exact: true })
     .click();
@@ -300,6 +303,7 @@ test("opted-in palm menu stays closed during camera window dragging and after re
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Undock Gesture Input", exact: true })
     .click();

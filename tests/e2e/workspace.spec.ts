@@ -1,3 +1,4 @@
+import { showLeft } from "../helpers/workspaceTools";
 import { showGestureSettings } from "../helpers/workspaceTools";
 import { test, expect } from "../helpers/editorTest";
 import type { Locator } from "@playwright/test";
@@ -41,14 +42,18 @@ test("workspace places camera and inspector on the left and construction on the 
   const left = await box(page.locator(".workspace-left"));
   const viewport = await box(page.getByLabel("3D construction viewport"));
   const right = await box(page.locator(".workspace-right"));
+  await showLeft(page, "gesture");
   const camera = await box(page.getByLabel("Gesture camera"));
+  await showLeft(page, "inspector");
   const inspector = await box(page.locator(".inspector"));
   const tools = await box(page.locator(".workspace-right .tools"));
   expect(left.x + left.width).toBeLessThanOrEqual(viewport.x + 1);
   expect(viewport.x + viewport.width).toBeLessThanOrEqual(right.x + 1);
   expect(camera.x).toBeGreaterThanOrEqual(left.x);
   expect(camera.x + camera.width).toBeLessThanOrEqual(left.x + left.width + 1);
-  expect(inspector.y).toBeGreaterThanOrEqual(camera.y + camera.height);
+  expect(inspector.x).toBeGreaterThanOrEqual(left.x);
+  expect(inspector.y).toBeGreaterThanOrEqual(left.y);
+  await expect(page.getByLabel("Gesture camera")).toBeHidden();
   expect(tools.x).toBeGreaterThanOrEqual(right.x);
   await expect(
     page.getByRole("separator", { name: "Resize left sidebar" }),
@@ -79,20 +84,24 @@ test("each sidebar section scrolls without moving its neighbours or the viewport
   await showGestureSettings(page);
   const canvas = page.locator("canvas[data-engine]");
   const before = await box(canvas);
-  const camera = page.getByLabel("Gesture camera");
-  const inspector = page.locator(".inspector-scroll");
   const tools = page.locator(".workspace-right .tools");
-  const cameraBefore = await box(camera);
-  const inspectorBefore = await box(inspector);
-  const toolsBefore = await box(tools);
-  for (const panel of [camera, inspector, tools]) {
+  for (const tab of ["gesture", "inspector"] as const) {
+    await showLeft(page, tab);
+    const panel =
+      tab === "gesture"
+        ? page.getByLabel("Gesture camera")
+        : page.locator("#left-panel-inspector .inspector-scroll");
+    const bounds = await box(panel),
+      toolsBounds = await box(tools);
     const result = await scrollPanel(panel);
     expect(result.after).toBeGreaterThan(result.before);
+    expect(await box(panel)).toEqual(bounds);
+    expect(await box(tools)).toEqual(toolsBounds);
     expect(await box(canvas)).toEqual(before);
-    expect(await box(camera)).toEqual(cameraBefore);
-    expect(await box(inspector)).toEqual(inspectorBefore);
-    expect(await box(tools)).toEqual(toolsBefore);
   }
+  const result = await scrollPanel(tools);
+  expect(result.after).toBeGreaterThan(result.before);
+  expect(await box(canvas)).toEqual(before);
 });
 
 test("keyboard and pointer separators resize panels and the live canvas without scene edits", async ({
@@ -125,6 +134,7 @@ test("keyboard and pointer separators resize panels and the live canvas without 
   await expect
     .poll(async () => (await box(canvas)).width)
     .toBeLessThan(initialCanvas.width);
+  await showLeft(page, "gesture");
   const camera = page.getByLabel("Gesture camera");
   const beforeCamera = await box(camera);
   const split = page.getByRole("separator", {
@@ -193,8 +203,11 @@ test("collapsed rails preserve core construction controls and independently rest
   await page
     .getByRole("button", { name: "Expand left sidebar", exact: true })
     .click();
+  await showLeft(page, "gesture");
   await expect(page.getByLabel("Gesture camera")).toBeVisible();
+  await showLeft(page, "inspector");
   await expect(page.locator(".inspector")).toBeVisible();
+  await showLeft(page, "inspector");
   await page
     .getByRole("button", { name: "Minimize Object Inspector", exact: true })
     .click();
@@ -202,6 +215,7 @@ test("collapsed rails preserve core construction controls and independently rest
   await page
     .getByRole("button", { name: "Expand Object Inspector", exact: true })
     .click();
+  await showLeft(page, "collection");
   await page.locator(".scene-list button").first().click();
   await expect(page.getByLabel("position X", { exact: true })).toBeVisible();
   await page
@@ -215,6 +229,7 @@ test("docked camera minimizes and undocks while the shared gesture path still mo
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Minimize Gesture Input", exact: true })
     .click();
@@ -232,9 +247,11 @@ test("docked camera minimizes and undocks while the shared gesture path still mo
     (await page.evaluate(() => window.__HOLO_TEST__!.snapshot())).history,
   ).toBe(1);
   await expect(page.getByLabel("Gesture tool menu")).toHaveCount(0);
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Expand Gesture Input", exact: true })
     .click();
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Undock Gesture Input", exact: true })
     .click();
@@ -353,9 +370,11 @@ test("workspace state survives reload and reset restores the documented defaults
   const handle = page.getByRole("separator", { name: "Resize left sidebar" });
   await handle.focus();
   await page.keyboard.press("Shift+ArrowRight");
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Minimize Gesture Input", exact: true })
     .click();
+  await showLeft(page, "inspector");
   await page
     .getByRole("button", { name: "Minimize Object Inspector", exact: true })
     .click();
@@ -391,9 +410,11 @@ test("workspace state survives reload and reset restores the documented defaults
   await page.reload();
   await target(page);
   expect((await box(diagnostics)).x).toBeCloseTo(savedDiagnostics.x, 0);
+  await showLeft(page, "gesture");
   await expect(
     page.getByRole("button", { name: "Expand Gesture Input", exact: true }),
   ).toBeVisible();
+  await showLeft(page, "inspector");
   await expect(
     page.getByRole("button", { name: "Expand Object Inspector", exact: true }),
   ).toBeVisible();
@@ -410,9 +431,11 @@ test("workspace state survives reload and reset restores the documented defaults
   await page
     .getByRole("button", { name: "Reset Workspace Layout", exact: true })
     .click();
+  await showLeft(page, "gesture");
   await expect(
     page.getByRole("button", { name: "Minimize Gesture Input", exact: true }),
   ).toBeVisible();
+  await showLeft(page, "inspector");
   await expect(
     page.getByRole("button", {
       name: "Minimize Object Inspector",
@@ -507,9 +530,11 @@ test("small screens keep both side drawers and project controls reachable withou
   await page
     .getByRole("button", { name: "Expand left sidebar", exact: true })
     .click();
+  await showLeft(page, "gesture");
   await expect(
     page.getByRole("button", { name: "Start camera", exact: true }),
   ).toBeVisible();
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Minimize Gesture Input", exact: true })
     .click();
@@ -529,6 +554,7 @@ test("small screens keep both side drawers and project controls reachable withou
   await page
     .getByRole("button", { name: "Show Gesture Input", exact: true })
     .click();
+  await showLeft(page, "gesture");
   await expect(
     page.getByRole("button", { name: "Minimize Gesture Input", exact: true }),
   ).toBeVisible();
@@ -640,6 +666,7 @@ test("synthetic webcam remains live through docking, minimization and sidebar co
     });
   });
   await page.goto("/");
+  await showLeft(page, "gesture");
   await page.getByRole("button", { name: "Start camera", exact: true }).click();
   await expect(page.locator(".camera-message")).toContainText(
     "Local tracking",
@@ -649,6 +676,7 @@ test("synthetic webcam remains live through docking, minimization and sidebar co
   const time = await video.evaluate(
     (element: HTMLVideoElement) => element.currentTime,
   );
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Minimize Gesture Input", exact: true })
     .click();
@@ -669,9 +697,11 @@ test("synthetic webcam remains live through docking, minimization and sidebar co
   await page
     .getByRole("button", { name: "Expand left sidebar", exact: true })
     .click();
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Expand Gesture Input", exact: true })
     .click();
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Undock Gesture Input", exact: true })
     .click();

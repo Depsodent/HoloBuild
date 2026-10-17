@@ -1,3 +1,4 @@
+import { showLeft } from "../helpers/workspaceTools";
 import { test, expect } from "../helpers/editorTest";
 test("real local MediaPipe processes a synthetic video and releases its stream", async ({
   page,
@@ -31,6 +32,7 @@ test("real local MediaPipe processes a synthetic video and releases its stream",
     });
   });
   await page.goto("/");
+  await showLeft(page, "gesture");
   await page.getByRole("button", { name: "Start camera", exact: true }).click();
   await expect(page.locator(".camera-message")).toContainText(
     "Local tracking",
@@ -43,6 +45,7 @@ test("real local MediaPipe processes a synthetic video and releases its stream",
   const time = await page
     .locator("video")
     .evaluate((v: HTMLVideoElement) => v.currentTime);
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Minimize Gesture Input", exact: true })
     .click();
@@ -65,6 +68,7 @@ test("real local MediaPipe processes a synthetic video and releases its stream",
     "data-test-track-stopped",
     "true",
   );
+  await showLeft(page, "gesture");
   await page
     .getByRole("button", { name: "Expand Gesture Input", exact: true })
     .click();
@@ -98,6 +102,7 @@ test("camera permission denial preserves mouse editing", async ({ page }) => {
     });
   });
   await page.goto("/");
+  await showLeft(page, "gesture");
   await page.getByRole("button", { name: "Start camera", exact: true }).click();
   await expect(page.locator(".camera-message")).toContainText(
     "permission denied",

@@ -90,3 +90,64 @@ Audit findings and targeted changes:
 Reproduce sequentially: `node scripts/benchmark-camera.mjs --output <json>`, then `--worker` or `--gpu`. Do not run builds, browser suites or model generation concurrently. New unit checks cover rolling metrics and cache invalidation; serial browser checks cover minimized tracking and cleanup.
 
 For physical lag reports include scene count, active execution/profile/resolution, the six compact readings, full render variation/long-task values, whether Ollama is generating, and panel/window visibility. Compare the same scene and lighting with CPU/worker/optional GPU separately. A high render FPS with low inference/gesture Hz still means hand control is slow. Physical webcam/microphone acceptance remains pending.
+
+## Milestone 10.2 — native graphics / delegate evidence — 17 October 2026
+
+The installed MediaPipe Tasks Vision 1.1.0 exposes CPU/GPU Hand Landmarker delegates. Fresh settings now choose Auto; existing explicit preferences remain. Auto consults the **existing scene WebGL context**, creates no probe context, skips known software renderers and attempts GPU on reported WebGL2. This is an initialization policy, not an adaptive speed test. Explicit GPU remains available with CPU fallback. Actual engine is assigned after successful initialization, with CPU fallback reasons; GPU runtime failure closes the GPU detector before creating CPU and cancels an uncommitted gesture. Initialization is serialized across starts; obsolete late instances close. One detector and one in-flight frame remain the rule. Stop before changing delegate. The same local WASM/model URLs are reused; no alternate model download or new package.
+
+Baseline observations before application changes used **native headless Edge 155 without SwiftShader flags**, 1280×720, the same 640×480 synthetic canvas requesting 30 FPS, no hand image, ten seconds settling and one final two-second rolling window. Runs were serial. These are single observations subject to warm-up/system scheduling, **not physical webcam or motion-to-photon benchmarks**.
+
+| Baseline observation | CPU | GPU |
+| --- | ---: | ---: |
+| Active engine | main-thread CPU | main-thread GPU |
+| Render FPS | 41.49 | 97.24 |
+| Camera presentation FPS | 13.43 | 28.01 |
+| Inference Hz | 13.89 | 24.96 |
+| Mean / p95 inference ms | 51.34 / 59.70 | 15.13 / 17.80 |
+| Gesture Hz | 13.73 | 24.96 |
+| Processing → render callback ms | 54.94 | 18.97 |
+| Result → render callback ms | 4.05 | 3.59 |
+| Main-thread long tasks / blocked ms (2 s) | 19 / 1193 | 2 / 135 |
+
+Raw baseline JSON: `benchmarks/2026-10-17-10.2-baseline-{cpu,gpu}.json`. The improvement shown here is **GPU versus CPU in this scene**, not a before/after application speed claim. The CPU path already existed in 10.1. No inference pacing/filter thresholds were reduced for these results. Synthetic delivery itself runs on the main thread, so CPU inference can reduce its apparent camera FPS.
+
+Windows read-only adapter enumeration reports AMD Radeon 740M and NVIDIA GeForce RTX 3050 Laptop GPU. Both native Edge baseline runs reported `ANGLE (AMD, AMD Radeon 740M Graphics (0x00001901) Direct3D11 vs_5_0 ps_5_0, D3D11)` for the **Three.js context**. This suggests Edge selected the integrated adapter for that context. It does **not prove a particular physical adapter for every MediaPipe operation**. Successful GPU delegate initialization is separate evidence from a WebGL renderer string. HoloBuild cannot force NVIDIA selection or read the browser's OS graphics preference/acceleration setting reliably. Privacy restrictions may redact the debug renderer extension; absence of a known software string does not certify hardware acceleration. No new WebGPU adapter/device is requested just to guess the GPU.
+
+The embedded Codex browser probe failed to create WebGL; native Edge rendered correctly. Use normal Edge/Chrome for acceptance. HoloBuild reports unavailable graphics rather than pretending GPU support. If desired, the user can enable browser graphics acceleration and choose their browser's High performance GPU in Windows Graphics settings, restart and recheck. The app does not change those settings.
+
+Read-only Ollama `/api/ps` during this audit returned no resident models. Thus these timings do not establish performance during concurrent model generation or GPU memory contention. Web APIs do not expose reliable cross-process VRAM use. Compare the same scene with Ollama idle/active manually; do not equate its GPU use with browser use.
+
+Diagnostics distinguish actual render callbacks, camera presentation metadata, inference/gesture windows, mean/p95 timings, measured long tasks and processing/result-to-render callbacks. Capture→render stays unavailable unless video metadata supplies capture time. Sensor/exposure delay, 45 ms configured landmark smoothing, 85 ms two-hand interpolation, display/compositor delay and physical motion latency are not measured. A high render FPS alone cannot diagnose a 5–7 Hz hand pipeline.
+
+Reproduce serially against the running D: server (no physical webcam access):
+
+```powershell
+node scripts/benchmark-camera.mjs --hardware --output camera-cpu.json
+node scripts/benchmark-camera.mjs --hardware --gpu --output camera-gpu.json
+```
+
+`--hardware` means software-rendering flags are omitted; it does not select or certify a physical GPU. Benchmark metadata records that request separately from the reported renderer and actual initialized engine. Keep camera profile, viewport, scene and background load comparable. Worker CPU remains optional/experimental; no worker speed improvement is claimed. Final observations are below; full validation is recorded in DEVELOPMENT.md. Physical user acceptance remains pending.
+
+### Final native observations
+
+After final application changes, the same script/source/profile/viewport/ten-second settling ran serially with no concurrent test, build or model request. Each number remains one rolling two-second observation, not a statistical benchmark.
+
+| Final observation | CPU | GPU | Auto |
+| --- | ---: | ---: | ---: |
+| Active engine | main-thread CPU | main-thread GPU | main-thread GPU |
+| Render FPS | 12.82 | 11.80 | 12.30 |
+| Camera presentation FPS | 18.36 | 26.37 | 26.87 |
+| Inference Hz | 11.39 | 11.92 | 12.45 |
+| Mean inference ms | 54.11 | 21.43 | 22.25 |
+| p95 inference ms | 60.30 | 32.00 | 33.80 |
+| Gesture Hz | 11.39 | 11.92 | 12.33 |
+| Processing → render callback ms | 60.92 | 27.86 | 28.24 |
+| Result → render callback ms | 6.53 | 6.13 | 5.40 |
+| Long tasks (last 2 s) | 20.00 | 3.00 | 3.00 |
+| Blocked ms (last 2 s) | 1261.00 | 226.00 | 173.00 |
+
+Raw files: `benchmarks/2026-10-17-10.2-final-{cpu,gpu,auto}.json`. Both requested GPU and Auto **successfully initialized main-thread GPU**. All three scene contexts again reported the AMD Radeon 740M ANGLE string. GPU lowered measured inference and processing-to-render duration relative to CPU in these samples; it did **not consistently increase update/render throughput**. The earlier 25Hz/97-render-FPS GPU baseline was not reproduced here. No claim of an overall before/after speedup is supported.
+
+A separate native Edge camera-off observation (`...final-idle.json`) measured **12.42 render FPS, 81.10ms render p95, 0.40ms frame variation, zero long tasks and zero inference**, with document visibility `visible`. This establishes that the later ~12Hz rendering limit also occurred without MediaPipe; it is not evidence that inference caused the limit. The exact browser/system pacing cause is unresolved. No OS/browser performance or security settings were changed to force a result. Physical foreground-browser/hand tests are required. Real webcam recognition, exposure latency, RTX-specific delegation, thermal behavior and concurrent Ollama remain unmeasured.
+
+Final production build passed (`tsc -b && vite build`, 15.63s Vite phase): main JS **1,487.21kB / 424.18kB gzip**, CSS **30.50kB / 7.18kB gzip**, optional worker144.79kB, vision144.27kB, lazy GLTFLoader44.80kB. Existing large-chunk and Zod annotation warnings remain. These are build sizes, not memory or throughput measurements.

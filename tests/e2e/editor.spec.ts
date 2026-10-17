@@ -1,3 +1,4 @@
+import { showLeft } from "../helpers/workspaceTools";
 import { showTools } from "../helpers/workspaceTools";
 import { test, expect } from "../helpers/editorTest";
 test("invalid imports preserve the scene and show recovery advice", async ({
@@ -61,6 +62,7 @@ test("workspace renders and mouse editor commands persist through undo and impor
   await page.getByLabel("position X", { exact: true }).press("Tab");
   await expect(page.getByLabel("position X", { exact: true })).toHaveValue("4");
   await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await showLeft(page, "collection");
   await page.locator(".scene-list button").last().click();
   await expect(page.getByLabel("position X", { exact: true })).toHaveValue(
     "1.5",

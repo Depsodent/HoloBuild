@@ -42,6 +42,22 @@ export const operationSchema = z.discriminatedUnion("type", [
     .strict(),
   z
     .object({
+      type: z.literal("color"),
+      color: z
+        .string()
+        .regex(/^#[a-fA-F0-9]{6}$/)
+        .optional(),
+      reset: z.literal(true).optional(),
+      role: z.enum(roles).optional(),
+      level: z.number().int().min(0).max(5).optional(),
+    })
+    .strict()
+    .refine(
+      (o) => Boolean(o.color) !== Boolean(o.reset),
+      "Choose color or reset, not both.",
+    ),
+  z
+    .object({
       type: z.literal("rename"),
       name: z.string().trim().min(1).max(60),
     })

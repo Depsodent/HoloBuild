@@ -1,3 +1,5 @@
+import { useLeftStore } from "../../workspace/leftStore";
+import { ColorEditor } from "./ColorEditor";
 import { useState } from "react";
 import { Vector3 } from "three";
 import { Accordion } from "./Accordion";
@@ -37,7 +39,7 @@ export function StructureInspector({ id }: { id: string }) {
   const objects = useSceneStore((s) => s.objects),
     parts = members(objects, id),
     info = structureInfo(parts);
-  const [role, setRole] = useState("wall"),
+  const [role, setRole] = useState("all"),
     [level, setLevel] = useState(0);
   const activeLevel = Math.min(
     level,
@@ -141,31 +143,9 @@ export function StructureInspector({ id }: { id: string }) {
           />
         </label>
       </Accordion>
-      <Accordion
-        id="structure.components"
-        title={`Components · ${parts.length}`}
-      >
-        <div className="scene-list">
-          {parts.map((o) => (
-            <button
-              key={o.id}
-              onClick={() => {
-                const s = useSceneStore.getState();
-                s.setSelectionMode("component");
-                s.select(o.id);
-              }}
-            >
-              {o.name.split(" / ").at(-1)}
-              <small>
-                {o.construction!.role}
-                {o.construction!.level === undefined
-                  ? ""
-                  : ` / L${o.construction!.level + 1}`}
-              </small>
-            </button>
-          ))}
-        </div>
-      </Accordion>
+      <button onClick={() => useLeftStore.getState().setTab("collection")}>
+        Browse components
+      </button>
       <Accordion id="structure.materials" title="Materials">
         <p className="muted">
           {[
@@ -210,6 +190,27 @@ export function StructureInspector({ id }: { id: string }) {
             ))}
           </select>
         </label>
+        <ColorEditor
+          key={`${id}:${role}`}
+          label="Structure color"
+          objects={parts.filter(
+            (o) => role === "all" || o.construction!.role === role,
+          )}
+          onApply={(color) =>
+            run({
+              type: "color",
+              color,
+              ...(role === "all" ? {} : { role: role as "wall" }),
+            })
+          }
+          onReset={() =>
+            run({
+              type: "color",
+              reset: true,
+              ...(role === "all" ? {} : { role: role as "wall" }),
+            })
+          }
+        />
       </Accordion>
       <Accordion id="structure.ai" title="AI Edit">
         <button

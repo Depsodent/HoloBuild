@@ -1,3 +1,4 @@
+import { showLeft } from "../helpers/workspaceTools";
 import { showTools } from "../helpers/workspaceTools";
 import { test, expect } from "../helpers/editorTest";
 import { hold, poseAt, target } from "../helpers/gestureInput";
@@ -49,12 +50,16 @@ for (const kind of kinds) {
     expect(
       await page.evaluate(() => window.__HOLO_TEST__!.scene()[0].position),
     ).toEqual(position);
+    await showLeft(page, "collection");
     await page.locator(".scene-list button").click();
     await page.getByLabel("position Y", { exact: true }).fill("4");
     await page.getByLabel("rotation Y", { exact: true }).fill("45");
     await page.getByLabel("scale X", { exact: true }).fill("1.5");
     await page.getByLabel("Material", { exact: true }).selectOption("glass");
     await page.getByLabel("Object color", { exact: true }).fill("#ff8844");
+    await page
+      .getByRole("button", { name: "Apply Color", exact: true })
+      .click();
     const result = await page.evaluate(() => window.__HOLO_TEST__!.scene()[0]);
     expect(result.scale[0]).toBe(1.5);
     expect(result.rotation[1]).toBeCloseTo(Math.PI / 4);
@@ -139,6 +144,7 @@ test("mouse placement validation rejects overlap, supports snapping and keyboard
       }),
     ),
   });
+  await showLeft(page, "collection");
   await page.locator(".scene-list button").last().click();
   await page.getByLabel("position X", { exact: true }).fill("0");
   await expect(page.locator("footer .status")).toContainText("Action rejected");
@@ -158,6 +164,7 @@ test("mouse placement validation rejects overlap, supports snapping and keyboard
   await expect(page.getByLabel("position X", { exact: true })).toHaveValue(
     "3.26",
   );
+  await showLeft(page, "collection");
   await page.locator(".scene-list button").last().click();
   for (const [key, mode] of [
     ["r", "ROTATE"],

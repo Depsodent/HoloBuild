@@ -1,0 +1,104 @@
+{
+  "milestone": "10.2",
+  "date": "2026-10-17",
+  "project": "D:/Projects/HoloBuild",
+  "baseCheckpoint": "e460e25",
+  "checkpointMessage": "feat: milestone 10.2 colors, left tabs and GPU tracking",
+  "checks": {
+    "typescript": "passed",
+    "eslint": "passed",
+    "unit": {
+      "passed": 245,
+      "files": 27
+    },
+    "backend": {
+      "passed": 13
+    },
+    "browser": {
+      "initial": {
+        "startTime": "2026-10-17T11:31:11.663Z",
+        "duration": 1004238.8049999999,
+        "expected": 106,
+        "skipped": 0,
+        "unexpected": 3,
+        "flaky": 0
+      },
+      "targeted": {
+        "startTime": "2026-10-17T11:49:17.295Z",
+        "duration": 91231.407,
+        "expected": 11,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "final": {
+        "startTime": "2026-10-17T11:54:25.536Z",
+        "duration": 946976.88,
+        "expected": 111,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    "productionBuild": {
+      "passed": true,
+      "viteSeconds": 15.63,
+      "mainJsKb": 1487.21,
+      "mainJsGzipKb": 424.18,
+      "cssKb": 30.5,
+      "warnings": [
+        "Existing large chunk warning",
+        "Third-party Zod annotation warnings"
+      ]
+    }
+  },
+  "addedRegressionCases": {
+    "unit": 14,
+    "browser": 8
+  },
+  "finalSourceUnchangedDuringFullSuite": true,
+  "services": {
+    "frontend": "http://127.0.0.1:5175/",
+    "planner": "http://127.0.0.1:5180",
+    "ollama": "http://127.0.0.1:11434",
+    "frontendHttpStatus": 200,
+    "readOnlyPlannerConnection": "connected",
+    "configuredModel": "qwen3:4b-instruct",
+    "plannerBudgetMs": 120000
+  },
+  "hardwareObservations": {
+    "windowsAdapters": [
+      "AMD Radeon 740M Graphics",
+      "NVIDIA GeForce RTX 3050 Laptop GPU"
+    ],
+    "browserReportedSceneRenderer": "ANGLE (AMD, AMD Radeon 740M Graphics (0x00001901) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "finalGpuEngine": "main-thread GPU",
+    "finalAutoEngine": "main-thread GPU",
+    "nvidiaSpecificAccelerationVerified": false,
+    "ollamaResidentModelsAtAudit": []
+  },
+  "benchmarkFiles": [
+    "2026-10-17-10.2-baseline-cpu.json",
+    "2026-10-17-10.2-baseline-gpu.json",
+    "2026-10-17-10.2-final-auto.json",
+    "2026-10-17-10.2-final-cpu.json",
+    "2026-10-17-10.2-final-gpu.json",
+    "2026-10-17-10.2-final-idle.json"
+  ],
+  "limitations": [
+    "Native benchmark uses synthetic 640x480 video without a hand image; no physical webcam or motion-to-photon verification",
+    "GPU reduced inference duration in these samples, not consistently throughput; final idle rendering also limited to about 12.4 FPS, exact browser/system pacing cause unresolved",
+    "Renderer strings do not prove the physical GPU used for every MediaPipe operation; browser/OS GPU settings not changed",
+    "Concurrent Ollama generation contention not benchmarked; no new expensive live generation",
+    "Embedded Codex browser could not create WebGL; normal native Edge worked",
+    "Physical webcam, microphone and UI acceptance pending"
+  ],
+  "reports": {
+    "initial": "playwright-report/milestone-10.2-full.json",
+    "targeted": "playwright-report/milestone-10.2-targeted.json",
+    "final": "playwright-report/milestone-10.2-final.json"
+  },
+  "pushed": false,
+  "deployed": false,
+  "milestone11Started": false
+}

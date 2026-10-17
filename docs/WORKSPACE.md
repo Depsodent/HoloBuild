@@ -22,3 +22,11 @@ Prompt → Generate → nonselectable Preview → Confirm → selected whole str
 ## Physical acceptance required
 
 Test narrow sidebars, keyboard tabs, resizing/reload, scope visibility and inspector relevance. Start webcam, minimize its panel, and verify point/pinch/move/release/Undo in Auto; then two pinches for scale/yaw and staggered hand joining. Try imported objects and whole structures, hand loss, mouse takeover and Undo during preview. Try a finalized voice request with autosubmit on/off and Cancel, and a real Ollama plan/edit through preview/confirm/Undo. Physical camera/microphone performance and usability are pending your confirmation; synthetic browser tests do not establish acceptance. No Milestone 11 has begun.
+
+## Milestone 10.2 — left navigation
+
+The left sidebar now has **Gesture / Inspector / Collection** tabs with Arrow Left/Right, Home/End and roving keyboard focus. Only one primary pane occupies the sidebar. `holobuild.left-tab.v1` remembers the selection. Inspector holds the contextual object or whole-structure controls; Collection replaces the old embedded lists with name/type/role search and expandable structure/component groups. Selecting a component selects Part scope; selecting the group action selects Structure scope. A selection opens Inspector.
+
+The camera component, video and HandTracker remain mounted across tab changes. Inactive docked preview/landmark drawing is hidden; inference still uses the existing fresh-frame scheduler and watchdog. A compact **Stop Camera** remains in the sidebar when Inspector/Collection is active; the global Stop covers collapsed sidebars. Floating/docking, camera minimization, sidebar resizing, scrolling and prior layout preferences remain available. The optional camera settings contain delegate/quality choices and the Performance diagnostics toggle.
+
+Appearance offers common swatches, native picker and validated HEX (`#RGB` or `#RRGGBB`). Changes preview immediately without changing the scene, history or saved JSON. **Apply Color** commits one existing command; **Reset to Material Default** resets only tint, preserving optical parameters. Whole-structure Materials resolves All or actual component roles from metadata. Imported original PBR surfaces retain their maps/optics and receive a multiplicative instance tint.

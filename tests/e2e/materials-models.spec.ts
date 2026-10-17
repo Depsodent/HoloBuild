@@ -1,3 +1,4 @@
+import { showLeft } from "../helpers/workspaceTools";
 import { showTools, showGestureSettings } from "../helpers/workspaceTools";
 import { test, expect } from "../helpers/editorTest";
 import type { Page } from "@playwright/test";
@@ -162,11 +163,13 @@ test("all presets render without shader errors; material controls, undo and save
   await page.getByLabel("Texture repeats per metre").fill("2");
   await page.getByLabel("Roughness", { exact: true }).fill("0.5");
   await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await showLeft(page, "collection");
   await page.locator(".scene-list button").click();
   await expect(page.getByLabel("Roughness", { exact: true })).toHaveValue(
     "0.9",
   );
   await page.getByRole("button", { name: "Redo", exact: true }).click();
+  await showLeft(page, "collection");
   await page.locator(".scene-list button").click();
   await expect(page.getByLabel("Roughness", { exact: true })).toHaveValue(
     "0.5",

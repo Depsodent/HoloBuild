@@ -1,3 +1,4 @@
+import { showLeft } from "../helpers/workspaceTools";
 import {
   showTools,
   showGestureSettings,
@@ -78,6 +79,7 @@ test("accordion defaults, keyboard expansion, independent persistence and compac
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
+  await showLeft(page, "inspector");
   const materials = page.locator('[data-accordion-key="inspector.appearance"]'),
     transform = page.locator('[data-accordion-key="inspector.transform"]');
   expect(await materials.getAttribute("open")).toBeNull();
@@ -148,6 +150,7 @@ test("one-hand selection survives scale/rotate switching and staggered pinches n
     (await page.evaluate(() => window.__HOLO_TEST__!.scene()[0])).scale,
   ).toEqual(start.object.scale);
   await page.getByRole("button", { name: "Redo", exact: true }).click();
+  await showLeft(page, "collection");
   await page.locator(".scene-list button").click();
   await showGestureSettings(page);
   await page.getByLabel("Gesture mode", { exact: true }).selectOption("rotate");
