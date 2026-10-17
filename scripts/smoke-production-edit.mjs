@@ -87,10 +87,12 @@ try {
     oneStepExactUndo: true,
     exactRedo: true,
     pageErrors: 0,
-    hostedDeploymentTested: false,
+    hostedDeploymentTested: (process.env.HOLO_PREVIEW_URL || "").startsWith(
+      "https://",
+    ),
   };
   await fs.writeFile(
-    "docs/GEMINI_EDIT_VALIDATION.json",
+    process.env.HOLO_REPORT_PATH || "docs/GEMINI_EDIT_VALIDATION.json",
     JSON.stringify(report, null, 2) + "\n",
   );
   console.log(JSON.stringify(report, null, 2));

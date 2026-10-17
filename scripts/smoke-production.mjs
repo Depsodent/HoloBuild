@@ -118,7 +118,9 @@ try {
     .click();
   await tab("Build");
   await fs.mkdir("docs/images", { recursive: true });
-  await page.screenshot({ path: "docs/images/workspace.png" });
+  await page.screenshot({
+    path: process.env.HOLO_SCREENSHOT_PATH || "docs/images/workspace.png",
+  });
   // Inject one backend outage to exercise explicit Auto fallback in the actual bundle.
   await page.route("**/api/planner/plan", (route) =>
     route.fulfill({
@@ -175,10 +177,12 @@ try {
     timings,
     assets,
     physicalWebcamOrMicrophoneRetested: false,
-    hostedDeploymentTested: false,
+    hostedDeploymentTested: (process.env.HOLO_PREVIEW_URL || "").startsWith(
+      "https://",
+    ),
   };
   await fs.writeFile(
-    "docs/PRODUCTION_VALIDATION.json",
+    process.env.HOLO_REPORT_PATH || "docs/PRODUCTION_VALIDATION.json",
     JSON.stringify(report, null, 2) + "\n",
   );
   console.log(JSON.stringify(report, null, 2));

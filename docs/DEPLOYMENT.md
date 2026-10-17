@@ -1,6 +1,6 @@
 # GitHub and public deployment preparation
 
-Status: local preparation only. Do not create a repository, push, connect automatic hosting or deploy until the owner explicitly approves this plan. No public deployment has been verified. Milestone 11 is out of scope.
+Status: published after explicit owner approval. Public repository: https://github.com/Depsodent/HoloBuild. Production: https://holobuild.vercel.app. Public AI is enabled after successful staged security/quota checks, claimed Free Upstash and owner confirmation that Gemini billing is disabled. Milestone 11 remains out of scope. Earlier preparation and local validation below are retained as historical context; the final hosted release record takes precedence.
 
 ## Repository
 
@@ -69,3 +69,18 @@ These are request limits, not a guaranteed dollar cap: token usage varies, provi
 6. Ask the owner to physically test camera/microphone, Part/Structure pointing/grabbing and two-hand transforms. Record failures; do not infer acceptance from synthetic tests.
 
 If any launch gate fails, keep AI disabled and report it; local editing/Offline generation remain usable. No public URL exists until deployment is approved and succeeds.
+
+
+## Approved public release — 2026-10-18 (India)
+
+- Public GitHub: https://github.com/Depsodent/HoloBuild, master; approved baseline 38f2bb1 preserved with additive commits, no history rewrite. License distribution gate excludes unused stats-gl implementation and fails future builds if it enters the bundle; authentic missing notices were not fabricated.
+- Production: https://holobuild.vercel.app. Final deployment dpl_HUcY2aq2fB7bAYVRV49rq4YwjN3r is READY, Node24, Vercel Hobby. Frontend and planner share the same HTTPS origin. No GitHub automatic deployment integration was installed; future releases use an explicitly authenticated deployment.
+- Initially deployed with AI disabled: anonymous frontend, HTTPS redirect, camera/microphone self permissions, asset MIME types, private-path404, CORS403 and disabled-generation503 passed. Public JavaScript hashes matched the validated local build; exact known private credentials were absent. The final deployment contains no private environment/cache/Git/auth files; .env.example is intentionally a placeholder. All10 environment settings are sensitive and production-only.
+- Free Upstash was claimed by the owner; post-claim PING passed. The owner confirmed Gemini free tier with billing disabled. No paid service was activated. AI was enabled only after those confirmations and staged checks. Native exact model: gemini-3.5-flash-lite; timeout30s.
+- Real public quota test: five connection metadata requests200; sixth generation request429 before provider invocation. Actual Redis atomic tests also verified daily cap and two concurrent generation leases across independent guard instances. Production limits:5 requests/IP/minute,100 generation attempts/UTCday,2 global generations. Failures count, leases release/expire, missing store fails closed. After public generation/edit, active leases=0. These are application safeguards, not provider/account billing guarantees.
+- Real public Gemini browser construction:2.644s to preview, first streamed content1.10s; two validated parts, inert preview, confirm, exact single-action Undo/Redo, portable Save/Load. Injected outage produced explicit Offline fallback and safe cancellation. Real wall-material edit:1.797s, four walls changed, other objects preserved, inert preview and exact Undo/Redo. Zero page errors in both. Public Offline/mouse smoke also passed six shapes, Inspector, Collection Part/Structure, history and persistence.
+- Invalid public content type415, unknown fields422, oversized request502 (safely rejected with generic error; status specificity could improve). No validator or application timeout was relaxed. No provider request was needed for these rejection checks.
+- Retained verified baseline:249 unit tests,32 backend tests,114 serial Playwright cases; TypeScript and local/remote production builds passed. Full ESLint reran successfully for added hosted smoke scripts. Frontend/client behavior did not change during publication; no unnecessary duplicate full browser suite or expensive model benchmarks were run.
+- Receipts: HOSTED_RELEASE_VALIDATION.json, HOSTED_SECURITY_VALIDATION.json (initial AI-disabled stage), HOSTED_CONFIGURATION_VALIDATION.json, HOSTED_UI_VALIDATION.json, HOSTED_QUOTA_VALIDATION.json, HOSTED_REQUEST_VALIDATION.json, HOSTED_GEMINI_GENERATION_VALIDATION.json, HOSTED_GEMINI_EDIT_VALIDATION.json and REDIS_VALIDATION.json. Public screenshot: images/public-workspace.png. Earlier localhost receipts remain separate.
+- Free-tier quotas/cold starts/model variation may cause delays or rejected requests. CORS is not authentication; the endpoint is anonymous and bounded. Small live smokes do not establish arbitrary complex-plan quality. Public visibility does not grant a license to original UNLICENSED code.
+- Local development/configuration remains preserved. Physical webcam/microphone were not retested. Owner acceptance: open the HTTPS site; allow camera; point/pinch/move/release/Undo; select a generated structure and test two-hand scale/yaw; minimize camera and verify tracking/Stop; test microphone support; generate/edit then confirm/Undo/Redo/save/load. Do not begin Milestone11 before acceptance.

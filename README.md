@@ -65,6 +65,6 @@ Alternatively install Playwright Chromium and omit the channel override. Browser
 
 ## Publication and licensing
 
-Proposed repository: **Depsodent/HoloBuild, public**. Publication and deployment await explicit owner approval; no public website is claimed. The proposed host serves frontend and Gemini endpoints together on Vercel, with server-only secrets and a distributed Upstash quota guard. Read the [concrete deployment plan](docs/DEPLOYMENT.md) before enabling public AI.
+Public website: **[holobuild.vercel.app](https://holobuild.vercel.app)**. Repository: **[Depsodent/HoloBuild](https://github.com/Depsodent/HoloBuild)**. Published with explicit owner approval. Vercel serves the frontend and native Gemini endpoints together; credentials are protected server-side, with distributed Upstash quotas. Public AI was enabled only after staged security/quota checks and owner confirmation of free-tier billing. See the [deployment record](docs/DEPLOYMENT.md).
 
 Original project code is **UNLICENSED**: public visibility does not grant an open-source license. Author credits remain intact. See [third-party notices](THIRD_PARTY_NOTICES.md); build-generated full dependency notices are served at `/third-party-notices/index.json`. No personal imported models, private environment files, model weights or generated build/test artifacts are committed.

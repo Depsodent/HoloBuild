@@ -1,0 +1,80 @@
+{
+  "checkedAt": "2026-10-17T18:39:15.649Z",
+  "deployment": "dpl_HcaqrTeQBhLG9qNbJVdKC2hukkpN",
+  "uploadedPathsChecked": 256,
+  "unsafeFiles": [],
+  "allVariablesSensitive": true,
+  "productionOnly": true,
+  "variables": [
+    {
+      "key": "PLANNER_MODE",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "LLM_PROVIDER",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "GEMINI_MODEL",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "GEMINI_API_KEY",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "LLM_TIMEOUT_MS",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "APP_ORIGINS",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "PUBLIC_AI_ENABLED",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "PUBLIC_AI_DAILY_LIMIT",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "UPSTASH_REDIS_REST_URL",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "UPSTASH_REDIS_REST_TOKEN",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    }
+  ]
+}

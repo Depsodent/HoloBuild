@@ -1,0 +1,38 @@
+{
+  "testedAt": "2026-10-17T18:49:16.610Z",
+  "url": "https://holobuild.vercel.app",
+  "repository": "https://github.com/Depsodent/HoloBuild",
+  "approvedBaseline": "38f2bb1",
+  "deploymentId": "dpl_HUcY2aq2fB7bAYVRV49rq4YwjN3r",
+  "deploymentUrl": "https://holobuild-amsgsp7kc-aaryand616-6524.vercel.app",
+  "readyState": "READY",
+  "nodeVersion": "24.x",
+  "publicAIEnabled": true,
+  "provider": "Gemini",
+  "model": "gemini-3.5-flash-lite",
+  "protectedProductionSettings": 10,
+  "privateUploadPathsFound": 0,
+  "placeholderEnvExampleIncluded": true,
+  "vercelPlan": "Hobby",
+  "upstashPlan": "Free (owner confirmed claimed)",
+  "geminiBilling": "Disabled (owner confirmed)",
+  "paidServicesActivated": false,
+  "limits": {
+    "perIPPerMinute": 5,
+    "globalGenerationAttemptsPerUTCDate": 100,
+    "globalConcurrency": 2,
+    "timeoutMs": 30000
+  },
+  "regression": {
+    "unit": 249,
+    "backend": 32,
+    "serialBrowser": 114,
+    "typecheck": "passed",
+    "lint": "passed",
+    "localBuild": "passed",
+    "vercelBuild": "passed"
+  },
+  "publicGenerationPreviewMs": 2644.4823,
+  "publicEditPreviewMs": 1796.5399,
+  "physicalDevicesRetested": false
+}

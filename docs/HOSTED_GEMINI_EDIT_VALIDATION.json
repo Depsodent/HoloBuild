@@ -1,0 +1,14 @@
+{
+  "testedAt": "2026-10-17T18:47:49.706Z",
+  "productionBuild": true,
+  "realGeminiEdit": true,
+  "model": "gemini-3.5-flash-lite",
+  "previewMs": 1796.5398999999998,
+  "inertPreview": true,
+  "wallsChanged": 4,
+  "otherObjectsPreserved": true,
+  "oneStepExactUndo": true,
+  "exactRedo": true,
+  "pageErrors": 0,
+  "hostedDeploymentTested": true
+}

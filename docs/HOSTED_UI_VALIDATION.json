@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-10-17T18:40:51.639Z",
+  "url": "https://holobuild.vercel.app",
+  "anonymousPublicBrowser": true,
+  "sixShapes": true,
+  "mouseTransform": true,
+  "exactUndoRedo": true,
+  "partStructureCollectionSelection": true,
+  "offlineInertPreviewConfirmation": true,
+  "realDisabledBackendAutoFallback": true,
+  "cancelPreservesScene": true,
+  "portableSaveLoad": true,
+  "cameraStartAccessible": true,
+  "pageErrors": 0,
+  "physicalWebcamMicrophoneTested": false
+}

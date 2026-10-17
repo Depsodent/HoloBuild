@@ -10,5 +10,8 @@
   "sixthIPRequestRejected": true,
   "generationProviderCalled": false,
   "paidPlanActivated": false,
-  "ownershipClaimPending": true
+  "ownershipClaimPending": false,
+  "ownerConfirmedFreeClaim": true,
+  "ownerConfirmedGeminiBillingDisabled": true,
+  "postClaimPingPassed": true
 }

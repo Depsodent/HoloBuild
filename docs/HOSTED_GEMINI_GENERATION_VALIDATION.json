@@ -1,0 +1,47 @@
+{
+  "testedAt": "2026-10-17T18:47:24.321Z",
+  "url": "https://holobuild.vercel.app",
+  "productionBuild": true,
+  "developmentBridgeAbsent": true,
+  "sameOriginEndpoints": true,
+  "provider": "Gemini",
+  "model": "gemini-3.5-flash-lite",
+  "realGeminiUI": true,
+  "previewMs": 2644.4822999999997,
+  "partsAdded": 2,
+  "inertPreview": true,
+  "oneStepExactUndo": true,
+  "exactRedo": true,
+  "portableSaveLoad": true,
+  "pageErrors": 0,
+  "generationRequests": 2,
+  "liveModelRequests": 1,
+  "injectedOutageRequests": 1,
+  "explicitOfflineFallback": true,
+  "fallbackCancelPreservesScene": true,
+  "timings": "First content token\n1.10 s\nProvider headers\n1.10 s\nProvider total\n1.61 s\nServer validation\n0.00 s\nBackend end to end\n1.81 s\nClient schema/materialization\n0.01 s\nClient request + validation\n2.20 s\nModel loading\nUnavailable on compatible transport\nResident before request\nunknown",
+  "assets": [
+    {
+      "path": "/vision/hand_landmarker.task",
+      "status": 200,
+      "contentType": "application/octet-stream"
+    },
+    {
+      "path": "/vision/wasm/vision_wasm_internal.wasm",
+      "status": 200,
+      "contentType": "application/wasm"
+    },
+    {
+      "path": "/vision/wasm/vision_wasm_internal.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8"
+    },
+    {
+      "path": "/third-party-notices/index.json",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8"
+    }
+  ],
+  "physicalWebcamOrMicrophoneRetested": false,
+  "hostedDeploymentTested": true
+}

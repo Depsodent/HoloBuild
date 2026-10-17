@@ -1,0 +1,9 @@
+{
+  "testedAt": "2026-10-17T18:46:06.456Z",
+  "url": "https://holobuild.vercel.app",
+  "metadataStatuses": [200, 200, 200, 200, 200],
+  "sixthGenerationRequestStatus": 429,
+  "providerGenerationCalls": 0,
+  "distributedPerIpLimit": 5,
+  "passed": true
+}
