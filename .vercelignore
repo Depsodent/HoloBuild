@@ -16,3 +16,10 @@ coverage/
 *.safetensors
 .vercel/
 docs/benchmarks/
+
+# Generated locally; rebuilt from checked official sources
+public/vision/wasm/
+public/vision/*.task
+public/third-party-notices/
+# Development records are published on GitHub, not uploaded to the runtime
+docs/

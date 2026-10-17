@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-10-17T18:35:04.948Z",
+  "service": "Upstash Redis Free",
+  "actualRedis": true,
+  "atomicCrossInstanceConcurrencyCap": 2,
+  "thirdSimultaneousRequestRejected": true,
+  "leasesReleased": true,
+  "dailyCapRejection": true,
+  "perIPFivePerMinute": true,
+  "sixthIPRequestRejected": true,
+  "generationProviderCalled": false,
+  "paidPlanActivated": false,
+  "ownershipClaimPending": true
+}

@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { parseEnv } from "node:util";
 const privateValues = [];
-for (const file of [".env", ".env.gemini.local"]) {
+for (const file of [".env", ".env.gemini.local", ".env.hosted.local"]) {
   if (!fs.existsSync(file)) continue;
   for (const [name, value] of Object.entries(
     parseEnv(fs.readFileSync(file, "utf8")),
