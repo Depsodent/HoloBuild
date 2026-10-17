@@ -1,4 +1,4 @@
-import { SelectionMode, StructureInspector } from "./StructureInspector";
+import { StructureInspector } from "./StructureInspector";
 import { objectSize } from "../../scene/objectFactory";
 import { Copy, Trash2, RotateCcw } from "lucide-react";
 import { useSceneStore } from "../../scene/sceneStore";
@@ -50,7 +50,7 @@ export function ObjectInspector() {
   return (
     <aside className="panel inspector">
       <div className="eyebrow">OBJECT INSPECTOR</div>
-      <SelectionMode />
+
       <h2>{object ? object.name : "Nothing selected"}</h2>
       {object ? (
         <>

@@ -13,6 +13,7 @@ export interface FloatingPanelOptions {
   boundarySelector?: string;
   initialLayout?: (size: WorkspaceSize) => PanelLayout;
   minimized?: boolean;
+  minimizedHeight?: number;
 }
 function readLayout(storageKey: string) {
   try {
@@ -28,8 +29,14 @@ export function useFloatingPanel(
     boundarySelector,
     initialLayout = defaultLayout,
     minimized,
+    minimizedHeight = BAR_HEIGHT,
   }: FloatingPanelOptions = {},
 ) {
+  const fitLayout = useCallback(
+    (layout: PanelLayout, size: WorkspaceSize) =>
+      clampLayout(layout, size, minimizedHeight),
+    [minimizedHeight],
+  );
   const [storedLayout, setLayout] = useState(
     () => readLayout(storageKey) ?? initialLayout({ width: 800, height: 600 }),
   );
@@ -62,7 +69,7 @@ export function useFloatingPanel(
       const saved = readLayout(storageKey);
       const first = !initialized.current && !saved;
       setLayout((current) =>
-        clampLayout(
+        fitLayout(
           {
             ...(first ? initialLayout(size.current) : current),
             ...(minimized === undefined ? {} : { minimized }),
@@ -74,7 +81,14 @@ export function useFloatingPanel(
     });
     observer.observe(workspace);
     return () => observer.disconnect();
-  }, [panel, boundarySelector, storageKey, initialLayout, minimized]);
+  }, [
+    panel,
+    boundarySelector,
+    storageKey,
+    initialLayout,
+    minimized,
+    fitLayout,
+  ]);
   useEffect(() => {
     if (!initialized.current) return;
     try {
@@ -86,8 +100,8 @@ export function useFloatingPanel(
   const reset = useCallback(() => {
     previous.current = null;
     drag.current = null;
-    setLayout(clampLayout(initialLayout(size.current), size.current));
-  }, [initialLayout]);
+    setLayout(fitLayout(initialLayout(size.current), size.current));
+  }, [initialLayout, fitLayout]);
   useEffect(() => {
     window.addEventListener("holobuild:reset-layout", reset);
     return () => window.removeEventListener("holobuild:reset-layout", reset);
@@ -112,7 +126,7 @@ export function useFloatingPanel(
     const dx = e.clientX - d.x,
       dy = e.clientY - d.y;
     setLayout(
-      clampLayout(
+      fitLayout(
         d.mode === "move"
           ? { ...d.layout, x: d.layout.x + dx, y: d.layout.y + dy }
           : {
@@ -146,7 +160,7 @@ export function useFloatingPanel(
     previous.current = null;
     const step = e.shiftKey ? 40 : 10;
     setLayout((l) =>
-      clampLayout(
+      fitLayout(
         mode === "move"
           ? { ...l, x: l.x + direction[0] * step, y: l.y + direction[1] * step }
           : {
@@ -172,22 +186,22 @@ export function useFloatingPanel(
       left: layout.x,
       top: layout.y,
       width: layout.width,
-      height: layout.minimized ? BAR_HEIGHT : layout.height,
+      height: layout.minimized ? minimizedHeight : layout.height,
     },
     handle,
     minimize: () =>
       setLayout((l) =>
-        clampLayout({ ...l, minimized: !l.minimized }, size.current),
+        fitLayout({ ...l, minimized: !l.minimized }, size.current),
       ),
     reset,
     maximize: () => {
       if (previous.current) {
-        setLayout(clampLayout(previous.current, size.current));
+        setLayout(fitLayout(previous.current, size.current));
         previous.current = null;
       } else {
         previous.current = layout;
         setLayout(
-          clampLayout(
+          fitLayout(
             {
               x: 12,
               y: 12,

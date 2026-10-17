@@ -1,24 +1,21 @@
+import { showTools, openWorkspaceSection } from "../helpers/workspaceTools";
 import { test, expect, type Page } from "@playwright/test";
 import { target, hold, poseAt } from "../helpers/gestureInput";
 import { offlinePlan } from "../../src/generation/offline";
-async function open(page: Page, id: string) {
-  const g = page.locator(`[data-accordion-key="${id}"]`);
-  if ((await g.getAttribute("open")) === null)
-    await g.locator(":scope > summary").click();
+async function open(page: Page, key: string) {
+  await openWorkspaceSection(page, key);
 }
 async function ready(page: Page) {
   await page.goto("/?testInput");
   await target(page);
-  await page.getByRole("button", { name: "Pin Shapes", exact: true }).click();
   await open(page, "tools.voice");
-  await page
-    .getByRole("button", { name: "Pin Ask HoloBuild", exact: true })
-    .click();
 }
 async function plan(
   page: Page,
   text = "Build a small house with four walls and a roof",
 ) {
+  await showTools(page, "ai");
+  await showTools(page, "ai");
   await page.getByLabel("Ask HoloBuild", { exact: true }).fill(text);
   await page.getByRole("button", { name: "Send request", exact: true }).click();
   await expect(
@@ -204,6 +201,7 @@ test("two-story windows, parameter controls and component preview retain the ada
   await expect(page.getByLabel("Generation result")).toContainText(
     "Constructed",
   );
+  await showTools(page, "ai");
   await page
     .getByLabel("Ask HoloBuild", { exact: true })
     .scrollIntoViewIfNeeded();
@@ -214,7 +212,9 @@ test("scene changes invalidate reviewed placement; regeneration and rejected req
 }) => {
   await ready(page);
   await plan(page, "Build a bridge supported by pillars");
+  await showTools(page, "build");
   await page.getByTitle("Create Sphere", { exact: true }).click();
+  await showTools(page, "ai");
   await expect(
     page.getByRole("button", { name: "Confirm construction", exact: true }),
   ).toBeDisabled();
@@ -227,6 +227,7 @@ test("scene changes invalidate reviewed placement; regeneration and rejected req
   await page
     .getByRole("button", { name: "Cancel generation", exact: true })
     .click();
+  await showTools(page, "ai");
   await page
     .getByLabel("Ask HoloBuild", { exact: true })
     .fill("Build a castle");
@@ -248,6 +249,7 @@ test("mocked LLM validates to the same preview and clearly labels its source", a
     }),
   );
   await ready(page);
+  await showTools(page, "ai");
   await page.getByLabel("Planner mode", { exact: true }).selectOption("llm");
   await plan(page, "Build a room");
   await expect(page.getByLabel("Planner source")).toContainText(
@@ -272,7 +274,9 @@ test("invalid LLM output fails safely; Auto fallback is explicit and never calle
     }),
   );
   await ready(page);
+  await showTools(page, "ai");
   await page.getByLabel("Planner mode", { exact: true }).selectOption("llm");
+  await showTools(page, "ai");
   await page.getByLabel("Ask HoloBuild", { exact: true }).fill("Build a house");
   await page.getByRole("button", { name: "Send request", exact: true }).click();
   await expect(page.getByLabel("Generation result")).not.toContainText(
@@ -284,6 +288,7 @@ test("invalid LLM output fails safely; Auto fallback is explicit and never calle
   expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
     1,
   );
+  await showTools(page, "ai");
   await page.getByLabel("Planner mode", { exact: true }).selectOption("auto");
   await plan(page);
   await expect(page.getByLabel("Planner source")).toContainText(
@@ -309,7 +314,9 @@ test("Cancel aborts a pending model plan and late responses never create a previ
       .catch(() => {});
   });
   await ready(page);
+  await showTools(page, "ai");
   await page.getByLabel("Planner mode", { exact: true }).selectOption("llm");
+  await showTools(page, "ai");
   await page.getByLabel("Ask HoloBuild", { exact: true }).fill("Build a house");
   await page.getByRole("button", { name: "Send request", exact: true }).click();
   await expect.poll(() => received).toBe(true);
@@ -347,11 +354,13 @@ test("text and final voice route explicit structures to preview; simple commands
     });
   });
   await ready(page);
+  await showTools(page, "ai");
   await page.getByLabel("Ask HoloBuild", { exact: true }).fill("Create a cube");
   await page.getByRole("button", { name: "Send request", exact: true }).click();
   expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
     2,
   );
+  await showTools(page, "ai");
   await page
     .getByRole("button", { name: "Start listening", exact: true })
     .click();
@@ -361,7 +370,7 @@ test("text and final voice route explicit structures to preview; simple commands
         window as unknown as {
           structureSpeech: { onresult: (e: unknown) => void };
         }
-      ).structureSpeech.onresult({
+      ).structureSpeech.onresult?.({
         resultIndex: 0,
         results: [
           { isFinal: true, 0: { transcript: "Build a room with a doorway" } },
@@ -376,9 +385,9 @@ test("text and final voice route explicit structures to preview; simple commands
   expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
     2,
   );
-  await page
-    .getByRole("button", { name: "Stop listening", exact: true })
-    .click();
+  await expect(page.getByLabel("Listening status")).toContainText(
+    "Final transcript",
+  );
   await page
     .getByRole("button", { name: "Confirm construction", exact: true })
     .click();
@@ -394,6 +403,7 @@ test("generated parts remain targetable by the existing gesture ray/controller",
   await page
     .getByRole("button", { name: "Confirm construction", exact: true })
     .click();
+  await page.getByLabel("Selection mode").selectOption("component");
   const scene = await page.evaluate(() => window.__HOLO_TEST__!.scene());
   const pillar = scene.filter((o) => o.construction?.role === "pillar").at(-1)!;
   const point = await page.evaluate(
@@ -409,4 +419,49 @@ test("generated parts remain targetable by the existing gesture ray/controller",
   expect(await page.evaluate(() => window.__HOLO_TEST__!.scene())).toEqual(
     scene,
   );
+});
+
+test("planner budget defaults to 120s, pending requests are deduplicated and SSE labels real provider", async ({
+  page,
+}) => {
+  let calls = 0;
+  let finish: () => void = () => {};
+  const gate = new Promise<void>((r) => (finish = r));
+  const plan = offlinePlan("Build a room");
+  await page.route("**/api/planner/plan", async (route) => {
+    calls++;
+    expect(route.request().postDataJSON().timeoutMs).toBe(120000);
+    await gate;
+    await route.fulfill({
+      contentType: "text/event-stream",
+      body: `event: progress\ndata: {"stage":"Generating","provider":"Ollama"}\n\nevent: result\ndata: ${JSON.stringify({ source: "llm", provider: "Ollama", model: "mock-local", plan })}\n\n`,
+    });
+  });
+  await ready(page);
+  await page.getByLabel("Planner mode").selectOption("llm");
+  await page.getByLabel("Ask HoloBuild", { exact: true }).fill("Build a room");
+  await page.getByRole("button", { name: "Send request", exact: true }).click();
+  await expect(page.getByLabel("Planner activity")).toContainText("Connecting");
+  await expect(
+    page.getByRole("button", { name: "Send request", exact: true }),
+  ).toBeDisabled();
+  await page.getByLabel("Ask HoloBuild", { exact: true }).press("Enter");
+  expect(calls).toBe(1);
+  finish();
+  await expect(page.getByLabel("Planner activity")).toContainText(
+    "Ollama · Preview Ready",
+  );
+  await expect(page.getByLabel("Planner source")).toContainText("Ollama · LLM");
+  await page
+    .getByRole("button", { name: "Confirm construction", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Edit Structure", exact: true })
+    .click();
+  await expect(
+    page.getByRole("tab", { name: "Edit", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
+  await expect(
+    page.getByLabel("Structure Inspector", { exact: true }),
+  ).toBeVisible();
 });

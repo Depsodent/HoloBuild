@@ -1,3 +1,6 @@
+import { usePlannerProgress } from "./plannerTransport";
+import { recordClientValidation } from "./plannerTransport";
+import { plannerRequest, plannerStage } from "./plannerTransport";
 import {
   cleanPrompt,
   planSchema,
@@ -91,27 +94,26 @@ export async function generatePlan(
     throw Error("Planner timeout must be 1–120 seconds.");
   if (mode !== "offline") {
     try {
-      const response = await fetch("/api/planner/plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, ...settings }),
-        signal: AbortSignal.any([
-          ...(signal ? [signal] : []),
-          AbortSignal.timeout(settings.timeoutMs ?? 30000),
-        ]),
-      });
-      const result = await jsonResponse(response);
+      const result = await plannerRequest(
+        "/api/planner/plan",
+        { prompt, ...settings },
+        signal,
+      );
       if (result.source !== "llm") throw Error("Invalid planner source.");
+      const validating = performance.now();
       const plan = planSchema.parse(result.plan);
       materializePlan(plan);
+      recordClientValidation(validating);
       return {
         plan,
         source: "llm",
-        notice: `LLM · ${String(result.model).slice(0, 120)}. Parameter controls apply to Offline only.`,
+        notice: `${result.provider ?? "LLM"} · LLM · ${String(result.model).slice(0, 120)}. Parameter controls apply to Offline only.`,
       };
     } catch (error) {
       if (signal?.aborted) throw new DOMException("Cancelled", "AbortError");
       if (mode === "llm") throw error;
+      plannerStage("Validating", "Offline fallback");
+      usePlannerProgress.setState({ timings: null });
       const plan = offlinePlan(prompt, options);
       return {
         plan,
@@ -120,6 +122,7 @@ export async function generatePlan(
       };
     }
   }
+  plannerStage("Validating", "Offline template");
   return {
     plan: offlinePlan(prompt, options),
     source: "offline",

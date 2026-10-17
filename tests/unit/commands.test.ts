@@ -226,7 +226,7 @@ class FakeRecognition implements Recognition {
   start = vi.fn();
   abort = vi.fn();
 }
-it("speech executes only final result indices once, allows deliberate repetition and ignores stopped callbacks", () => {
+it("speech ends after one final result, allows a new deliberate capture and ignores stopped callbacks", () => {
   const states: SpeechState[] = [],
     run = vi.fn(),
     c = new SpeechController(FakeRecognition, (s) => states.push(s), run);
@@ -248,8 +248,14 @@ it("speech executes only final result indices once, allows deliberate repetition
     results: [event.results[0], event.results[0]],
   };
   r.onresult?.(repeated);
+  expect(run).toHaveBeenCalledTimes(1);
+  expect(r.abort).toHaveBeenCalledTimes(1);
+  c.start();
+  const next = FakeRecognition.latest;
+  next.onresult?.(event);
   expect(run).toHaveBeenCalledTimes(2);
-  const late = r.onresult;
+  c.start();
+  const late = FakeRecognition.latest.onresult;
   c.stop();
   late?.({
     resultIndex: 2,

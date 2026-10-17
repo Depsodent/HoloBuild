@@ -1,3 +1,4 @@
+import { showGestureSettings } from "../helpers/workspaceTools";
 import { test, expect } from "../helpers/editorTest";
 import type { Locator } from "@playwright/test";
 import { target, hold, poseAt } from "../helpers/gestureInput";
@@ -74,6 +75,8 @@ test("each sidebar section scrolls without moving its neighbours or the viewport
   await page.setViewportSize({ width: 1600, height: 600 });
   await page.goto("/?testInput");
   await target(page);
+  // The clean Build tab need not overflow. Exercise scrolling with real advanced controls.
+  await showGestureSettings(page);
   const canvas = page.locator("canvas[data-engine]");
   const before = await box(canvas);
   const camera = page.getByLabel("Gesture camera");
@@ -578,7 +581,7 @@ test("layout handles cancel an active grab without committing or changing gestur
   });
   expect((await target(page)).object.position).toEqual(start.object.position);
   await expect(page.getByLabel("Gesture mode", { exact: true })).toHaveValue(
-    "move",
+    "auto",
   );
   await hold(page, poseAt("pointing", start.cursor));
   await hold(page, poseAt("pinch", start.cursor));

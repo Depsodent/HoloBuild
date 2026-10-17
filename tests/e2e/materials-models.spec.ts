@@ -1,3 +1,4 @@
+import { showTools, showGestureSettings } from "../helpers/workspaceTools";
 import { test, expect } from "../helpers/editorTest";
 import type { Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
@@ -251,6 +252,7 @@ test("lighting controls affect the rendered scene, reset and persist with projec
 }) => {
   await page.goto("/?testInput");
   await target(page);
+  await showTools(page, "scene");
   await page.getByText("Studio lighting", { exact: true }).click();
   const before = await page.locator("canvas[data-engine]").screenshot();
   await page.getByLabel("ambient intensity").fill("0.2");
@@ -365,6 +367,7 @@ test("model assets survive reload via IndexedDB and export into a fresh browser 
   const original = await page.evaluate(() => window.__HOLO_TEST__!.scene());
   await page.reload();
   await target(page);
+  await showTools(page, "scene");
   await page.getByRole("button", { name: "Restore local project" }).click();
   await expect
     .poll(() => page.evaluate(() => window.__HOLO_TEST__!.scene()))
@@ -444,6 +447,7 @@ test("imported model two-hand scaling and rotation commit through normal history
     );
     await page.clock.runFor(700);
   }
+  await showGestureSettings(page);
   await page.getByLabel("Gesture mode", { exact: true }).selectOption("scale");
   await hold(page, [], 50);
   await hands(0.25, false);
@@ -454,6 +458,7 @@ test("imported model two-hand scaling and rotation commit through normal history
     (await page.evaluate(() => window.__HOLO_TEST__!.scene()[0])).scale[0],
   ).toBeGreaterThan(1.4);
   await hold(page, [], 50);
+  await showGestureSettings(page);
   await page.getByLabel("Gesture mode", { exact: true }).selectOption("rotate");
   await hands(0.3, false);
   await hands(0.3, true);

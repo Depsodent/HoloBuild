@@ -6,13 +6,12 @@ export function HandGuides() {
   const state = useAdvancedStore(),
     hands = useHandsStore();
   const phase = useInteractionStore((s) => s.phase);
-  const active =
-    state.mode === "move"
-      ? phase === "dragging" || phase === "invalid"
-      : state.active;
+  const active = state.active || phase === "dragging" || phase === "invalid";
   const paired =
     hands.hands.length === 2 &&
-    (state.mode === "scale" || state.mode === "rotate");
+    (state.mode === "auto" ||
+      state.mode === "scale" ||
+      state.mode === "rotate");
   const points = hands.hands.map(handReference);
   return (
     <>
@@ -45,20 +44,26 @@ export function HandGuides() {
           ))}
         </svg>
       )}
-      {(hands.hands.length > 0 || state.mode !== "move") && (
+      {(hands.hands.length > 0 || state.active) && (
         <div className="advanced-hud" aria-label="Advanced gesture feedback">
           <strong>
             {state.mode === "navigate"
               ? "CAMERA PAN"
-              : state.mode.toUpperCase()}{" "}
+              : (state.intent ?? state.mode).toUpperCase()}{" "}
             · {active ? "ACTIVE" : "READY"}
           </strong>
           <span>
-            {hands.hands.length} tracked hands
+            {state.intent === "detect"
+              ? "Detecting scale/rotation"
+              : `${hands.hands.length} tracked hands`}
             {hands.ambiguous ? " · separate hands" : ""}
           </span>
-          {state.mode === "scale" && <b>{state.factor.toFixed(2)}× scale</b>}
-          {state.mode === "rotate" && <b>{state.angle.toFixed(1)}° yaw</b>}
+          {(state.mode === "scale" || state.intent === "scale") && (
+            <b>{state.factor.toFixed(2)}× scale</b>
+          )}
+          {(state.mode === "rotate" || state.intent === "rotate") && (
+            <b>{state.angle.toFixed(1)}° yaw</b>
+          )}
         </div>
       )}
     </>

@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "provider": "Ollama",
+  "elapsedMs": 26216,
+  "timings": {
+    "firstTokenMs": 767.9821999999986,
+    "headerMs": 766.9346000000005,
+    "providerMs": 25564.660600000003,
+    "validationMs": 5.591200000002573,
+    "totalMs": 25608.95,
+    "modelLoadMs": null,
+    "residentBefore": true,
+    "residentVramBytes": 2344636907,
+    "clientValidationMs": 37.5,
+    "clientTotalMs": 25726.900000000373
+  },
+  "atomicHistory": true,
+  "undoRestored": true,
+  "pageErrors": [],
+  "physicalWebcamTested": false
+}

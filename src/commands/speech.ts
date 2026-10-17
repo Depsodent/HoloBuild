@@ -65,7 +65,7 @@ export class SpeechController {
       failed = false;
     const current = () =>
       generation === this.generation && this.recognition === r;
-    r.continuous = true;
+    r.continuous = false;
     r.interimResults = true;
     r.lang = "en-US";
     r.maxAlternatives = 1;
@@ -89,7 +89,24 @@ export class SpeechController {
         if (!e.results[i].isFinal || seen.has(i)) continue;
         seen.add(i); // Result indices are stable within one recognition session.
         const text = e.results[i][0]?.transcript.trim();
-        if (text) this.final(text);
+        if (text) {
+          this.recognition = null;
+          this.generation++;
+          r.onstart = r.onend = r.onnomatch = null;
+          r.onresult = r.onerror = null;
+          try {
+            r.abort();
+          } catch {
+            /* Already finalized. */
+          }
+          this.change({
+            status: "idle",
+            message: "Final transcript ready.",
+            transcript: text,
+          });
+          this.final(text);
+          break;
+        }
       }
     };
     r.onnomatch = () => {

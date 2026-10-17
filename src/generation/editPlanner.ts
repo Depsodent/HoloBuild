@@ -1,3 +1,6 @@
+import { usePlannerProgress } from "./plannerTransport";
+import { recordClientValidation } from "./plannerTransport";
+import { plannerRequest, plannerStage } from "./plannerTransport";
 import { cleanPrompt } from "../../shared/planSchema.mjs";
 import {
   editPlanSchema,
@@ -171,35 +174,31 @@ export async function interpretEdit(
   signal: AbortSignal,
 ) {
   const prompt = cleanPrompt(input);
-  if (mode === "offline")
+  if (mode === "offline") {
+    plannerStage("Validating", "Offline deterministic edit");
     return {
       plan: deterministicEdit(prompt),
       source: "Offline deterministic edit",
     };
+  }
   try {
-    const response = await fetch("/api/planner/edit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, context, ...settings }),
-      signal: AbortSignal.any([
-        signal,
-        AbortSignal.timeout(settings.timeoutMs ?? 30000),
-      ]),
-    });
-    const data = await response.json();
-    if (!response.ok)
-      throw Error(
-        typeof data.error === "string"
-          ? data.error
-          : "Edit planner unavailable.",
-      );
+    const data = await plannerRequest(
+      "/api/planner/edit",
+      { prompt, context, ...settings },
+      signal,
+    );
     if (data.source !== "llm") throw Error("Invalid edit source.");
+    const validating = performance.now();
+    const plan = editPlanSchema.parse(data.plan);
+    recordClientValidation(validating);
     return {
-      plan: editPlanSchema.parse(data.plan),
-      source: `LLM edit / ${String(data.model).slice(0, 120)}`,
+      plan,
+      source: `LLM edit / ${data.provider ?? "Compatible"} / ${String(data.model).slice(0, 120)}`,
     };
   } catch (error) {
     if (signal.aborted || mode === "llm") throw error;
+    plannerStage("Validating", "Offline edit fallback");
+    usePlannerProgress.setState({ timings: null });
     return {
       plan: deterministicEdit(prompt),
       source: `Offline edit fallback: ${error instanceof Error ? error.message : "LLM unavailable"}`,

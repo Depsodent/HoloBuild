@@ -1,6 +1,7 @@
+import { useLightingStore } from "../../scene/lightingStore";
 import { StructureControls } from "./StructureControls";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useRef } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useRef, useEffect, memo } from "react";
 import { useSceneStore } from "../../scene/sceneStore";
 import { Grid } from "./Grid";
 import { SceneLights } from "./SceneLights";
@@ -12,7 +13,38 @@ import { GestureInteraction, PlacementPreview } from "./GestureInteraction";
 import { SurfaceResources } from "./SurfaceMaterial";
 import { performanceMetrics } from "../../vision/performanceStore";
 import { GenerationPreview } from "./GenerationPreview";
+function ShadowCache() {
+  const gl = useThree((s) => s.gl),
+    objects = useSceneStore((s) => s.objects),
+    lighting = useLightingStore((s) => s.lighting),
+    preview = useSceneStore((s) => !!s.preview);
+  useEffect(() => {
+    gl.shadowMap.autoUpdate = false;
+    gl.shadowMap.needsUpdate = true;
+    return () => {
+      gl.shadowMap.autoUpdate = true;
+    };
+  }, [gl, objects, lighting, preview]);
+  return null;
+}
 function Metrics() {
+  useEffect(() => {
+    if (
+      typeof PerformanceObserver === "undefined" ||
+      !PerformanceObserver.supportedEntryTypes?.includes("longtask")
+    )
+      return;
+    performanceMetrics.longTaskSupport(true);
+    const observer = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries())
+        performanceMetrics.longTask(entry.startTime, entry.duration);
+    });
+    observer.observe({ type: "longtask" });
+    return () => {
+      observer.disconnect();
+      performanceMetrics.longTaskSupport(false);
+    };
+  }, []);
   const timer = useRef({ elapsed: 0, frames: 0 });
   useFrame(({ gl }, delta) => {
     performanceMetrics.render(performance.now(), delta * 1000);
@@ -28,7 +60,7 @@ function Metrics() {
   });
   return null;
 }
-export function Scene() {
+export const Scene = memo(function Scene() {
   const objects = useSceneStore((s) => s.objects);
   return (
     <ViewportBoundary>
@@ -47,6 +79,7 @@ export function Scene() {
         <color attach="background" args={["#0a121e"]} />
         <fog attach="fog" args={["#0a121e", 25, 65]} />
         <SceneLights />
+        <ShadowCache />
         <StudioEnvironment />
         <Grid />
         <CameraController />
@@ -75,4 +108,4 @@ export function Scene() {
       </Canvas>
     </ViewportBoundary>
   );
-}
+});

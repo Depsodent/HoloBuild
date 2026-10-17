@@ -1,3 +1,4 @@
+import {SelectionMode} from "./components/ui/StructureInspector";
 import { useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { GestureCursor } from "./components/ui/GestureCursor";
@@ -209,6 +210,7 @@ export default function App() {
               <span className="eyebrow">WORKSPACE / 01</span>
               <h1>3D Workspace</h1>
             </div>
+            <SelectionMode/>
             <span className="view-label">
               PERSPECTIVE <span>⌖</span>
             </span>

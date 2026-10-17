@@ -1,3 +1,7 @@
+import { AutoIntent } from "./autoIntent";
+import type { Preview } from "../scene/sceneStore";
+import { structureInfo } from "../scene/structures";
+import type { StructureMetadata } from "../scene/objectTypes";
 import type { HandsFrame } from "../vision/handRecognizer";
 import type { SceneObject } from "../scene/objectTypes";
 import { useSceneStore } from "../scene/sceneStore";
@@ -15,6 +19,7 @@ import {
   yawRotation,
 } from "./twoHandMath";
 export class TwoHandController {
+  constructor(private takeover?: () => Preview | null) {}
   private ready = new Map<number, number>();
   private selectionKey = "";
   private lastFrame = 0;
@@ -24,7 +29,11 @@ export class TwoHandController {
     object: SceneObject;
     distance: number;
     factor: number;
-    mode: "scale" | "rotate";
+    mode: "detect" | "scale" | "rotate";
+    requestedMode: "auto" | "scale" | "rotate";
+    arbitration: AutoIntent;
+    initialPreview: Preview | null;
+    groupFrame: StructureMetadata | null;
     lastAngle: number;
     unwrapped: number;
     angle: number;
@@ -44,13 +53,20 @@ export class TwoHandController {
     this.selectionKey = "";
     if (!wasActive) return;
     useSceneStore.setState({ preview: null });
-    useAdvancedStore.setState({ active: false, readyHands: 0, message });
+    useAdvancedStore.setState({
+      active: false,
+      intent: null,
+      readyHands: 0,
+      message,
+    });
     useInteractionStore.setState({ phase: "idle", hoveredId: null });
   }
   update(frame: HandsFrame) {
     const state = useAdvancedStore.getState();
     if (
-      (state.mode !== "scale" && state.mode !== "rotate") ||
+      (state.mode !== "auto" &&
+        state.mode !== "scale" &&
+        state.mode !== "rotate") ||
       useInteractionStore.getState().menuOpen
     ) {
       this.ready.clear();
@@ -63,7 +79,8 @@ export class TwoHandController {
     const key = `${state.mode}:${selected?.id ?? ""}`;
     if (
       !this.active &&
-      (key !== this.selectionKey || frame.timestamp - this.lastFrame > 250)
+      ((key !== this.selectionKey && state.mode !== "auto") ||
+        frame.timestamp - this.lastFrame > 250)
     )
       this.ready.clear();
     this.selectionKey = key;
@@ -101,7 +118,7 @@ export class TwoHandController {
       for (const h of unstable) this.ready.delete(h.id);
       status(
         selected
-          ? `Object selected: ${selected.name} · Waiting for second hand to stabilize.`
+          ? `Object selected: ${selected?.name ?? "none"} · Waiting for second hand to stabilize.`
           : "Select an object once with one-hand pinch or mouse.",
       );
       return;
@@ -114,7 +131,7 @@ export class TwoHandController {
     if (this.session) {
       const s = this.session;
       if (
-        state.mode !== s.mode ||
+        state.mode !== s.requestedMode ||
         selected?.id !== s.object.id ||
         ids !== s.ids ||
         frame.timestamp - s.time > 250 ||
@@ -135,9 +152,16 @@ export class TwoHandController {
         const preview = useSceneStore.getState().preview;
         this.session = null;
         this.ready.clear();
-        useAdvancedStore.setState({ active: false, readyHands: 0 });
+        useAdvancedStore.setState({
+          active: false,
+          intent: null,
+          readyHands: 0,
+        });
         const history = useSceneStore.getState().past.length;
-        const committed = preview?.valid && commitPlacement(preview);
+        const committed =
+          s.mode === "detect"
+            ? s.initialPreview?.valid && commitPlacement(s.initialPreview)
+            : preview?.valid && commitPlacement(preview);
         useSceneStore.setState({ preview: null });
         useInteractionStore.setState({ phase: "idle", hoveredId: null });
         useAdvancedStore.setState({
@@ -145,27 +169,45 @@ export class TwoHandController {
             ? useSceneStore.getState().past.length === history
               ? "Transform unchanged. No undo entry."
               : "Transform placed. One Undo restores it."
-            : "Invalid transform cancelled.",
+            : s.mode === "detect" && !s.initialPreview
+              ? "No deliberate transform. Preview canceled."
+              : "Invalid transform cancelled.",
         });
         return;
       }
-      const alpha = 1 - Math.exp(-Math.max(0, elapsed) / 85);
       const rawAngle = handAngle(hands[0], hands[1], frame.aspectRatio);
-      if (
-        s.mode === "rotate" &&
-        handDistance(hands[0], hands[1], frame.aspectRatio) < 0.08
-      ) {
-        this.cancel("Separate pinches for stable rotation.");
+      const distance = handDistance(hands[0], hands[1], frame.aspectRatio);
+      if (distance < 0.08) {
+        this.cancel("Separate pinches for a stable reference.");
         return;
       }
       s.unwrapped += angleDelta(rawAngle, s.lastAngle);
       s.lastAngle = rawAngle;
+      if (s.mode === "detect") {
+        const intent = s.arbitration.update(
+          Math.log(distance / s.distance),
+          s.unwrapped,
+          frame.timestamp,
+          state.autoThresholds,
+        );
+        if (!intent) {
+          status(
+            "Detecting scale/rotation · separate hands or turn the hand line.",
+          );
+          return;
+        }
+        s.mode = intent;
+        useAdvancedStore.setState({
+          intent,
+          message:
+            intent === "scale"
+              ? "Scaling active · Release to confirm."
+              : "Rotation active · Release to confirm.",
+        });
+      }
+      const alpha = 1 - Math.exp(-Math.max(0, elapsed) / 85);
       s.angle += (s.unwrapped * s.sensitivity - s.angle) * alpha;
-      const target = boundedFactor(
-        s.object.scale,
-        handDistance(hands[0], hands[1], frame.aspectRatio) / s.distance,
-      );
-      // Landmark smoothing plus bounded per-frame interpolation avoids jumps.
+      const target = boundedFactor(s.object.scale, distance / s.distance);
       s.factor += (target - s.factor) * alpha;
       const scale = s.object.scale.map(
         (v) => v * (s.mode === "scale" ? s.factor : 1),
@@ -183,9 +225,25 @@ export class TwoHandController {
       );
       const grouped = groupPreview(
         s.object.id,
-        s.mode === "scale"
-          ? { type: "scale", factors: [s.factor, s.factor, s.factor] }
-          : { type: "rotate", angle: s.angle },
+        s.groupFrame
+          ? {
+              type: "setTransform",
+              position: s.groupFrame.position,
+              yaw: Math.atan2(
+                Math.sin(
+                  s.groupFrame.yaw + (s.mode === "rotate" ? s.angle : 0),
+                ),
+                Math.cos(
+                  s.groupFrame.yaw + (s.mode === "rotate" ? s.angle : 0),
+                ),
+              ),
+              scale: s.groupFrame.scale.map(
+                (v) => v * (s.mode === "scale" ? s.factor : 1),
+              ) as SceneObject["scale"],
+            }
+          : s.mode === "scale"
+            ? { type: "scale", factors: [s.factor, s.factor, s.factor] }
+            : { type: "rotate", angle: s.angle },
       );
       useSceneStore.setState({
         preview: grouped ?? {
@@ -217,7 +275,7 @@ export class TwoHandController {
       }
       return;
     }
-    if (!selected) {
+    if (!selected && state.mode !== "auto") {
       this.ready.clear();
       status(
         "Select an object once: point and pinch with one hand, or click it.",
@@ -238,17 +296,17 @@ export class TwoHandController {
         this.ready.set(h.id, frame.timestamp);
     if (hands.length < 2) {
       status(
-        `Object selected: ${selected.name} · Waiting for ${hands.length ? "second hand" : "hands"}.`,
+        `Object selected: ${selected?.name ?? "none"} · Waiting for ${hands.length ? "second hand" : "hands"}.`,
       );
       return;
     }
     const prepared = hands.every((h) => this.ready.has(h.id));
     status(
       prepared
-        ? `Object selected: ${selected.name} · Pinch both hands (up to 4 s apart).`
+        ? `Object selected: ${selected?.name ?? "none"} · Pinch both hands (up to 4 s apart).`
         : "Open thumb and index on each hand once, then pinch both.",
     );
-    if (closed && prepared) {
+    if (closed && prepared && selected) {
       this.ready.clear();
       const scene = useSceneStore.getState(),
         object = scene.objects.find((o) => o.id === scene.selectedId);
@@ -259,13 +317,35 @@ export class TwoHandController {
         });
         return;
       }
+      const initialPreview =
+        state.mode === "auto" ? (this.takeover?.() ?? null) : null;
+      if (initialPreview && !initialPreview.valid) {
+        this.cancel("Invalid movement cancelled before two-hand transform.");
+        useSceneStore.setState({ preview: null });
+        return;
+      }
+      const baseObject = initialPreview
+        ? {
+            ...object,
+            position: initialPreview.position,
+            scale: initialPreview.scale ?? object.scale,
+            rotation: initialPreview.rotation ?? object.rotation,
+          }
+        : object;
+      const groupFrame = initialPreview?.structure?.objects.length
+        ? structureInfo(initialPreview.structure.objects)
+        : null;
       scene.setTool("select");
       this.session = {
         ids,
-        object: structuredClone(object),
+        object: structuredClone(baseObject),
+        initialPreview,
+        groupFrame,
+        arbitration: new AutoIntent(),
+        requestedMode: state.mode,
         distance,
         factor: 1,
-        mode: state.mode,
+        mode: state.mode === "auto" ? "detect" : state.mode,
         lastAngle: handAngle(hands[0], hands[1], frame.aspectRatio),
         unwrapped: 0,
         angle: 0,
@@ -276,20 +356,24 @@ export class TwoHandController {
       useSceneStore.setState({
         preview: {
           id: object.id,
-          position: [...object.position],
-          scale: [...object.scale],
+          ...(initialPreview ?? {}),
+          position: [...baseObject.position],
+          scale: [...baseObject.scale],
           valid: true,
         },
       });
       useAdvancedStore.setState({
         active: true,
+        intent: state.mode === "auto" ? "detect" : state.mode,
         readyHands: 2,
         factor: 1,
         angle: 0,
         message:
-          state.mode === "scale"
-            ? "Scaling active · Move hands apart/together. Release to confirm."
-            : "Rotating active · Tilt the hand line. Release to confirm.",
+          state.mode === "auto"
+            ? "Detecting scale/rotation · separate hands or turn the hand line."
+            : state.mode === "scale"
+              ? "Scaling active · Move hands apart/together. Release to confirm."
+              : "Rotating active · Tilt the hand line. Release to confirm.",
       });
       useInteractionStore.setState({ phase: "dragging", hoveredId: object.id });
     }

@@ -1,3 +1,5 @@
+import { plannerPreferences, persistPlanner } from "./plannerPreferences";
+import { plannerStage } from "./plannerTransport";
 import { cancelEdit, useEditStore } from "./editStore";
 import { create } from "zustand";
 import { preparePlan, type PreparedPlan } from "./engine";
@@ -10,7 +12,7 @@ export const useGenerationStore = create(() => ({
   mode: "offline" as PlannerMode,
   options: {} as OfflineOptions,
   model: "",
-  timeoutMs: 30000,
+  timeoutMs: plannerPreferences().timeoutMs,
   prepared: null as PreparedPlan | null,
   source: "",
   notice: "",
@@ -22,6 +24,7 @@ export const useGenerationStore = create(() => ({
 let controller: AbortController | null = null,
   request = 0;
 export function cancelGeneration(message = "Plan cancelled. Scene unchanged.") {
+  plannerStage("Idle");
   request++;
   controller?.abort();
   controller = null;
@@ -40,6 +43,15 @@ export function updateGeneration(patch: {
   model?: string;
   timeoutMs?: number;
 }) {
+  if (patch.timeoutMs !== undefined) {
+    if (
+      !Number.isInteger(patch.timeoutMs) ||
+      patch.timeoutMs < 1000 ||
+      patch.timeoutMs > 120000
+    )
+      return;
+    persistPlanner(patch.timeoutMs);
+  }
   cancelEdit();
   cancelGeneration("Settings changed. Generate a new preview.");
   useGenerationStore.setState(patch);
@@ -56,6 +68,7 @@ export function cancelUnconfirmedGeneration() {
 export async function planStructure(
   prompt = useGenerationStore.getState().prompt,
 ) {
+  if (useGenerationStore.getState().status === "planning") return;
   cancelEdit();
   cancelGeneration();
   const version = ++request,
@@ -77,6 +90,7 @@ export async function planStructure(
     );
     if (version !== request || abort.signal.aborted) return;
     const prepared = preparePlan(result.plan, useSceneStore.getState().objects);
+    plannerStage("Preview Ready");
     useGenerationStore.setState({
       prepared,
       status: "preview",
@@ -86,7 +100,8 @@ export async function planStructure(
         "Review the preview. Confirm construction adds one undoable batch.",
     });
   } catch (error) {
-    if (version === request && !abort.signal.aborted)
+    if (version === request && !abort.signal.aborted) {
+      plannerStage("Error");
       useGenerationStore.setState({
         prepared: null,
         status: "error",
@@ -95,6 +110,7 @@ export async function planStructure(
             ? error.message
             : "Planning failed. Scene unchanged.",
       });
+    }
   } finally {
     if (version === request) controller = null;
   }
@@ -116,14 +132,17 @@ export function confirmStructure() {
       objects: prepared.objects,
       contacts: prepared.plan.contacts,
     })
-  )
+  ) {
+    s.setSelectionMode("structure");
+    s.select(prepared.objects[0].id);
+    plannerStage("Complete");
     useGenerationStore.setState({
       prepared: null,
       status: "complete",
       lastStructureId: prepared.objects[0].construction!.structureId,
       message: `Constructed ${prepared.plan.name} (${prepared.objects.length} parts). One Undo removes the batch.`,
     });
-  else
+  } else
     useGenerationStore.setState({
       message:
         s.status === "idle"

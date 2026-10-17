@@ -1,12 +1,11 @@
+import { openWorkspaceSection } from "../helpers/workspaceTools";
 import { test, expect, type Page } from "@playwright/test";
 import { target, hold, poseAt } from "../helpers/gestureInput";
 
 const group = (page: Page, key: string) =>
   page.locator(`[data-accordion-key="${key}"]`);
 async function open(page: Page, key: string) {
-  const item = group(page, key);
-  if ((await item.getAttribute("open")) === null)
-    await item.locator(":scope > summary").click();
+  await openWorkspaceSection(page, key);
 }
 async function ready(page: Page) {
   await page.goto("/?testInput");
@@ -17,16 +16,14 @@ test("clean defaults expose four major groups and keep diagnostics and advanced 
   page,
 }) => {
   await ready(page);
-  const majors = page.locator(".tools > .workspace-accordion > summary > span");
-  await expect(majors).toHaveText([
-    "Shapes",
-    "Tools",
-    "Ask HoloBuild",
+  await expect(page.getByRole("tab")).toHaveText([
+    "Build",
+    "Edit",
+    "AI",
     "Scene",
   ]);
-  await expect(page.locator(".tools > .workspace-accordion[open]")).toHaveCount(
-    1,
-  );
+  await expect(page.getByRole("tabpanel")).toHaveCount(1);
+  await expect(page.getByLabel("Selection mode")).toBeVisible();
   await expect(page.getByTitle("Create Cube", { exact: true })).toBeVisible();
   await expect(
     page.getByLabel("Ask HoloBuild", { exact: true }),
@@ -48,29 +45,28 @@ test("clean defaults expose four major groups and keep diagnostics and advanced 
   await expect(page.getByText(/Palm-normalized distance:/)).toBeVisible();
 });
 
-test("major groups are exclusive, pins are keyboard accessible, and both preferences survive reload", async ({
+test("flat tabs are exclusive, keyboard accessible and remember the active category", async ({
   page,
 }) => {
   await ready(page);
-  await open(page, "tools.transform");
-  await expect(group(page, "tools.shapes")).not.toHaveAttribute("open");
-  const pin = page.getByRole("button", { name: "Pin Tools", exact: true });
-  await pin.focus();
-  await page.keyboard.press("Enter");
-  await expect(pin).toHaveAttribute("aria-pressed", "true");
-  await open(page, "tools.voice");
-  await expect(group(page, "tools.transform")).toHaveAttribute("open");
-  await open(page, "tools.scene");
-  await expect(group(page, "tools.voice")).not.toHaveAttribute("open");
-  await expect(group(page, "tools.transform")).toHaveAttribute("open");
+  await page.getByRole("tab", { name: "Build", exact: true }).focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(
+    page.getByRole("tab", { name: "Edit", exact: true }),
+  ).toBeFocused();
+  await expect(page.getByRole("tabpanel")).toHaveCount(1);
+  await page.keyboard.press("End");
+  await expect(
+    page.getByRole("tab", { name: "Scene", exact: true }),
+  ).toBeFocused();
   await page.reload();
   await target(page);
-  await expect(pin).toHaveAttribute("aria-pressed", "true");
-  await expect(group(page, "tools.scene")).toHaveAttribute("open");
-  await pin.click();
-  await open(page, "tools.shapes");
-  await expect(group(page, "tools.transform")).not.toHaveAttribute("open");
-  await expect(group(page, "tools.scene")).not.toHaveAttribute("open");
+  await expect(
+    page.getByRole("tab", { name: "Scene", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
+  await page.getByRole("tab", { name: "Scene", exact: true }).focus();
+  await page.keyboard.press("Home");
+  await expect(page.getByTitle("Create Cube", { exact: true })).toBeVisible();
 });
 
 test("Inspector is contextual and exposes transform, appearance and collection without duplicate groups", async ({
@@ -150,7 +146,7 @@ test("minimized Gesture Input retains accessible camera controls and remembered 
     .getByRole("button", { name: "Minimize Gesture Input", exact: true })
     .click();
   await expect(page.locator(".camera-title")).toContainText("0 hands");
-  await expect(page.locator(".camera-title")).toContainText("move");
+  await expect(page.locator(".camera-title")).toContainText("auto");
   await expect(
     page.getByRole("button", { name: "Start camera", exact: true }),
   ).toBeVisible();
@@ -193,7 +189,7 @@ test("narrow sidebars fit all main controls and keyboard resizing persists while
         .locator(".tools")
         .evaluate((e) => e.scrollWidth - e.clientWidth),
     ).toBeLessThanOrEqual(1);
-    const buttons = group(page, key).locator("button:visible");
+    const buttons = page.getByRole("tabpanel").locator("button:visible");
     for (const button of await buttons.all()) {
       const bounds = (await button.boundingBox())!;
       const parent = (await right.boundingBox())!;

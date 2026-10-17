@@ -20,6 +20,7 @@ export function defaultLayout(size: WorkspaceSize): PanelLayout {
 export function clampLayout(
   layout: PanelLayout,
   size: WorkspaceSize,
+  minimizedHeight = BAR_HEIGHT,
 ): PanelLayout {
   const width = Math.min(Math.max(270, layout.width), Math.max(1, size.width));
   const height = Math.min(
@@ -35,7 +36,7 @@ export function clampLayout(
       0,
       Math.min(
         layout.y,
-        size.height - (layout.minimized ? BAR_HEIGHT : height),
+        size.height - (layout.minimized ? minimizedHeight : height),
       ),
     ),
   };

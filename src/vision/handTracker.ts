@@ -60,24 +60,40 @@ const defaults: TrackerDependencies = {
     const { FilesetResolver, HandLandmarker } =
       await import("@mediapipe/tasks-vision");
     const files = await FilesetResolver.forVisionTasks("/vision/wasm");
-    const detector = await HandLandmarker.createFromOptions(files, {
+    const gpu = useCameraSettings.getState().execution === "gpu";
+    const options = {
       baseOptions: {
         modelAssetPath: "/vision/hand_landmarker.task",
-        delegate: "CPU",
+        delegate: "CPU" as "CPU" | "GPU",
       },
       runningMode: "VIDEO",
       numHands: 2,
       minHandDetectionConfidence: 0.6,
       minHandPresenceConfidence: 0.6,
       minTrackingConfidence: 0.6,
-    });
+    } as const;
+    let engine = "main-thread CPU";
+    let detector: HandLandmarker;
+    if (gpu) {
+      try {
+        detector = await HandLandmarker.createFromOptions(files, {
+          ...options,
+          baseOptions: { ...options.baseOptions, delegate: "GPU" },
+        });
+        engine = "main-thread GPU";
+      } catch {
+        if (signal?.aborted) throw Error("Camera stopped.");
+        detector = await HandLandmarker.createFromOptions(files, options);
+        engine = "main-thread CPU (GPU unavailable)";
+      }
+    } else detector = await HandLandmarker.createFromOptions(files, options);
     return {
       detectForVideo: detector.detectForVideo.bind(detector),
       close: () => detector.close(),
       engine:
         useCameraSettings.getState().execution === "worker"
           ? "main-thread CPU (worker unavailable)"
-          : "main-thread CPU",
+          : engine,
     };
   },
 };

@@ -1,9 +1,12 @@
+import {
+  showTools,
+  showGestureSettings,
+  openWorkspaceSection,
+} from "../helpers/workspaceTools";
 import { test, expect, type Page } from "@playwright/test";
 import { hold, poseAt, target } from "../helpers/gestureInput";
-async function open(page: Page, id: string) {
-  const group = page.locator(`[data-accordion-key="${id}"]`);
-  if ((await group.getAttribute("open")) === null)
-    await group.locator(":scope > summary").click();
+async function open(page: Page, key: string) {
+  await openWorkspaceSection(page, key);
 }
 async function pair(
   page: Page,
@@ -115,6 +118,7 @@ test("one-hand selection survives scale/rotate switching and staggered pinches n
   await expect(page.locator(".scene-list button.selected")).toContainText(
     "Cube",
   );
+  await showGestureSettings(page);
   await page.getByLabel("Gesture mode", { exact: true }).selectOption("scale");
   await expect(page.locator(".scene-list button.selected")).toContainText(
     "Cube",
@@ -145,6 +149,7 @@ test("one-hand selection survives scale/rotate switching and staggered pinches n
   ).toEqual(start.object.scale);
   await page.getByRole("button", { name: "Redo", exact: true }).click();
   await page.locator(".scene-list button").click();
+  await showGestureSettings(page);
   await page.getByLabel("Gesture mode", { exact: true }).selectOption("rotate");
   await hold(page, [], 50);
   await pair(page, { x: 0.35, y: 0.35 }, { x: 0.65, y: 0.35 }, false, false);
@@ -166,6 +171,7 @@ test("unselected objects can be pinched once in Rotate mode and panel clicks can
   await open(page, "tools.transform");
   await open(page, "inspector.collection");
   await page.keyboard.press("Escape");
+  await showGestureSettings(page);
   await page.getByLabel("Gesture mode", { exact: true }).selectOption("rotate");
   await hold(page, poseAt("pointing", start.cursor));
   await hold(page, poseAt("pinch", start.cursor));
@@ -183,7 +189,7 @@ test("unselected objects can be pinched once in Rotate mode and panel clicks can
   expect(
     (await page.evaluate(() => window.__HOLO_TEST__!.snapshot())).preview,
   ).not.toBeNull();
-  await page.locator('[data-accordion-key="tools.shapes"] > summary').click();
+  await showTools(page, "build");
   expect(
     (await page.evaluate(() => window.__HOLO_TEST__!.snapshot())).preview,
   ).toBeNull();
@@ -208,7 +214,9 @@ test("camera metrics, live quality, hidden preview and emergency Stop remain usa
   await open(page, "camera.settings");
   await page.getByLabel("Tracking quality").selectOption("performance");
   await expect(page.getByLabel("Tracking quality")).toHaveValue("performance");
-  await page.getByRole("button", {name:"Toggle Gesture Diagnostics", exact:true}).click();
+  await page
+    .getByRole("button", { name: "Toggle Gesture Diagnostics", exact: true })
+    .click();
   await page
     .getByRole("button", { name: "Expand Gesture Diagnostics", exact: true })
     .click();
@@ -249,7 +257,9 @@ test("unsupported worker/video callbacks fall back to CPU with honest unavailabl
   await expect(page.locator(".camera-meta")).toContainText(/[1-9]\d* Hz/, {
     timeout: 60000,
   });
-  await page.getByRole("button", {name:"Toggle Gesture Diagnostics", exact:true}).click();
+  await page
+    .getByRole("button", { name: "Toggle Gesture Diagnostics", exact: true })
+    .click();
   await page
     .getByRole("button", { name: "Expand Gesture Diagnostics", exact: true })
     .click();

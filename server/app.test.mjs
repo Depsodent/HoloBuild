@@ -270,6 +270,8 @@ test("edit adapter uses compatible provider and strict intent schema, never scen
   assert.equal(r.status, 200);
   assert.deepEqual((await r.json()).plan, plan);
   assert.ok(sent.messages[0].content.includes("clarify"));
+  assert.deepEqual(sent.response_format, { type: "json_object" });
+  assert.equal(sent.max_tokens, 768);
   assert.deepEqual(JSON.parse(sent.messages[1].content).context, editContext);
   assert.equal(
     (
@@ -317,4 +319,138 @@ test("edit endpoint rejects invalid context, executable output, unknown material
       .status,
     422,
   );
+});
+
+function providerEvents(content) {
+  const text = JSON.stringify(content);
+  return new Response(
+    `data: ${JSON.stringify({ choices: [{ delta: { content: text.slice(0, 20) } }] })}\n\ndata: ${JSON.stringify({ choices: [{ delta: { content: text.slice(20) } }] })}\n\ndata: [DONE]\n\n`,
+    { headers: { "content-type": "text/event-stream" } },
+  );
+}
+test("SSE sends stages and validated result with genuine timing, matching 120s budget", async (t) => {
+  let request;
+  const url = await fixture(
+    t,
+    async (endpoint, init) => {
+      if (endpoint.endsWith("/api/ps")) return Response.json({ models: [] });
+      request = JSON.parse(init.body);
+      return providerEvents(plan);
+    },
+    { LLM_TIMEOUT_MS: "120000" },
+  );
+  const response = await post(
+    url,
+    { prompt: "build a house", timeoutMs: 120000 },
+    {
+      headers: {
+        "content-type": "application/json",
+        accept: "text/event-stream",
+      },
+    },
+  );
+  const text = await response.text();
+  assert.match(text, /Loading Model/);
+  assert.match(text, /Generating/);
+  assert.match(text, /Validating/);
+  assert.equal(request.stream, true);
+  assert.equal(request.response_format.type, "json_schema");
+  assert.equal(request.response_format.json_schema.name, "holobuild_plan");
+  const decoded = request.response_format.json_schema.schema.properties;
+  assert.deepEqual(decoded.contacts.items.items, {
+    type: "string",
+    pattern: "^[a-zA-Z0-9_-]{1,48}$",
+  });
+  assert.equal(decoded.objects.items.properties.position.minItems, 3);
+  assert.deepEqual(decoded.objects.items.properties.position.items, {
+    type: "number",
+  });
+  assert.equal(
+    request.response_format.json_schema.schema.additionalProperties,
+    false,
+  );
+  const event = text.split("\n\n").find((x) => x.startsWith("event: result"));
+  const data = JSON.parse(event.split("data: ")[1]);
+  assert.deepEqual(data.plan, plan);
+  assert.equal(data.provider, "Ollama");
+  assert.ok(data.timings.firstTokenMs >= 0);
+  assert.ok(data.timings.totalMs >= data.timings.providerMs);
+  assert.equal(data.timings.modelLoadMs, null);
+  assert.equal(data.timings.residentBefore, false);
+  const status = await (await fetch(url + "/api/planner/status")).json();
+  assert.equal(status.timeoutMs, 120000);
+});
+test("stream errors never expose an invalid plan; connection and timeout are distinct", async (t) => {
+  for (const [kind, fetcher] of [
+    ["validation", async () => providerEvents({ version: 99 })],
+    [
+      "connection",
+      async () => {
+        throw new TypeError("private endpoint");
+      },
+    ],
+    [
+      "timeout",
+      async (_endpoint, init) =>
+        new Promise((_resolve, reject) =>
+          init.signal.addEventListener(
+            "abort",
+            () => reject(init.signal.reason),
+            { once: true },
+          ),
+        ),
+    ],
+  ]) {
+    const url = await fixture(t, fetcher, {
+      LLM_BASE_URL: "http://127.0.0.1:9999/v1",
+      LLM_TIMEOUT_MS: "1000",
+    });
+    const response = await post(
+      url,
+      { prompt: "build a house", timeoutMs: 1000 },
+      {
+        headers: {
+          "content-type": "application/json",
+          accept: "text/event-stream",
+        },
+      },
+    );
+    const text = await response.text();
+    assert.match(text, /event: error/);
+    assert.match(text, new RegExp(`"kind":"${kind}"`));
+    assert.ok(!text.includes("event: result"));
+    assert.ok(!text.includes("private endpoint"));
+  }
+});
+test("disconnecting streamed client cancels the active provider request", async (t) => {
+  let providerSignal;
+  const url = await fixture(
+    t,
+    async (_endpoint, init) => {
+      providerSignal = init.signal;
+      return new Promise((_resolve, reject) =>
+        init.signal.addEventListener(
+          "abort",
+          () => reject(init.signal.reason),
+          { once: true },
+        ),
+      );
+    },
+    { LLM_BASE_URL: "http://127.0.0.1:9999/v1" },
+  );
+  const abort = new AbortController();
+  const response = await post(url, undefined, {
+    signal: abort.signal,
+    headers: {
+      "content-type": "application/json",
+      accept: "text/event-stream",
+    },
+  });
+  const reader = response.body.getReader();
+  await reader.read();
+  abort.abort();
+  await reader.cancel().catch(() => {});
+  for (let i = 0; i < 50 && !providerSignal?.aborted; i++)
+    await new Promise((r) => setTimeout(r, 10));
+  assert.equal(providerSignal?.aborted, true);
 });

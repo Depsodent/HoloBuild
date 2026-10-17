@@ -1,3 +1,4 @@
+import { AutoGestureController } from "../../interaction/autoGestureController";
 import { ObjectGeometry } from "./ObjectGeometry";
 import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
@@ -38,7 +39,7 @@ export function GestureInteraction() {
             rect.top + cursor.y * rect.height,
           )
           ?.closest(
-            ".webcam-panel, .gesture-diagnostics, .workspace-left, .workspace-right",
+            ".webcam-panel, .gesture-diagnostics, .workspace-left, .workspace-right, .selection-scope",
           );
       },
       menuHit(cursor) {
@@ -56,6 +57,7 @@ export function GestureInteraction() {
       },
     });
     controller.current = instance;
+    const automatic = new AutoGestureController(instance);
     const two = new TwoHandController();
     const menu = new GestureMenuController();
     const orbit = () =>
@@ -112,7 +114,8 @@ export function GestureInteraction() {
     cancelNavigation.current = () => {
       if (nav.active) nav.cancel("Tracking stalled. Camera pan restored.");
     };
-    advanced.current = two;
+    advanced.current =
+      useAdvancedStore.getState().mode === "auto" ? automatic.two : two;
     let mouseActive = false;
     const off = gestureStream.subscribe((frame) => {
       last.current = performance.now();
@@ -125,6 +128,7 @@ export function GestureInteraction() {
     });
     const offHands = handsStream.subscribe((frame) => {
       const mode = useAdvancedStore.getState().mode;
+      if (!mouseActive && mode === "auto") automatic.update(frame);
       if (
         !mouseActive &&
         (mode === "scale" || mode === "rotate") &&
@@ -132,13 +136,15 @@ export function GestureInteraction() {
         frame.hands.length === 1
       )
         instance.update(frame.hands[0].gesture, true);
-      if (!mouseActive) two.update(frame);
+      if (!mouseActive && mode !== "auto") two.update(frame);
       if (!mouseActive) nav.update(frame);
       if (!mouseActive) menu.update(frame);
       else menu.suppress(frame.timestamp);
     });
     const offMode = useAdvancedStore.subscribe((state, previous) => {
       if (state.mode !== previous.mode) {
+        advanced.current = state.mode === "auto" ? automatic.two : two;
+        automatic.cancel("Gesture mode changed.");
         instance.cancel("Gesture mode changed.");
         two.cancel("Mode changed. Open pinches before beginning.");
         nav.cancel("Mode changed. Open pinch before navigating.");
@@ -153,7 +159,10 @@ export function GestureInteraction() {
     });
     const offScene = useSceneStore.subscribe((state, previous) => {
       if (
-        (instance.dragging || two.active || nav.active) &&
+        (instance.dragging ||
+          two.active ||
+          automatic.two.active ||
+          nav.active) &&
         (state.objects !== previous.objects ||
           state.selectedId !== previous.selectedId ||
           state.selectedStructureId !== previous.selectedStructureId ||
@@ -163,6 +172,7 @@ export function GestureInteraction() {
         instance.cancel(
           "Scene changed during grab. Uncommitted movement cancelled.",
         );
+        automatic.two.cancel("Scene changed during auto transform.");
         two.cancel("Scene changed during advanced transform.");
         nav.cancel("Scene changed. Camera pan cancelled.");
       }
@@ -171,6 +181,7 @@ export function GestureInteraction() {
       mouseActive = true;
       menu.suppress(performance.now());
       instance.cancel("Mouse control resumed. Open pinch and aim again.");
+      automatic.two.cancel("Mouse control resumed. Auto preview cancelled.");
       two.cancel("Mouse control resumed. Advanced preview cancelled.");
       nav.cancel("Mouse control resumed. Camera pan cancelled.");
       const controls = orbit();
@@ -191,9 +202,9 @@ export function GestureInteraction() {
       else if (
         event.target instanceof Element &&
         event.target.closest(
-          ".workspace-left, .workspace-right, .webcam-panel, .gesture-diagnostics",
+          ".workspace-left, .workspace-right, .webcam-panel, .gesture-diagnostics, .selection-scope",
         ) &&
-        (instance.dragging || two.active || nav.active)
+        (instance.dragging || two.active || automatic.two.active || nav.active)
       )
         cancelOnMouse();
     };
@@ -236,6 +247,7 @@ export function GestureInteraction() {
       off();
       offHands();
       offMode();
+      automatic.cancel();
       two.cancel();
       nav.cancel();
       cancelNavigation.current = null;

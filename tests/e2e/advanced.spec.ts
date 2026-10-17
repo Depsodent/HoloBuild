@@ -1,3 +1,4 @@
+import { showGestureSettings } from "../helpers/workspaceTools";
 import { test, expect } from "../helpers/editorTest";
 import { hold, poseAt, target } from "../helpers/gestureInput";
 test("two tracked IDs survive detection order changes and one-hand movement still works", async ({
@@ -60,6 +61,7 @@ test("two-hand scale previews, commits once, and uses normal undo/redo", async (
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
+  await showGestureSettings(page);
   await page.getByLabel("Gesture mode", { exact: true }).selectOption("scale");
   await hold(page, [], 50);
   await holdPair(page, 0.25, false);
@@ -89,6 +91,7 @@ test("lost hand and Undo during two-hand scaling cancel safely", async ({
   await page.goto("/?testInput");
   await target(page);
   await page.getByRole("button", { name: "Cube 1 × 1 × 1 m" }).click();
+  await showGestureSettings(page);
   await page.getByLabel("Gesture mode", { exact: true }).selectOption("scale");
   await hold(page, [], 50);
   await holdPair(page, 0.25, false);
@@ -115,6 +118,7 @@ test("explicit rotation mode changes yaw without scaling and commits once", asyn
 }) => {
   await page.goto("/?testInput");
   await target(page);
+  await showGestureSettings(page);
   await page.getByLabel("Gesture mode", { exact: true }).selectOption("rotate");
   await hold(page, [], 50);
   await holdPair(page, 0.3, false);
@@ -156,10 +160,12 @@ test("opt-in palm menu requires a hold, never reopens on held palm, and pinch co
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
+  await showGestureSettings(page);
   await page.getByLabel("Enable open-palm tool menu", { exact: true }).check();
   await hold(page, poseAt("open-palm", start.cursor), 200);
   await expect(page.getByLabel("Gesture tool menu")).toHaveCount(0);
-  await hold(page, poseAt("pointing", start.cursor), 600);
+  // UI navigation suppresses activation; allow pose debounce plus 500 ms neutral rearming.
+  await hold(page, poseAt("pointing", start.cursor), 1000);
   await hold(page, poseAt("open-palm", start.cursor), 2500);
   await expect(page.getByLabel("Gesture tool menu")).toBeVisible();
   await page.locator('[data-gesture-action="close"]').click();
@@ -191,6 +197,7 @@ test("pinch release into a held palm never invokes the opted-in menu", async ({
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
+  await showGestureSettings(page);
   await page.getByLabel("Enable open-palm tool menu", { exact: true }).check();
   await hold(page, poseAt("pointing", start.cursor));
   await hold(page, poseAt("pinch", start.cursor));
@@ -214,6 +221,7 @@ test("navigation pans the real camera without editing objects and loss restores 
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
+  await showGestureSettings(page);
   await page
     .getByLabel("Gesture mode", { exact: true })
     .selectOption("navigate");
@@ -265,6 +273,7 @@ test("two-hand visual guides and transform feedback remain visible with the came
 }) => {
   await page.goto("/?testInput");
   await target(page);
+  await showGestureSettings(page);
   await page.getByLabel("Gesture mode", { exact: true }).selectOption("scale");
   await page
     .getByRole("button", { name: "Minimize Gesture Input", exact: true })
@@ -294,6 +303,7 @@ test("opted-in palm menu stays closed during camera window dragging and after re
   await page
     .getByRole("button", { name: "Undock Gesture Input", exact: true })
     .click();
+  await showGestureSettings(page);
   await page.getByLabel("Enable open-palm tool menu", { exact: true }).check();
   await hold(page, poseAt("open-palm", start.cursor), 600);
   const header = (await page

@@ -84,3 +84,10 @@ The strict shared edit schema is in `shared/editSchema.mjs`; the local provider 
 Physical acceptance is pending the user's test. Milestone 11 is not started.
 
 If physical tracking feels slow, report the scene's object/component count and Gesture Diagnostics readings: Render FPS and frame p95, Camera presentation FPS and reported resolution/FPS, Inference rate and average/p95, Gesture updates/processing, and Execution/scheduler. Include whether preview/panels were minimized. These measurements distinguish rendering, capture and inference; do not interpret synthetic/headless test FPS as laptop webcam performance.
+
+
+## Milestone 10.1 interaction update
+
+Use the viewport's **Target: Part / Structure** control; it remains discoverable in every tool tab. Confirmation of a generated structure selects the whole structure and exposes Edit Structure. Part returns to ordinary component editing. Explicit select/rename/material/floor controls and shared atomic command/history/JSON metadata remain unchanged.
+
+Auto now performs one-hand move and recognizes two-hand scale versus yaw on the retained selection; no mode switch or second surface hit is required. Capture each open pinch, pinch both, then separate hands or turn the hand line. A short neutral recognition phase rejects mixed motion; once active, the operation locks until release. Pending one-hand translation transfers into the same group frame and command, preserving one Undo and all relationships. Hand loss/scene changes/mouse takeover cancel. See GESTURES.md for tested arbitration settings and physical checklist. Existing certified floor/geometry/collision limits still apply; this milestone does not implement arbitrary pitch/roll or redesign.

@@ -1,14 +1,20 @@
 import { ObjectGeometry } from "./ObjectGeometry";
 import { SurfaceMaterial } from "./SurfaceMaterial";
 import { ImportedModel } from "./ImportedModel";
-import { useRef, useState } from "react";
+import { useRef, useState, memo } from "react";
+import { useThree } from "@react-three/fiber";
 import { Edges, TransformControls } from "@react-three/drei";
 import { Mesh } from "three";
 import type { SceneObject, Vec3 } from "../../scene/objectTypes";
 import { useSceneStore } from "../../scene/sceneStore";
 import { execute } from "../../scene/commandManager";
 import { useInteractionStore } from "../../interaction/interactionStore";
-export function BuildingObject({ object }: { object: SceneObject }) {
+export const BuildingObject = memo(function BuildingObject({
+  object,
+}: {
+  object: SceneObject;
+}) {
+  const gl = useThree((s) => s.gl);
   const ref = useRef<Mesh>(null);
   const [hover, setHover] = useState(false);
   const selected = useSceneStore((s) => s.selectedId === object.id);
@@ -111,9 +117,12 @@ export function BuildingObject({ object }: { object: SceneObject }) {
           translationSnap={snap ? 0.5 : null}
           rotationSnap={snap ? Math.PI / 12 : null}
           scaleSnap={snap ? 0.1 : null}
+          onObjectChange={() => {
+            gl.shadowMap.needsUpdate = true;
+          }}
           onMouseUp={commit}
         />
       )}
     </>
   );
-}
+});

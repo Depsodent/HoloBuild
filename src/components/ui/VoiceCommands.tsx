@@ -1,3 +1,6 @@
+import { useToolsStore } from "../../workspace/toolsStore";
+import { PlannerActivity } from "./PlannerActivity";
+import { plannerStage } from "../../generation/plannerTransport";
 import { StructureEditReview } from "./StructureEditReview";
 import { isStructureEdit } from "../../generation/editPlanner";
 import {
@@ -21,7 +24,7 @@ import {
   type SpeechState,
 } from "../../commands/speech";
 import { saveProject } from "../../assets/saveProject";
-import { useAccordionStore } from "../../workspace/accordionStore";
+
 import { StructureGenerator } from "./StructureGenerator";
 import { routeInput } from "../../generation/planner";
 import {
@@ -51,7 +54,18 @@ export function VoiceCommands() {
   const [interpreter] = useState(() => new CommandInterpreter(saveProject));
   const controller = useRef<SpeechController | null>(null),
     mounted = useRef(false);
-  const open = useAccordionStore((s) => s.open["tools.voice"]);
+  const open = useToolsStore((s) => s.tab === "ai");
+  const view = useToolsStore((s) => s.aiView);
+  const [autoSubmit, setAutoSubmit] = useState(() => {
+    try {
+      return localStorage.getItem("holobuild.voice-auto-submit.v1") !== "false";
+    } catch {
+      return true;
+    }
+  });
+  const autoSubmitRef = useRef(autoSubmit);
+  autoSubmitRef.current = autoSubmit;
+  const busyRef = useRef(false);
 
   async function dispatch(text: string): Promise<CommandResult> {
     const route = routeInput(text);
@@ -95,6 +109,8 @@ export function VoiceCommands() {
         message:
           "Unsupported or ambiguous command. Please clarify: use a supported quick command or Build/Generate <structure>. See examples.",
       };
+    plannerStage("Idle");
+    plannerStage("Complete", "Deterministic command");
     return interpreter.run(text);
   }
   const dispatchRef = useRef(dispatch);
@@ -107,14 +123,21 @@ export function VoiceCommands() {
         if (mounted.current) setSpeech(s);
       },
       (text) => {
+        if (!mounted.current || busyRef.current) return;
         setHeard(text);
+        updateGeneration({ prompt: text });
+        if (!autoSubmitRef.current) return;
+        busyRef.current = true;
         setBusy(true);
-        void dispatchRef.current(text).then((r) => {
-          if (mounted.current) {
-            setResult(r);
-            setBusy(false);
-          }
-        });
+        void dispatchRef
+          .current(text)
+          .then((r) => {
+            if (mounted.current) setResult(r);
+          })
+          .finally(() => {
+            busyRef.current = false;
+            if (mounted.current) setBusy(false);
+          });
       },
     );
     const hide = () => {
@@ -132,20 +155,30 @@ export function VoiceCommands() {
   useEffect(() => {
     if (!open && active) controller.current?.stop();
   }, [open, active]);
+
+  const [slowSpeech, setSlowSpeech] = useState(false);
   useEffect(() => {
-    if (!open) cancelUnconfirmedGeneration();
-  }, [open]);
+    setSlowSpeech(false);
+    if (!active) return;
+    const timer = setTimeout(() => setSlowSpeech(true), 8000);
+    return () => clearTimeout(timer);
+  }, [active]);
   async function submit() {
+    if (busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     setHeard("");
-    const r = await dispatch(input);
-    if (mounted.current) {
-      setResult(r);
-      setBusy(false);
+    controller.current?.stop();
+    try {
+      const r = await dispatch(input);
+      if (mounted.current) setResult(r);
+    } finally {
+      busyRef.current = false;
+      if (mounted.current) setBusy(false);
     }
   }
   return (
-    <Accordion id="tools.voice" title="Ask HoloBuild">
+    <section aria-label="Ask HoloBuild tools">
       <div className="voice-commands">
         <form
           onSubmit={(e) => {
@@ -192,9 +225,9 @@ export function VoiceCommands() {
                   updateGeneration({ mode: e.target.value as PlannerMode });
               }}
             >
-              <option value="commands">Commands · deterministic</option>
+              <option value="commands">Commands</option>
               <option value="offline">Offline</option>
-              <option value="auto">Auto · LLM / Offline fallback</option>
+              <option value="auto">Auto</option>
               <option value="llm">LLM</option>
             </select>
           </label>
@@ -210,10 +243,29 @@ export function VoiceCommands() {
             Send request
           </button>
         </form>
+        <PlannerActivity />
+        {(active || heard || busy) && (
+          <button
+            onClick={() => {
+              controller.current?.stop();
+              cancelUnconfirmedGeneration();
+              setHeard("");
+              setResult(interpreter.cancel());
+            }}
+          >
+            Cancel voice request
+          </button>
+        )}
         <p role="status" aria-label="Listening status" className="muted">
           {speech.message}
         </p>
-        {speech.transcript && (
+        {slowSpeech && active && (
+          <p role="status" className="muted">
+            Waiting for the browser speech service. You can stop and type
+            instead.
+          </p>
+        )}
+        {speech.transcript && active && (
           <p className="voice-transcript" aria-label="Live transcript">
             {speech.transcript}
           </p>
@@ -244,29 +296,70 @@ export function VoiceCommands() {
           </div>
         )}
         <StructureEditReview />
-        <StructureGenerator />
-        <Accordion id="tools.voice-help" title="Help & examples">
-          <p>
-            Create a cube · Move it right by 2 meters · Rotate it by 45 degrees
-            · Make it red · Apply wood material · Undo · Save the scene · Build
-            a house. Select the whole house · Move the entire house right by 2
-            meters · Change all walls to brick · Add another floor.
-          </p>
-          <p>
-            Quick commands always use the deterministic interpreter. Structure
-            requests use the chosen planner. One command per sentence; delete
-            and clear require confirmation.
-          </p>
-          <p>
-            World axes: right +X, up +Y, forward −Z. Rotation is world-Y yaw.
-            Grid snapping and collision limits apply.
-          </p>
-          <p>
-            Speech may send audio to your browser provider. Collapsing Ask
-            HoloBuild stops listening; webcam tracking stays independent.
-          </p>
-        </Accordion>
+        <nav className="ai-secondary-nav" aria-label="AI views">
+          {(["main", "settings", "help"] as const).map((key) => (
+            <button
+              key={key}
+              aria-pressed={view === key}
+              onClick={() =>
+                useToolsStore.setState({ aiView: view === key ? "main" : key })
+              }
+            >
+              {key === "main"
+                ? "Request"
+                : key === "settings"
+                  ? "AI Settings"
+                  : "AI Help"}
+            </button>
+          ))}
+        </nav>
+        {view === "settings" && (
+          <label className="toggle">
+            <input
+              type="checkbox"
+              aria-label="Auto-submit final transcript"
+              checked={autoSubmit}
+              onChange={(e) => {
+                setAutoSubmit(e.target.checked);
+                try {
+                  localStorage.setItem(
+                    "holobuild.voice-auto-submit.v1",
+                    String(e.target.checked),
+                  );
+                } catch {
+                  /* Session preference. */
+                }
+              }}
+            />
+            Auto-submit final transcript
+          </label>
+        )}
+        <StructureGenerator view={view} />
+        {view === "help" && (
+          <Accordion id="tools.voice-help" title="Help & examples">
+            <p>
+              Create a cube · Move it right by 2 meters · Rotate it by 45
+              degrees · Make it red · Apply wood material · Undo · Save the
+              scene · Build a house. Select the whole house · Move the entire
+              house right by 2 meters · Change all walls to brick · Add another
+              floor.
+            </p>
+            <p>
+              Quick commands always use the deterministic interpreter. Structure
+              requests use the chosen planner. One command per sentence; delete
+              and clear require confirmation.
+            </p>
+            <p>
+              World axes: right +X, up +Y, forward −Z. Rotation is world-Y yaw.
+              Grid snapping and collision limits apply.
+            </p>
+            <p>
+              Speech may send audio to your browser provider. Leaving AI
+              HoloBuild stops listening; webcam tracking stays independent.
+            </p>
+          </Accordion>
+        )}
       </div>
-    </Accordion>
+    </section>
   );
 }

@@ -1,7 +1,9 @@
+import { showTools, showGestureSettings } from "../helpers/workspaceTools";
 import { test, expect } from "../helpers/editorTest";
 import type { Page } from "@playwright/test";
 import { target, hold, poseAt } from "../helpers/gestureInput";
 async function ask(page: Page, text: string) {
+  await showTools(page, "ai");
   await page.getByLabel("Ask HoloBuild", { exact: true }).fill(text);
   await page.getByRole("button", { name: "Send request", exact: true }).click();
 }
@@ -115,13 +117,11 @@ test("AI material preview cancels cleanly, confirms once, preserves cube, Undo/R
   );
   page.on("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "Reset scene", exact: true }).click();
-  await page
-    .locator("input[type=file][accept='.json']")
-    .setInputFiles({
-      name: "structure.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(json),
-    });
+  await page.locator("input[type=file][accept='.json']").setInputFiles({
+    name: "structure.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(json),
+  });
   await expect.poll(() => scene(page)).toEqual(after);
 });
 test("floor editing, duplication and ungrouping are atomic and reversible", async ({
@@ -166,6 +166,27 @@ test("one-hand group raycast/movement commits once, hand loss and Undo during gr
   await selectGroup(page);
   const original = await scene(page);
   const id = original.find((o) => o.construction?.role === "roof")!.id;
+  // Frame the building so its roof is not behind the always-visible Target control.
+  await showTools(page, "scene");
+  await page
+    .getByRole("button", { name: "Fit structure in view", exact: true })
+    .click();
+  await expect
+    .poll(() =>
+      page.evaluate((id) => {
+        const p = window.__HOLO_TEST__!.project!(id)!;
+        const rect = document
+          .querySelector("canvas[data-engine]")!
+          .getBoundingClientRect();
+        return !!document
+          .elementFromPoint(
+            rect.left + p.x * rect.width,
+            rect.top + p.y * rect.height,
+          )
+          ?.closest("canvas[data-engine]");
+      }, id),
+    )
+    .toBe(true);
   const cursor = await page.evaluate(
     (id) => window.__HOLO_TEST__!.project!(id)!,
     id,
@@ -211,6 +232,7 @@ test("two-hand group scale/yaw use shared previews and one history entry each", 
 }) => {
   await ready(page);
   await selectGroup(page);
+  await showGestureSettings(page);
   await page.getByLabel("Gesture mode", { exact: true }).selectOption("scale");
   await hold(page, [], 50);
   await pair(page, 0.25, false);
@@ -227,6 +249,7 @@ test("two-hand group scale/yaw use shared previews and one history entry each", 
     await page.evaluate(() => window.__HOLO_TEST__!.snapshot().history),
   ).toBe(count + 1);
   await hold(page, [], 50);
+  await showGestureSettings(page);
   await page.getByLabel("Gesture mode", { exact: true }).selectOption("rotate");
   await pair(page, 0.3, false);
   await pair(page, 0.3, true);
@@ -255,6 +278,7 @@ test("mocked Ollama edit intents preview, unsupported/invalid requests and stale
   page,
 }) => {
   await ready(page);
+  await showTools(page, "ai");
   await page.getByLabel("Planner mode", { exact: true }).selectOption("llm");
   const base = await scene(page);
   await page.route("**/api/planner/edit", (route) =>

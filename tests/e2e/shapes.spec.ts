@@ -1,3 +1,4 @@
+import { showTools } from "../helpers/workspaceTools";
 import { test, expect } from "../helpers/editorTest";
 import { hold, poseAt, target } from "../helpers/gestureInput";
 const kinds = ["cube", "sphere", "cylinder", "cone", "wall", "floor"] as const;
@@ -73,6 +74,7 @@ test("palette creates every shape and JSON restores the mixed collection", async
 }) => {
   await page.goto("/?testInput");
   await target(page);
+  await showTools(page, "build");
   for (const kind of kinds.slice(1))
     await page
       .getByTitle(`Create ${kind[0].toUpperCase() + kind.slice(1)}`, {
@@ -150,6 +152,7 @@ test("mouse placement validation rejects overlap, supports snapping and keyboard
   await expect(page.getByLabel("position X", { exact: true })).toHaveValue(
     "3.5",
   );
+  await showTools(page, "edit");
   await page.getByLabel(/Snap to grid/).uncheck();
   await page.getByLabel("position X", { exact: true }).fill("3.26");
   await expect(page.getByLabel("position X", { exact: true })).toHaveValue(

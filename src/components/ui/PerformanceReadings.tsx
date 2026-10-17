@@ -12,6 +12,11 @@ export function PerformanceReadings() {
         <dd>
           {number(m.renderP95Ms)} / {number(m.renderStdMs)} ms (std)
         </dd>
+        <dt>Main-thread tasks over 50 ms · last 2 s</dt>
+        <dd>
+          {number(m.mainThreadLongTasks, 0)} · {number(m.mainThreadBlockedMs)}{" "}
+          ms total
+        </dd>
         <dt>Camera presentation FPS</dt>
         <dd>{number(m.cameraFps)}</dd>
         <dt>Camera reported settings</dt>

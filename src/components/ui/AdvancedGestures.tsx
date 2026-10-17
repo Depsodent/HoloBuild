@@ -4,7 +4,7 @@ import {
 } from "../../interaction/advancedStore";
 import type { AdvancedMode } from "../../interaction/advancedStore";
 import { useHandsStore } from "../../vision/handsStream";
-import { Accordion } from "./Accordion";
+
 import { useSceneStore } from "../../scene/sceneStore";
 export function AdvancedGestures() {
   const state = useAdvancedStore();
@@ -23,6 +23,7 @@ export function AdvancedGestures() {
             useAdvancedStore.setState({ mode: e.target.value as AdvancedMode })
           }
         >
+          <option value="auto">Auto · one or two hands</option>
           <option value="move">One-hand move</option>
           <option value="scale">Two-hand scale</option>
           <option value="rotate">Two-hand yaw rotation</option>
@@ -49,8 +50,40 @@ export function AdvancedGestures() {
           ? "Release to confirm"
           : `${state.readyHands}/2 hands prepared`}
       </p>
-      <Accordion id="tools.gesture-settings" title="Gesture settings">
+      <div className="gesture-settings">
         <p className="muted">{MODE_INSTRUCTIONS[state.mode]}</p>
+        {state.mode === "auto" && (
+          <>
+            {(
+              [
+                ["radial", "Scale activation", 0.05, 0.25, 0.01],
+                ["angular", "Yaw activation (radians)", 0.08, 0.4, 0.01],
+                ["dominance", "Intent confidence margin", 1.15, 2, 0.05],
+                ["dwellMs", "Intent stable window (ms)", 80, 300, 10],
+              ] as const
+            ).map(([key, label, min, max, step]) => (
+              <label className="field" key={key}>
+                {label}
+                <input
+                  type="number"
+                  aria-label={label}
+                  min={min}
+                  max={max}
+                  step={step}
+                  value={state.autoThresholds[key]}
+                  disabled={state.active}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    if (v >= min && v <= max)
+                      useAdvancedStore.setState({
+                        autoThresholds: { ...state.autoThresholds, [key]: v },
+                      });
+                  }}
+                />
+              </label>
+            ))}
+          </>
+        )}
         {state.mode === "navigate" && (
           <label>
             Pan sensitivity{" "}
@@ -106,7 +139,7 @@ export function AdvancedGestures() {
             />
           </label>
         )}
-      </Accordion>
+      </div>
     </div>
   );
 }

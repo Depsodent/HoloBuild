@@ -40,7 +40,7 @@ export function GestureCursor() {
       <small>
         {phase === "invalid"
           ? "INVALID"
-          : mode !== "move"
+          : mode !== "move" && mode !== "auto"
             ? mode === "navigate"
               ? "CAMERA PAN"
               : mode === "scale"

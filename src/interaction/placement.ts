@@ -2,7 +2,22 @@ import { objectSize } from "../scene/objectFactory";
 import { Box3, Euler, Matrix4, Quaternion, Vector3 } from "three";
 import type { SceneObject, Vec3 } from "../scene/objectTypes";
 import { snapCoordinate } from "./coordinateMapping";
+const boundCache = new WeakMap<SceneObject, { key: string; box: Box3 }>();
 export function bounds(object: SceneObject, position = object.position) {
+  const key = [
+    object.type,
+    ...position,
+    ...object.rotation,
+    ...object.scale,
+    ...(object.model?.size ?? []),
+  ].join(":");
+  const cached = boundCache.get(object);
+  if (cached?.key === key) return cached.box.clone();
+  const box = calculateBounds(object, position);
+  boundCache.set(object, { key, box });
+  return box.clone();
+}
+function calculateBounds(object: SceneObject, position: Vec3) {
   const matrix = new Matrix4().compose(
     new Vector3(...position),
     new Quaternion().setFromEuler(new Euler(...object.rotation)),

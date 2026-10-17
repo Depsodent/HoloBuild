@@ -1,11 +1,11 @@
+import { showTools, openWorkspaceSection } from "../helpers/workspaceTools";
 import { test, expect, type Page } from "@playwright/test";
 import { target } from "../helpers/gestureInput";
 async function open(page: Page, key: string) {
-  const panel = page.locator(`[data-accordion-key="${key}"]`);
-  if ((await panel.getAttribute("open")) === null)
-    await panel.locator(":scope > summary").click();
+  await openWorkspaceSection(page, key);
 }
 async function ask(page: Page, text: string) {
+  await showTools(page, "ai");
   await page.getByLabel("Ask HoloBuild", { exact: true }).fill(text);
   await page.getByRole("button", { name: "Send request", exact: true }).click();
 }
@@ -114,6 +114,7 @@ test("ambiguous/contradictory model targets and selection-mode changes cannot co
         .map((o) => o.construction!.structureId),
     ),
   ];
+  await showTools(page, "ai");
   await page.getByRole("button", { name: "Undo", exact: true }).focus();
   await page.keyboard.press("Escape");
   let requests = 0;
@@ -153,6 +154,7 @@ test("ambiguous/contradictory model targets and selection-mode changes cannot co
   expect(await page.evaluate(() => window.__HOLO_TEST__!.scene())).toEqual(
     base,
   );
+  await showTools(page, "ai");
   await page
     .getByLabel("Planner mode", { exact: true })
     .selectOption("offline");

@@ -51,3 +51,17 @@ it("accordion preferences reject unknown/invalid values and keep independent def
   expect(parsed.extra).toBeUndefined();
   expect(parseAccordions("bad")).toEqual(ACCORDION_DEFAULTS);
 });
+
+it("long-task diagnostics report measured entries only in their rolling window", () => {
+  performanceMetrics.longTaskSupport(true);
+  performanceMetrics.longTask(10000, 90);
+  performanceMetrics.longTask(10080, 60);
+  performanceMetrics.flush(10150, true);
+  expect(usePerformanceStore.getState().mainThreadBlockedMs).toBe(150);
+  expect(usePerformanceStore.getState().mainThreadLongTasks).toBe(2);
+  performanceMetrics.flush(12500, true);
+  expect(usePerformanceStore.getState().mainThreadLongTasks).toBe(0);
+  performanceMetrics.longTaskSupport(false);
+  performanceMetrics.flush(12501, true);
+  expect(usePerformanceStore.getState().mainThreadBlockedMs).toBeNull();
+});

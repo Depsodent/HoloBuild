@@ -25,6 +25,8 @@ function rate(samples: Sample[]) {
         (samples.at(-1)!.time - samples[0].time || 1);
 }
 const empty = {
+  mainThreadLongTasks: null as number | null,
+  mainThreadBlockedMs: null as number | null,
   renderFps: 0,
   renderP95Ms: 0,
   renderStdMs: 0,
@@ -47,6 +49,8 @@ const empty = {
   reportedFps: null as number | null,
 };
 export const usePerformanceStore = create(() => ({ ...empty }));
+let longTasksSupported = false;
+const longTasks: Sample[] = [];
 const render: Sample[] = [],
   camera: Sample[] = [],
   inference: Sample[] = [],
@@ -64,6 +68,12 @@ let lastUi = 0,
   duplicates = 0,
   skipReliable = true;
 export const performanceMetrics = {
+  longTaskSupport(value: boolean) {
+    longTasksSupported = value;
+  },
+  longTask(time: number, duration: number) {
+    append(longTasks, time, duration);
+  },
   resetCamera(settings?: MediaTrackSettings) {
     for (const s of [
       camera,
@@ -138,7 +148,12 @@ export const performanceMetrics = {
       inf = active(inference),
       ges = active(gesture),
       rs = stats(render);
+    const blocked = active(longTasks);
     usePerformanceStore.setState({
+      mainThreadLongTasks: longTasksSupported ? blocked.length : null,
+      mainThreadBlockedMs: longTasksSupported
+        ? blocked.reduce((sum, s) => sum + s.value, 0)
+        : null,
       renderFps: rs.mean ? 1000 / rs.mean : 0,
       renderP95Ms: rs.p95,
       renderStdMs: rs.std,

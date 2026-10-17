@@ -11,13 +11,13 @@ import {
 } from "../../scene/materialPresets";
 import type { Vec3 } from "../../scene/objectTypes";
 import type { StructureOperation } from "../../../shared/editSchema.mjs";
-import { useAccordionStore } from "../../workspace/accordionStore";
+import { openTools } from "../../workspace/toolsStore";
 import { updateGeneration } from "../../generation/generationStore";
 export function SelectionMode() {
   const mode = useSceneStore((s) => s.selectionMode);
   return (
-    <label className="field">
-      Selection
+    <label className="selection-scope">
+      Target
       <select
         aria-label="Selection mode"
         value={mode}
@@ -27,8 +27,8 @@ export function SelectionMode() {
             .setSelectionMode(e.target.value as "component" | "structure")
         }
       >
-        <option value="component">Select Component</option>
-        <option value="structure">Select Entire Structure</option>
+        <option value="component">Part</option>
+        <option value="structure">Structure</option>
       </select>
     </label>
   );
@@ -59,7 +59,7 @@ export function StructureInspector({ id }: { id: string }) {
   return (
     <aside className="panel inspector" aria-label="Structure Inspector">
       <div className="eyebrow">STRUCTURE INSPECTOR</div>
-      <SelectionMode />
+
       <h2>{info.name}</h2>
       <div className="object-id">
         {info.type.toUpperCase()} <span>WHOLE STRUCTURE</span>
@@ -217,7 +217,7 @@ export function StructureInspector({ id }: { id: string }) {
             updateGeneration({
               prompt: "Change all walls in this structure to brick",
             });
-            useAccordionStore.getState().setOpen("tools.voice", true);
+            openTools("ai");
           }}
         >
           Edit in Ask HoloBuild

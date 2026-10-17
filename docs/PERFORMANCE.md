@@ -55,3 +55,38 @@ node scripts/benchmark-camera.mjs --worker --output camera-worker.json
 Set `HOLOBUILD_URL` if the server uses a different URL. Runs launch isolated synthetic contexts and do not access the laptop webcam. Raw observations: [2026-10-15-camera.json](benchmarks/2026-10-15-camera.json). Final production sizes are recorded with the 7.1 verification log; existing bundle/Zod warnings remain. Physical laptop acceptance is required before further optimization or Milestone 8.
 
 The final 7.1 production build reports main JavaScript 1,389.99 kB / 392.97 kB gzip, optional tracking worker 144.79 kB, lazy worker client 1.73 kB / 0.82 kB gzip, lazy GLTFLoader 44.80 kB / 13.22 kB gzip, vision bundle 144.27 kB / 43.72 kB gzip and CSS 24.74 kB / 6.04 kB gzip. These are transfer/build sizes, not runtime timing or physical memory measurements. The optional worker is loaded only when selected and supported.
+
+## Milestone 10.1 audit and recovery — 16 October 2026
+
+The following are isolated **single two-second rolling windows** after ten seconds settling, headless Edge/SwiftShader, 1280×720, real local MediaPipe and a uniform synthetic 640×480 canvas requesting 30 FPS; no real hand, exposure timestamp, physical camera, hardware GPU or concurrent Ollama generation. Before/after runs differ in warm-up/system scheduling and final instrumentation. They establish separate bottlenecks, **not an overall performance improvement or physical latency benchmark**. No inference threshold, debounce or smoothing was lowered. Raw JSON is in `docs/benchmarks/2026-10-16-10.1-*.json`; the early worker baseline is also retained.
+
+| Reading | Before CPU | Final CPU | Final worker CPU | Optional GPU (software) |
+| --- | ---: | ---: | ---: | ---: |
+| Render FPS | 9.5 | 8.6 | 29.4 | 2.3 |
+| Camera presentation FPS | 4.7 | 3.8 | 27.8 | 1.1 |
+| Inference Hz | 9.6 | 8.7 | 4.8 | 3.4 |
+| Mean inference ms | 89.1 | 97.4 | 171.7 | 272.7 |
+| Inference p95 ms | 113.3 | 272.8 | 234.8 | 301.4 |
+| Gesture Hz | 9.4 | 8.7 | 4.8 | 3.4 |
+| Render frame p95 ms | 220.4 | 453.3 | 63.9 | 600.8 |
+| Render variation/std ms | 73.8 | 111.1 | 18.1 | 145.7 |
+| Process → next render callback ms | 99.1 | 94.9 | 197.3 | 287.1 |
+| Result → next callback ms | 7.0 | 6.4 | 23.6 | 10.5 |
+| Main-thread tasks >50 ms / 2 s | unavailable | 11.0 | 1.0 | 3.0 |
+| Measured long-task duration / 2 s ms | unavailable | 1614.0 | 63.0 | 1471.0 |
+
+Default CPU remains unchanged. Long synchronous inference (~97 ms mean in this final sample) occupies the main thread; its observed tasks over 50 ms totaled 1614 ms in the last two seconds. This is a correlation of actual observer entries, not exclusive attribution of every task to MediaPipe. Worker mode frees camera/render callbacks here but its slower inference (~4.8 Hz) can approach/exceed the 250 ms loss safeguard. GPU delegate under **software** WebGL was worse, so it is optional with CPU initialization fallback, never auto-enabled. Hardware GPU/laptop tests may differ. Do not infer real camera quality or end-to-end hand latency from these numbers; the target 30 FPS gesture interaction is still unverified.
+
+Audit findings and targeted changes:
+
+- Existing frame-pacer deduplicates video media times; one inference may run at once, no backlog; RVFC and RAF watchdog share pacing. No duplicate count increase appeared in these windows. Inference Hz may exceed distinct camera presentation FPS because the watchdog accepts fresh video media time between sparse presentation callbacks; these are different observations, not sensor frame counts. Skipped-frame and capture latency stayed unavailable and are not guessed.
+- Existing visibility cleanup stops capture/inference when the document hides. Minimization only hides the preview; it does not stop video/tracking. UI-only hand publication remains throttled (~150 ms), performance publication at 500 ms. Per-frame recognition/controller updates stay outside React.
+- Scene shell formerly followed parent FPS changes; memoized Scene and BuildingObject plus retained identities for unchanged validated objects avoid unrelated whole-scene React work. Bounds cache uses geometry/transform signatures and cloned results, preserving validation even if an object changes in place. Static shadow maps now invalidate on object/lighting/preview/import changes and mouse-gizmo changes; no change to scene geometry, material appearance, render resolution or shadow quality.
+- Generated scenes still incur meshes/materials/submeshes and conservative validation work; 120-part plans / 200-object scenes remain bounded. No instancing rewrite or claimed large-scene FPS uplift. Imported assets and transmissive surfaces can remain costly.
+- CPU remains Balanced request 640×480 / target 30. Lower capture profiles, optional worker and GPU execution are user-selectable experiments; actual negotiated settings are reported. No additional cursor prediction/filter delay was added. Existing 45/85 ms smoothing is preserved to avoid breaking accepted pinch behavior.
+- Optional compact diagnostics exposes Render FPS, Camera presentation FPS, Inference Hz, p95, Gesture Hz and process-to-next-render callback. Full details add render p95/std, real `PerformanceObserver` tasks over 50 ms in the last two seconds, engine/scheduler and unavailable capture timing. Next callback excludes exposure, smoothing and compositor/GPU presentation. New samples/counters are bounded and reuse the existing UI publication cadence.
+- Ollama residency/VRAM is optional request telemetry, not proof that it caused camera contention. Camera benchmarks were separate from live model calls; simultaneous physical inference contention needs user measurements. No model unload or hardware changes were made.
+
+Reproduce sequentially: `node scripts/benchmark-camera.mjs --output <json>`, then `--worker` or `--gpu`. Do not run builds, browser suites or model generation concurrently. New unit checks cover rolling metrics and cache invalidation; serial browser checks cover minimized tracking and cleanup.
+
+For physical lag reports include scene count, active execution/profile/resolution, the six compact readings, full render variation/long-task values, whether Ollama is generating, and panel/window visibility. Compare the same scene and lighting with CPU/worker/optional GPU separately. A high render FPS with low inference/gesture Hz still means hand control is slow. Physical webcam/microphone acceptance remains pending.

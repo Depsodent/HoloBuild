@@ -22,6 +22,15 @@ export class GestureController {
   get dragging() {
     return this.grab !== null;
   }
+  transfer() {
+    const preview = useSceneStore.getState().preview;
+    this.grab = null;
+    this.armed = false;
+    this.aim = null;
+    this.previousPinch = true;
+    this.lastCursor = null;
+    return preview;
+  }
   cancel(message = "Tracking lost. Uncommitted movement cancelled.") {
     const wasDragging = this.dragging;
     this.grab = null;

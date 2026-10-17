@@ -1,0 +1,22 @@
+{
+  "renderFps": 9.452736318407961,
+  "renderP95Ms": 220.40000000037253,
+  "renderStdMs": 73.83353891099694,
+  "cameraFps": 4.684467643712778,
+  "inferenceHz": 9.559267458242886,
+  "inferenceMeanMs": 89.11499999975786,
+  "inferenceP95Ms": 113.29999999888241,
+  "transferMeanMs": 0,
+  "gestureHz": 9.440889541584985,
+  "gestureMeanMs": 0.10526315799277079,
+  "pipelineToRenderMs": 99.10000000002661,
+  "resultToRenderMs": 6.96428571441876,
+  "captureToRenderMs": null,
+  "skippedFrames": null,
+  "duplicatesAvoided": 0,
+  "scheduler": "video callback + RAF watchdog",
+  "engine": "main-thread CPU",
+  "width": 640,
+  "height": 480,
+  "reportedFps": 30
+}

@@ -206,10 +206,11 @@ export function WebcamPreview() {
               value={settings.execution}
               disabled={active}
               onChange={(e) =>
-                saveCameraExecution(e.target.value as "main" | "worker")
+                saveCameraExecution(e.target.value as "main" | "worker" | "gpu")
               }
             >
               <option value="main">Main thread CPU (default)</option>
+              <option value="gpu">GPU · CPU fallback</option>
               <option value="worker">Worker CPU (experimental)</option>
             </select>
           </label>

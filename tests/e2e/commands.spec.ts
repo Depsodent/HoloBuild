@@ -1,17 +1,15 @@
+import { showTools } from "../helpers/workspaceTools";
 import { test, expect, type Page } from "@playwright/test";
 import { target } from "../helpers/gestureInput";
 async function command(page: Page, text: string) {
+  await showTools(page, "ai");
   await page.getByLabel("Ask HoloBuild", { exact: true }).fill(text);
   await page.getByRole("button", { name: "Send request", exact: true }).click();
 }
 async function ready(page: Page) {
   await page.goto("/?testInput");
   await target(page);
-  await page.getByRole("button", { name: "Pin Shapes", exact: true }).click();
-  await page.locator('[data-accordion-key="tools.voice"] > summary').click();
-  await page
-    .getByRole("button", { name: "Pin Ask HoloBuild", exact: true })
-    .click();
+  await showTools(page, "ai");
 }
 async function mock(page: Page, unsupported = false) {
   await page.addInitScript(
@@ -149,35 +147,25 @@ test("command section remembers collapse and text typing preserves keyboard edit
   page,
 }) => {
   await ready(page);
+  await showTools(page, "ai");
   await page.getByLabel("Ask HoloBuild", { exact: true }).fill("rotate it 90");
   expect(
     await page.evaluate(() => window.__HOLO_TEST__!.scene()[0].rotation),
   ).toEqual([0, 0, 0]);
+  await showTools(page, "ai");
   await page.getByLabel("Ask HoloBuild", { exact: true }).press("Enter");
   await expect(page.getByLabel("Command result")).toContainText("Updated");
-  const group = page.locator('[data-accordion-key="tools.voice"]');
-  await group.locator(":scope > summary").click();
-  await expect(
-    page.getByLabel("Ask HoloBuild", { exact: true }),
-  ).not.toBeVisible();
-  expect(
-    await page.evaluate(
-      () =>
-        JSON.parse(localStorage.getItem("holobuild.accordions.v1")!)[
-          "tools.voice"
-        ],
-    ),
-  ).toBe(false);
+  await showTools(page, "build");
+  await expect(page.getByLabel("Ask HoloBuild", { exact: true })).toBeHidden();
   await page.reload();
   await target(page);
-  await page.getByRole("button", { name: "Pin Shapes", exact: true }).click();
-  expect(await group.getAttribute("open")).toBeNull();
-  await group.locator(":scope > summary").focus();
-  await page.keyboard.press("Enter");
+  await expect(
+    page.getByRole("tab", { name: "Build", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
+  await page.getByRole("tab", { name: "Build", exact: true }).focus();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
   await expect(page.getByLabel("Ask HoloBuild", { exact: true })).toBeVisible();
-  await page
-    .getByLabel("Ask HoloBuild", { exact: true })
-    .scrollIntoViewIfNeeded();
   await page.screenshot({ path: "test-results/milestone-8-commands.png" });
 });
 test("interim transcripts never execute; repeated final results execute once; stop ignores late results", async ({
@@ -203,6 +191,9 @@ test("interim transcripts never execute; repeated final results execute once; st
     2,
   );
   await page
+    .getByRole("button", { name: "Start listening", exact: true })
+    .click();
+  await page
     .getByRole("button", { name: "Stop listening", exact: true })
     .click();
   await speak(page, "create a sphere");
@@ -215,6 +206,7 @@ test("speech permission failure and unsupported browsers retain text commands", 
 }) => {
   await mock(page);
   await ready(page);
+  await showTools(page, "ai");
   await page
     .getByRole("button", { name: "Start listening", exact: true })
     .click();
@@ -245,15 +237,18 @@ test("collapsing commands stops microphone; confirmation cannot delete a changed
 }) => {
   await mock(page);
   await ready(page);
+  await showTools(page, "ai");
   await page
     .getByRole("button", { name: "Start listening", exact: true })
     .click();
-  const summary = page.locator('[data-accordion-key="tools.voice"] > summary');
-  await summary.click();
-  await summary.click();
+  await showTools(page, "build");
+  await showTools(page, "ai");
   await expect(page.getByLabel("Listening status")).toContainText("stopped");
   await command(page, "delete it");
+  await showTools(page, "build");
+  await showTools(page, "build");
   await page.getByTitle("Create Sphere", { exact: true }).click();
+  await showTools(page, "ai");
   await page
     .getByRole("button", { name: "Confirm command", exact: true })
     .click();
@@ -263,4 +258,49 @@ test("collapsing commands stops microphone; confirmation cannot delete a changed
   expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
     2,
   );
+});
+
+test("final capture can wait for manual submission; cancel discards late audio", async ({
+  page,
+}) => {
+  await mock(page);
+  await ready(page);
+  await page.getByRole("button", { name: "AI Settings", exact: true }).click();
+  await page.getByLabel("Auto-submit final transcript").uncheck();
+  await page.getByRole("button", { name: "Request", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Start listening", exact: true })
+    .click();
+  await speak(page, "create a cylinder");
+  await expect(page.getByLabel("Listening status")).toContainText(
+    "Final transcript",
+  );
+  expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
+    1,
+  );
+  await expect(page.getByLabel("Ask HoloBuild", { exact: true })).toHaveValue(
+    "create a cylinder",
+  );
+  await page.getByRole("button", { name: "Send request", exact: true }).click();
+  expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
+    2,
+  );
+  await page
+    .getByRole("button", { name: "Start listening", exact: true })
+    .click();
+  await speak(page, "create a sphere", false);
+  await page
+    .getByRole("button", { name: "Cancel voice request", exact: true })
+    .click();
+  await speak(page, "create a sphere");
+  expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
+    2,
+  );
+  await page.reload();
+  await target(page);
+  await showTools(page, "ai");
+  await page.getByRole("button", { name: "AI Settings", exact: true }).click();
+  await expect(
+    page.getByLabel("Auto-submit final transcript"),
+  ).not.toBeChecked();
 });

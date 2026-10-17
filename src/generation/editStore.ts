@@ -1,3 +1,4 @@
+import { plannerStage } from "./plannerTransport";
 import { create } from "zustand";
 import {
   applyStructure,
@@ -34,6 +35,8 @@ export const useEditStore = create(() => ({
 let request = 0,
   controller: AbortController | null = null;
 export function cancelEdit() {
+  const active = useEditStore.getState();
+  if (active.prepared || active.status === "planning") plannerStage("Idle");
   request++;
   controller?.abort();
   controller = null;
@@ -109,7 +112,9 @@ export async function requestEdit(
   prompt: string,
   settings: { mode: PlannerMode; model?: string; timeoutMs?: number },
 ) {
+  if (useEditStore.getState().status === "planning") return;
   cancelEdit();
+  plannerStage("Idle");
   const version = ++request,
     abort = new AbortController();
   controller = abort;
@@ -157,6 +162,7 @@ export async function requestEdit(
         structureId: target,
         operation: plan.operation,
       });
+      plannerStage("Complete");
       useEditStore.setState({
         status: "complete",
         message: `Selected ${structureInfo(members(base, target)).name}.`,
@@ -180,6 +186,7 @@ export async function requestEdit(
           .map((o) => o.id),
       ]),
     ];
+    plannerStage("Preview Ready");
     useEditStore.setState({
       status: "preview",
       source,
@@ -196,7 +203,8 @@ export async function requestEdit(
       },
     });
   } catch (error) {
-    if (version === request && !abort.signal.aborted)
+    if (version === request && !abort.signal.aborted) {
+      plannerStage("Error");
       useEditStore.setState({
         prepared: null,
         status: "error",
@@ -205,6 +213,7 @@ export async function requestEdit(
             ? error.message
             : "Edit failed; scene unchanged.",
       });
+    }
   } finally {
     if (version === request) controller = null;
   }
@@ -233,11 +242,13 @@ export function confirmEdit() {
     base: p.base,
     prepared: p.result,
   });
-  if (ok)
+  if (ok) {
+    plannerStage("Complete");
     useEditStore.setState({
       prepared: null,
       status: "complete",
       message: "Structure edit confirmed. One Undo restores it.",
     });
+  }
   return ok;
 }

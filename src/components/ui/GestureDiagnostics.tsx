@@ -1,3 +1,4 @@
+import { CompactPerformance } from "./CompactPerformance";
 import { useRef } from "react";
 import { ChevronDown, Grip, Minus, X } from "lucide-react";
 import { useGestureStore } from "../../vision/gesturePipeline";
@@ -34,6 +35,7 @@ export function GestureDiagnostics() {
     storageKey: "holobuild.diagnostics-window.v1",
     boundarySelector: ".workspace",
     initialLayout: diagnosticLayout,
+    minimizedHeight: 144,
   });
   const visible = useWorkspaceLayout((s) => s.layout.diagnosticsVisible);
   const updateLayout = useWorkspaceLayout((s) => s.update);
@@ -97,6 +99,7 @@ export function GestureDiagnostics() {
           <X size={15} />
         </button>
       </div>
+      {visible && floating.layout.minimized && <CompactPerformance />}
       <div className="diagnostics-body" hidden={floating.layout.minimized}>
         <Accordion id="diagnostics.gesture" title="Gesture State">
           <dl>

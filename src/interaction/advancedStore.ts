@@ -1,6 +1,8 @@
+import { AUTO_THRESHOLDS, type AutoThresholds } from "./autoIntent";
 import { create } from "zustand";
-export type AdvancedMode = "move" | "scale" | "rotate" | "navigate";
+export type AdvancedMode = "auto" | "move" | "scale" | "rotate" | "navigate";
 export const MODE_INSTRUCTIONS: Record<AdvancedMode, string> = {
+  auto: "Point and pinch to move. Pinch both hands, then separate to scale or turn the hand line for yaw.",
   move: "Point at an object, pinch to grab, move, then release.",
   scale:
     "Keep the selected object. Show each hand open once, then pinch both within 4 s. Release to confirm.",
@@ -12,6 +14,8 @@ export const MODE_INSTRUCTIONS: Record<AdvancedMode, string> = {
 export const useAdvancedStore = create<{
   mode: AdvancedMode;
   active: boolean;
+  intent: "detect" | "scale" | "rotate" | null;
+  autoThresholds: AutoThresholds;
   readyHands: number;
   menuEnabled: boolean;
   factor: number;
@@ -20,7 +24,9 @@ export const useAdvancedStore = create<{
   navigationSensitivity: number;
   message: string;
 }>(() => ({
-  mode: "move",
+  mode: "auto",
+  intent: null,
+  autoThresholds: { ...AUTO_THRESHOLDS },
   active: false,
   readyHands: 0,
   menuEnabled: false,
@@ -28,6 +34,5 @@ export const useAdvancedStore = create<{
   angle: 0,
   rotationSensitivity: 1,
   navigationSensitivity: 1,
-  message:
-    "Move: point and pinch. Scale: select, open both hands, then pinch both.",
+  message: MODE_INSTRUCTIONS.auto,
 }));

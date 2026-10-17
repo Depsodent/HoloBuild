@@ -232,6 +232,11 @@ export function execute(command: Command): boolean {
       }
     }
     objects = sceneSchema.parse(objects);
+    const originals = new Map(s.objects.map((o) => [o.id, o]));
+    objects = objects.map((o) => {
+      const old = originals.get(o.id);
+      return old && JSON.stringify(old) === JSON.stringify(o) ? old : o;
+    });
     if (command.type !== "structure") selectedStructureId = null;
     if (JSON.stringify(objects) === JSON.stringify(s.objects)) return true;
     useSceneStore.setState({

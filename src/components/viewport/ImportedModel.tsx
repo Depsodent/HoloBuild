@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useThree } from "@react-three/fiber";
 import { Mesh } from "three";
 import { modelResource } from "../../assets/modelRegistry";
 import type { SceneObject } from "../../scene/objectTypes";
@@ -12,6 +14,10 @@ export function ImportedModel({
   highlight: boolean;
 }) {
   const resource = object.model && modelResource(object.model.assetId);
+  const gl = useThree((s) => s.gl);
+  useEffect(() => {
+    gl.shadowMap.needsUpdate = true;
+  }, [resource, grabbed, object.material, gl]);
   if (!resource) return null;
   return (
     <group visible={!grabbed}>

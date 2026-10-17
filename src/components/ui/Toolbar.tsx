@@ -1,3 +1,4 @@
+import { useToolsStore, type ToolsTab } from "../../workspace/toolsStore";
 import { SHAPES } from "../../scene/objectFactory";
 import {
   Box,
@@ -18,7 +19,7 @@ import type { Tool, ObjectType } from "../../scene/objectTypes";
 import { LightingControls } from "./LightingControls";
 import { ModelImport } from "./ModelImport";
 import { AdvancedGestures } from "./AdvancedGestures";
-import { Accordion } from "./Accordion";
+
 import { VoiceCommands } from "./VoiceCommands";
 import { useGenerationStore } from "../../generation/generationStore";
 const shapeIcons = {
@@ -36,6 +37,8 @@ const tools = [
   ["scale", "Scale", Scaling, "S"],
 ] as const;
 export function Toolbar({ compact = false }: { compact?: boolean }) {
+  const tab = useToolsStore((s) => s.tab),
+    setTab = useToolsStore((s) => s.setTab);
   const active = useSceneStore((s) => s.tool);
   const snap = useSceneStore((s) => s.snap);
   const selected = useSceneStore((s) => s.selectedId);
@@ -52,8 +55,58 @@ export function Toolbar({ compact = false }: { compact?: boolean }) {
       aria-label="Construction tools"
     >
       <div className="eyebrow">CONSTRUCTION</div>
-      <h2>Construction</h2>
-      <Accordion id="tools.shapes" title="Shapes" forceOpen={compact}>
+      {!compact && (
+        <nav
+          className="tools-tabs"
+          role="tablist"
+          aria-label="Construction categories"
+          onKeyDown={(e) => {
+            const keys = ["build", "edit", "ai", "scene"] as ToolsTab[];
+            const n = keys.indexOf(tab);
+            const next =
+              e.key === "ArrowRight"
+                ? (n + 1) % 4
+                : e.key === "ArrowLeft"
+                  ? (n + 3) % 4
+                  : e.key === "Home"
+                    ? 0
+                    : e.key === "End"
+                      ? 3
+                      : -1;
+            if (next >= 0) {
+              e.preventDefault();
+              setTab(keys[next]);
+              const buttons =
+                e.currentTarget.querySelectorAll<HTMLButtonElement>(
+                  "[role=tab]",
+                );
+              buttons[next].focus();
+            }
+          }}
+        >
+          {(["build", "edit", "ai", "scene"] as const).map((key) => (
+            <button
+              key={key}
+              role="tab"
+              id={`tools-tab-${key}`}
+              aria-controls={`tools-pane-${key}`}
+              aria-selected={tab === key}
+              tabIndex={tab === key ? 0 : -1}
+              onClick={() => setTab(key)}
+            >
+              {key === "ai" ? "AI" : key[0].toUpperCase() + key.slice(1)}
+            </button>
+          ))}
+        </nav>
+      )}
+      <section
+        className="tools-pane"
+        id="tools-pane-build"
+        role={compact ? undefined : "tabpanel"}
+        aria-labelledby={compact ? undefined : "tools-tab-build"}
+        hidden={!compact && tab !== "build"}
+      >
+        {!compact && <h3>Shapes</h3>}
         <div className="shape-palette" aria-label="Construction shapes">
           {(Object.entries(SHAPES) as [ObjectType, typeof SHAPES.cube][]).map(
             ([type, shape]) => (
@@ -77,8 +130,16 @@ export function Toolbar({ compact = false }: { compact?: boolean }) {
             ),
           )}
         </div>
-      </Accordion>
-      <Accordion id="tools.transform" title="Tools" forceOpen={compact}>
+        {!compact && <ModelImport compact={false} section="import" />}
+      </section>
+      <section
+        className="tools-pane"
+        id="tools-pane-edit"
+        role={compact ? undefined : "tabpanel"}
+        aria-labelledby={compact ? undefined : "tools-tab-edit"}
+        hidden={!compact && tab !== "edit"}
+      >
+        {!compact && <h3>Edit selection</h3>}
         <div className="tool-list">
           {tools.map(([id, label, Icon, key]) => (
             <button
@@ -126,15 +187,34 @@ export function Toolbar({ compact = false }: { compact?: boolean }) {
             </button>
           </div>
         )}
-        {!compact && <AdvancedGestures />}
-      </Accordion>
+        {!compact && (
+          <details className="advanced-gesture-settings">
+            <summary>Advanced gesture settings</summary>
+            <AdvancedGestures />
+          </details>
+        )}
+      </section>
       {compact ? (
         <ModelImport compact />
       ) : (
         <>
-          <VoiceCommands />
-          <Accordion id="tools.scene" title="Scene">
-            <ModelImport compact={false} />
+          <section
+            className="tools-pane"
+            id="tools-pane-ai"
+            role="tabpanel"
+            aria-labelledby="tools-tab-ai"
+            hidden={tab !== "ai"}
+          >
+            <VoiceCommands />
+          </section>
+          <section
+            className="tools-pane"
+            id="tools-pane-scene"
+            role="tabpanel"
+            aria-labelledby="tools-tab-scene"
+            hidden={tab !== "scene"}
+          >
+            <ModelImport compact={false} section="restore" />
             <LightingControls compact={false} />
             {hasStructure && !pending && (
               <button
@@ -145,7 +225,7 @@ export function Toolbar({ compact = false }: { compact?: boolean }) {
                 Fit structure in view
               </button>
             )}
-          </Accordion>
+          </section>
         </>
       )}
     </aside>

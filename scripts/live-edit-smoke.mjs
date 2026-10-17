@@ -13,6 +13,14 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } }),
 page.on("pageerror", (e) => errors.push(e.message));
 await mkdir("test-results", { recursive: true });
 const open = async (id) => {
+  if (id === "tools.voice") {
+    await page.getByRole("tab", { name: "AI", exact: true }).click();
+    return;
+  }
+  if (id === "tools.ai-settings")
+    await page
+      .getByRole("button", { name: "AI Settings", exact: true })
+      .click();
   const panel = page.locator(`[data-accordion-key="${id}"]`);
   if ((await panel.getAttribute("open")) === null)
     await panel.locator(":scope > summary").click();
@@ -49,10 +57,27 @@ try {
       () => window.__HOLO_TEST__.snapshot().history,
     ),
     start = Date.now();
+  const pending = page.waitForResponse(
+    (r) =>
+      r.url().endsWith("/api/planner/edit") && r.request().method() === "POST",
+  );
   await ask("Replace every wall of the whole house with brick");
   await expect(
     page.getByLabel("Structure modification preview", { exact: true }),
   ).toBeVisible({ timeout: 130000 });
+  const response = await pending;
+  assert.match(response.headers()["content-type"], /text\/event-stream/);
+  // Chromium does not retain EventSource response bodies for CDP getResponseBody.
+  // Read the actual application telemetry populated by its validated stream parser.
+  const measured = await page.evaluate(async () => {
+    const resource = performance
+      .getEntriesByType("resource")
+      .find((e) => e.name.includes("/src/generation/plannerTransport.ts"));
+    return (await import(resource.name)).usePlannerProgress.getState();
+  });
+  assert.equal(measured.provider, "Ollama");
+  assert.equal(measured.stage, "Preview Ready");
+  assert.ok(measured.timings.firstTokenMs >= 0);
   const elapsedMs = Date.now() - start,
     source = await page.getByLabel("Edit planner source").textContent();
   assert.match(source, /LLM edit.*qwen3:4b-instruct/);
@@ -89,6 +114,8 @@ try {
     ok: true,
     source,
     elapsedMs,
+    timings: measured.timings,
+    finalStage: measured.stage,
     components: before.filter((o) => o.construction).length,
     atomicHistory: true,
     undoRestored: true,

@@ -1,0 +1,23 @@
+{
+  "ok": true,
+  "source": "LLM edit / Ollama / qwen3:4b-instruct",
+  "elapsedMs": 24291,
+  "timings": {
+    "firstTokenMs": 12092.237799999995,
+    "headerMs": 12091.544000000002,
+    "providerMs": 23557.483,
+    "validationMs": 3.3827999999921303,
+    "totalMs": 23569.689100000003,
+    "modelLoadMs": null,
+    "residentBefore": false,
+    "residentVramBytes": null,
+    "clientValidationMs": 0.6999999992549419,
+    "clientTotalMs": 23594.099999999627
+  },
+  "finalStage": "Preview Ready",
+  "components": 6,
+  "atomicHistory": true,
+  "undoRestored": true,
+  "pageErrors": [],
+  "physicalWebcamTested": false
+}

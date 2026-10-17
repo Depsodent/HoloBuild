@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-17",
+  "baseCheckpoint": "a7f0f12",
+  "productionSourceChangedDuringFinalization": false,
+  "unitTests": {
+    "passed": 231,
+    "files": 25,
+    "verifiedPreviousSession": true
+  },
+  "backendTests": {
+    "passed": 13,
+    "verifiedPreviousSession": true
+  },
+  "productionBuild": {
+    "passed": true,
+    "verifiedPreviousSession": true,
+    "mainJSKB": 1477.98,
+    "mainJSGzipKB": 420.71,
+    "cssKB": 28.74,
+    "cssGzipKB": 6.85,
+    "warnings": [
+      "Existing Zod annotation warnings",
+      "Existing large-main-bundle warning"
+    ]
+  },
+  "fullBrowserRun": {
+    "startTime": "2026-10-17T10:46:16.064Z",
+    "duration": 921792.2969999999,
+    "expected": 100,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  },
+  "initialBrowserFailures": [
+    {
+      "title": "lighting controls affect the rendered scene, reset and persist with project",
+      "file": "materials-models.spec.ts",
+      "passed": false
+    },
+    {
+      "title": "one-hand group raycast/movement commits once, hand loss and Undo during grab cancel",
+      "file": "structures.spec.ts",
+      "passed": false
+    },
+    {
+      "title": "each sidebar section scrolls without moving its neighbours or the viewport",
+      "file": "workspace.spec.ts",
+      "passed": false
+    }
+  ],
+  "targetedFinalCorrections": {
+    "startTime": "2026-10-17T11:03:33.853Z",
+    "duration": 41746.823,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "distinctBrowserScenariosValidated": 103,
+  "note": "Full serial run: 100 passed, 3 fixture failures. Navigation, intentional non-overflowing Build tab, and aiming behind Target control were corrected only in fixtures. All three affected scenarios then passed against unchanged production code. No second full run is claimed.",
+  "physicalWebcamAccepted": false,
+  "physicalMicrophoneAccepted": false,
+  "liveProviderResultsReused": [
+    "2026-10-16-10.1-live-generation.json",
+    "2026-10-16-10.1-live-edit.json"
+  ]
+}

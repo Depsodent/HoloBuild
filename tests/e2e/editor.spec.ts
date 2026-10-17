@@ -1,3 +1,4 @@
+import { showTools } from "../helpers/workspaceTools";
 import { test, expect } from "../helpers/editorTest";
 test("invalid imports preserve the scene and show recovery advice", async ({
   page,
@@ -15,10 +16,14 @@ test("transform modes and orbit preserve a healthy WebGL viewport", async ({
   page,
 }) => {
   await page.goto("/");
+  await showTools(page, "edit");
   await page.getByRole("button", { name: "Move G", exact: true }).click();
   await expect(page.locator("footer")).toContainText("TRANSLATE");
+  await showTools(page, "edit");
   await page.getByRole("button", { name: "Rotate R", exact: true }).click();
+  await showTools(page, "edit");
   await page.getByRole("button", { name: "Scale S", exact: true }).click();
+  await showTools(page, "edit");
   await page.getByRole("button", { name: "Select V", exact: true }).click();
   const canvas = page.locator("canvas[data-engine]");
   const bounds = await canvas.boundingBox();
