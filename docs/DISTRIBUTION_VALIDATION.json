@@ -1,0 +1,18 @@
+{
+  "baseline": "38f2bb1",
+  "date": "2026-10-17",
+  "buildPassed": true,
+  "viteSeconds": 25.85,
+  "clientJSUnchanged": true,
+  "statsGl": {
+    "excluded": [
+      {
+        "package": "stats-gl",
+        "renderedBytes": 0,
+        "reason": "Unused optional Drei StatsGl component; tree-shaken. Full upstream notice absent, so build fails if its code is included."
+      }
+    ]
+  },
+  "fullUpstreamNoticeInvented": false,
+  "publicAIInitiallyEnabled": false
+}

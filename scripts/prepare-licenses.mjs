@@ -56,6 +56,12 @@ for (const directory of [...new Set(directories)]) {
     version: pkg.version,
     license: pkg.license ?? "See upstream package",
     files: links,
+    ...(pkg.name === "stats-gl"
+      ? {
+          distribution:
+            "Excluded from production code by the Vite distribution guard; see distribution.json. SPDX declaration retained as installed-dependency metadata only.",
+        }
+      : {}),
   });
 }
 entries.sort((a, b) => a.name.localeCompare(b.name));
@@ -77,5 +83,5 @@ await fs.writeFile(
   ),
 );
 console.log(
-  `Prepared notices for ${entries.length} production packages; ${entries.filter((e) => !e.files.length).length} rely on package SPDX/upstream notices.`,
+  `Prepared notices for ${entries.length} production packages; ${entries.filter((e) => !e.files.length && !e.distribution).length} unresolved notices; stats-gl is excluded by the production-code guard.`,
 );

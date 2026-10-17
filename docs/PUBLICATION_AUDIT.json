@@ -1,9 +1,9 @@
 {
-  "auditedAt": "2026-10-17T18:18:26.885Z",
-  "baseline": "f691848c5ca2aa798a453db5ef593eb846ac1bee",
-  "workingFiles": 249,
-  "historicalBlobsScanned": 587,
-  "bundleFilesScanned": 84,
+  "auditedAt": "2026-10-17T18:26:24.881Z",
+  "baseline": "38f2bb1f58a1ee8610e888aaea74decf4e22b346",
+  "workingFiles": 250,
+  "historicalBlobsScanned": 631,
+  "bundleFilesScanned": 85,
   "findings": [],
   "reviewedFixtures": [
     {

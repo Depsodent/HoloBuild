@@ -7,5 +7,12 @@
     "maath": "https://raw.githubusercontent.com/pmndrs/maath/main/LICENSE",
     "mediapipe": "https://raw.githubusercontent.com/google-ai-edge/mediapipe/master/LICENSE"
   },
-  "remainingNoticeGap": "stats-gl 2.4.2 declares MIT in its npm package metadata but does not ship a full license file; upstream root also lacks one. Inventory records the declaration without inventing copyright ownership."
+  "statsGlDistributionResolution": {
+    "package": "stats-gl@2.4.2",
+    "fullUpstreamNoticeObtained": false,
+    "distributedCodeBytes": 0,
+    "resolution": "Unused optional component is tree-shaken; Vite build fails if stats-gl renders any code. Inventory entry is metadata only.",
+    "evidence": "/third-party-notices/distribution.json",
+    "requiredBeforeFutureInclusion": "Obtain authentic upstream full license/copyright notice."
+  }
 }

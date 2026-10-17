@@ -10,7 +10,7 @@ Status: local preparation only. Do not create a repository, push, connect automa
 - Excluded: `.env*` except placeholder `.env.example`, credential/key files, node_modules, dist, local caches/reports, `.vercel`, model weights, generated MediaPipe assets and personal imported GLB/GLTF/BIN bundles.
 - Secret audit scans current non-ignored files, every reachable historical blob, and production output; it also checks for exact locally configured secrets without printing values. `docs/PUBLICATION_AUDIT.json` records findings and reviewed fake fixtures. Pattern scanning is not a guarantee of complete detection.
 - Production dependency advisory check: zero reported vulnerabilities on 2026-10-17. Author credits, commit author metadata and historical local-path development notes remain visible in a public repository; no private configuration was intentionally included.
-- Original code remains UNLICENSED. Third-party license inventory and recovered upstream notices are generated during build. See `THIRD_PARTY_NOTICES.md` for the stats-gl upstream notice gap.
+- Original code remains UNLICENSED. Third-party license inventory and recovered upstream notices are generated during build. The stats-gl notice gap is resolved for distribution: no implementation bytes are shipped, and a Vite build guard fails if that changes. See `THIRD_PARTY_NOTICES.md` and the generated distribution.json evidence.
 
 ## Hosting choice
 
