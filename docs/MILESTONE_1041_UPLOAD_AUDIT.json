@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-10-18T15:33:10.253Z",
+  "deployment": "dpl_7yvDqSdmQAt6m91SC8gXTdCitRmF",
+  "pathsChecked": 238,
+  "unsafeUploadPaths": [],
+  "emptyDirectoryMarkers": [
+    "src/test-results"
+  ],
+  "note": "Vercel file-list includes empty directory markers; no test-result file contents were uploaded."
+}

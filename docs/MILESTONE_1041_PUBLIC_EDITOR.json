@@ -1,0 +1,16 @@
+{
+  "testedAt": "2026-10-18T15:42:24.607Z",
+  "browser": "156.0.8078.4",
+  "physicalDeviceTested": false,
+  "url": "https://holobuild.vercel.app",
+  "checks": [
+    "Mouse selection and Inspector position edit, exact history",
+    "Inspector material and inert custom-color preview, confirmation and history",
+    "Public JSON save/load preserves scene"
+  ],
+  "knownLimitations": [
+    "Importing an identical scene leaves the Loading project status despite preserving data; no-op replace returns before updating status. This path predates8f833f6."
+  ],
+  "pageErrors": [],
+  "ok": true
+}

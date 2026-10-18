@@ -1,0 +1,272 @@
+{
+  "checkedAt": "2026-10-18T17:07:57.332Z",
+  "deployment": "dpl_7yvDqSdmQAt6m91SC8gXTdCitRmF",
+  "since": "2026-10-18T15:32:00Z",
+  "runtimeRecords": 7,
+  "runtime": [
+    {
+      "timestamp": "2026-10-18T15:49:47.478Z",
+      "level": "warn",
+      "path": "/api/planner/plan",
+      "requestId": "ad0c73c0-3612-4f9e-b01b-ba4b512b7a34",
+      "status": 429,
+      "kind": "rate-limit",
+      "phase": "request",
+      "unparsed": false
+    },
+    {
+      "timestamp": "2026-10-18T15:49:39.262Z",
+      "level": "warn",
+      "path": "/api/planner/connection",
+      "requestId": "2d000f6c-d1d2-47c4-861c-b0397ece6450",
+      "status": 429,
+      "kind": "rate-limit",
+      "phase": "request",
+      "unparsed": false
+    },
+    {
+      "timestamp": "2026-10-18T15:33:07.285Z",
+      "level": "warn",
+      "path": "/api/planner/status",
+      "requestId": "66caebfd-0e4a-43ca-aa71-35ba93431cf2",
+      "status": 403,
+      "kind": "request",
+      "phase": "request",
+      "unparsed": false
+    },
+    {
+      "timestamp": "2026-10-18T15:33:06.736Z",
+      "level": "warn",
+      "path": "/api/planner/status",
+      "requestId": "73122ee5-8140-455d-a19a-4b03ebaad0c6",
+      "status": 403,
+      "kind": "request",
+      "phase": "request",
+      "unparsed": false
+    },
+    {
+      "timestamp": "2026-10-18T15:33:06.450Z",
+      "level": "warn",
+      "path": "/api/planner/status",
+      "requestId": "9ed2e240-28e5-4acd-9968-b7ec0e92d98a",
+      "status": 403,
+      "kind": "request",
+      "phase": "request",
+      "unparsed": false
+    },
+    {
+      "timestamp": "2026-10-18T15:32:30.726Z",
+      "level": "warn",
+      "path": "/api/planner/status",
+      "requestId": "95749fe7-b341-4d83-ae81-a1efed85c256",
+      "status": 403,
+      "kind": "request",
+      "phase": "request",
+      "unparsed": false
+    },
+    {
+      "timestamp": "2026-10-18T15:32:30.518Z",
+      "level": "warn",
+      "path": "/api/planner/status",
+      "requestId": "f57f94c4-bbde-47d7-878f-91d414bb1f7c",
+      "status": 403,
+      "kind": "request",
+      "phase": "request",
+      "unparsed": false
+    }
+  ],
+  "requestRecords": 25,
+  "httpStatusCounts": {
+    "200": 18,
+    "403": 5,
+    "429": 2
+  },
+  "requests": [
+    {
+      "timestamp": "2026-10-18T15:50:38.198Z",
+      "path": "/api/planner/connection",
+      "status": 200,
+      "requestId": "5m8jh-1792338638198-32f574de5437"
+    },
+    {
+      "timestamp": "2026-10-18T15:49:46.935Z",
+      "path": "/api/planner/plan",
+      "status": 429,
+      "requestId": "m5788-1792338586935-edd3be6f050f"
+    },
+    {
+      "timestamp": "2026-10-18T15:49:41.742Z",
+      "path": "/api/planner/status",
+      "status": 200,
+      "requestId": "lct8v-1792338581742-97309fbc94c2"
+    },
+    {
+      "timestamp": "2026-10-18T15:49:38.961Z",
+      "path": "/api/planner/connection",
+      "status": 429,
+      "requestId": "rr5kw-1792338578961-85c660ce8ed2"
+    },
+    {
+      "timestamp": "2026-10-18T15:49:38.512Z",
+      "path": "/api/planner/connection",
+      "status": 200,
+      "requestId": "rr5kw-1792338578512-547f2f909f7f"
+    },
+    {
+      "timestamp": "2026-10-18T15:49:38.074Z",
+      "path": "/api/planner/connection",
+      "status": 200,
+      "requestId": "rr5kw-1792338578074-b0026734444d"
+    },
+    {
+      "timestamp": "2026-10-18T15:49:37.613Z",
+      "path": "/api/planner/connection",
+      "status": 200,
+      "requestId": "8tgzb-1792338577613-8bf6a5de425f"
+    },
+    {
+      "timestamp": "2026-10-18T15:49:37.183Z",
+      "path": "/api/planner/connection",
+      "status": 200,
+      "requestId": "8tgzb-1792338577183-2558df5369a2"
+    },
+    {
+      "timestamp": "2026-10-18T15:49:35.954Z",
+      "path": "/api/planner/connection",
+      "status": 200,
+      "requestId": "8tgzb-1792338575954-c890a2ac630d"
+    },
+    {
+      "timestamp": "2026-10-18T15:42:28.404Z",
+      "path": "/api/planner/status",
+      "status": 200,
+      "requestId": "vb9n8-1792338148404-a5791fe29b40"
+    },
+    {
+      "timestamp": "2026-10-18T15:40:45.133Z",
+      "path": "/api/planner/status",
+      "status": 200,
+      "requestId": "qg76l-1792338045133-b5e05d44b313"
+    },
+    {
+      "timestamp": "2026-10-18T15:39:30.595Z",
+      "path": "/api/planner/status",
+      "status": 200,
+      "requestId": "6gfvc-1792337970595-e4ac8bc532d4"
+    },
+    {
+      "timestamp": "2026-10-18T15:38:31.886Z",
+      "path": "/api/planner/status",
+      "status": 200,
+      "requestId": "wfw2f-1792337911886-2ec8c0cfb258"
+    },
+    {
+      "timestamp": "2026-10-18T15:37:53.842Z",
+      "path": "/api/planner/assistant",
+      "status": 200,
+      "requestId": "vb9n8-1792337873842-99b1df1633e0"
+    },
+    {
+      "timestamp": "2026-10-18T15:37:51.153Z",
+      "path": "/api/planner/status",
+      "status": 200,
+      "requestId": "sjkpf-1792337871153-a90293c4bc45"
+    },
+    {
+      "timestamp": "2026-10-18T15:36:46.308Z",
+      "path": "/api/planner/assistant",
+      "status": 200,
+      "requestId": "m88q7-1792337806308-3de68c01d7d8"
+    },
+    {
+      "timestamp": "2026-10-18T15:36:42.524Z",
+      "path": "/api/planner/status",
+      "status": 200,
+      "requestId": "hqm8q-1792337802524-09b73e3dec6d"
+    },
+    {
+      "timestamp": "2026-10-18T15:35:16.233Z",
+      "path": "/api/planner/status",
+      "status": 200,
+      "requestId": "cdw54-1792337716233-6b952a21dd43"
+    },
+    {
+      "timestamp": "2026-10-18T15:34:37.576Z",
+      "path": "/api/planner/status",
+      "status": 200,
+      "requestId": "wgg8t-1792337677576-c29b9abe6487"
+    },
+    {
+      "timestamp": "2026-10-18T15:33:06.937Z",
+      "path": "/api/planner/status",
+      "status": 403,
+      "requestId": "hq58s-1792337586937-3444c71857e9"
+    },
+    {
+      "timestamp": "2026-10-18T15:33:06.602Z",
+      "path": "/api/planner/status",
+      "status": 403,
+      "requestId": "sph6z-1792337586602-aa28ff70f416"
+    },
+    {
+      "timestamp": "2026-10-18T15:33:06.092Z",
+      "path": "/api/planner/status",
+      "status": 403,
+      "requestId": "wtm9l-1792337586092-6510b837e0a0"
+    },
+    {
+      "timestamp": "2026-10-18T15:33:05.552Z",
+      "path": "/api/planner/status",
+      "status": 200,
+      "requestId": "xrlsb-1792337585552-27877fe0dba3"
+    },
+    {
+      "timestamp": "2026-10-18T15:32:30.585Z",
+      "path": "/api/planner/status",
+      "status": 403,
+      "requestId": "b7x4d-1792337550585-f195786628e6"
+    },
+    {
+      "timestamp": "2026-10-18T15:32:30.415Z",
+      "path": "/api/planner/status",
+      "status": 403,
+      "requestId": "msggs-1792337550415-02558aa3bd83"
+    }
+  ],
+  "unexpected": [],
+  "server5xx": 0,
+  "rawBodiesOrPromptsIncluded": false,
+  "notes": [
+    "403: origin validation/probe denials.",
+    "429: intentional rate-limit and recovery test."
+  ],
+  "summaries": [
+    {
+      "type": "summary",
+      "recordsReturned": 7,
+      "timeRange": {
+        "start": "2026-10-18T15:32:00.000Z",
+        "end": "2026-10-18T15:51:37.681Z"
+      },
+      "pagination": {
+        "hasMore": false,
+        "next": null
+      },
+      "excludedIntervals": []
+    },
+    {
+      "type": "summary",
+      "recordsReturned": 25,
+      "timeRange": {
+        "start": "2026-10-18T15:32:00.000Z",
+        "end": "2026-10-18T15:52:15.000Z"
+      },
+      "pagination": {
+        "hasMore": false,
+        "next": null
+      },
+      "excludedIntervals": []
+    }
+  ],
+  "ok": true
+}

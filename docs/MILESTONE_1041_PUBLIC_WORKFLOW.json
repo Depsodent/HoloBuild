@@ -1,0 +1,88 @@
+{
+  "testedAt": "2026-10-18T15:36:36.065Z",
+  "url": "https://holobuild.vercel.app",
+  "browser": "155.0.4283.45",
+  "physicalDeviceTested": false,
+  "public1041Tested": true,
+  "contexts": [
+    {
+      "scenario": "Genuine Gemini flexible detailed interpretation, same-structure roof/window/width refinements, confirmation and exact history",
+      "previewMs": 2872,
+      "provider": [
+        {
+          "http": 200,
+          "event": "event: result",
+          "requestId": "468b6f70-b2f1-43bd-a8f5-cecfde1371bf",
+          "provider": "Gemini",
+          "model": "gemini-3.5-flash-lite",
+          "kind": "create",
+          "timings": {
+            "firstTokenMs": 917.5695059999998,
+            "headerMs": 916.7473989999853,
+            "providerMs": 1316.9107189999777,
+            "validationMs": 5.733269000018481,
+            "totalMs": 1876.1202279999852,
+            "modelLoadMs": null,
+            "residentBefore": null,
+            "residentVramBytes": null
+          }
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "scenario": "Fresh context, genuine Gemini Part resize, preview, confirmation and exact history",
+      "elapsedMs": 3804,
+      "provider": [
+        {
+          "http": 200,
+          "event": "event: result",
+          "requestId": "dbbbc88e-ae4d-441f-8b61-f62e5df1d9c9",
+          "provider": "Gemini",
+          "model": "gemini-3.5-flash-lite",
+          "kind": "edit",
+          "timings": {
+            "firstTokenMs": 662.0113499999861,
+            "headerMs": 661.7780400000047,
+            "providerMs": 854.2344000000157,
+            "validationMs": 2.2343000000109896,
+            "totalMs": 1250.1451299999608,
+            "modelLoadMs": null,
+            "residentBefore": null,
+            "residentVramBytes": null
+          }
+        }
+      ],
+      "pageErrors": []
+    }
+  ],
+  "ok": true,
+  "basicChecks": {
+    "examples": [
+      "mouse",
+      "keyboard",
+      "emulated touch"
+    ],
+    "focusAndEditing": true,
+    "noAutomaticRequest": true,
+    "naturalPhrases": [
+      "Generate a home",
+      "Build a modern house"
+    ],
+    "exactDetailedHouse": true,
+    "inertPreview": true,
+    "cancellation": true,
+    "confirmationAndExactHistory": true,
+    "providerRequests": 0,
+    "pageErrors": []
+  },
+  "harnessNote": "Earlier basics passed; a subsequent fresh navigation exceeded20s before a provider request. Retried with60s navigation wait; no application timeout changed.",
+  "selectionChecks": {
+    "partChangesOneObjectOnly": true,
+    "partMetadataAndSelectionPreserved": true,
+    "structureTargetsAllWalls": true,
+    "unrelatedCubePreserved": true,
+    "inertPreviews": true,
+    "exactHistory": true
+  }
+}
