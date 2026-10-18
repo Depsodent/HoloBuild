@@ -1,3 +1,4 @@
+import { setPlannerMode } from "../helpers/workspaceTools";
 import { showLeft } from "../helpers/workspaceTools";
 import { showTools, openWorkspaceSection } from "../helpers/workspaceTools";
 import { test, expect, type Page } from "@playwright/test";
@@ -13,6 +14,7 @@ async function ask(page: Page, text: string) {
 async function ready(page: Page) {
   await page.goto("/?testInput");
   await target(page);
+  await setPlannerMode(page, "offline");
   await open(page, "tools.voice");
   await ask(page, "Build a house without doors");
   await page
@@ -130,7 +132,7 @@ test("ambiguous/contradictory model targets and selection-mode changes cannot co
       },
     });
   });
-  await page.getByLabel("Planner mode", { exact: true }).selectOption("llm");
+  await setPlannerMode(page, "llm");
   await ask(page, "Move the whole house right");
   await expect(page.getByLabel("Structure edit result")).toContainText(
     /Which structure/,
@@ -158,9 +160,7 @@ test("ambiguous/contradictory model targets and selection-mode changes cannot co
     base,
   );
   await showTools(page, "ai");
-  await page
-    .getByLabel("Planner mode", { exact: true })
-    .selectOption("offline");
+  await setPlannerMode(page, "offline");
   await ask(page, "Change all walls to brick");
   await expect(
     page.getByRole("button", { name: "Confirm structure edit", exact: true }),

@@ -33,3 +33,30 @@ it("normalizes paraphrases without deleting details", () => {
   );
   expect(requestedAppearance("make the roof blue").roof?.color).toBe("#508ee8");
 });
+import { validateDesignAttributes } from "../../src/generation/designValidation";
+it("rejects missing explicit requirements without repairing provider geometry", () => {
+  const plan = offlinePlan("house");
+  expect(() =>
+    validateDesignAttributes("Build a two-story house", plan),
+  ).toThrow(/floor count/);
+  expect(() =>
+    validateDesignAttributes("Build a house with six windows", plan),
+  ).toThrow(/window count/);
+  expect(() =>
+    validateDesignAttributes("Build a house with yellow walls", plan),
+  ).toThrow(/color/);
+  expect(() =>
+    validateDesignAttributes("Build a house with a wooden door", {
+      ...plan,
+      objects: plan.objects.map((p) =>
+        p.role === "door" ? { ...p, material: "concrete" } : p,
+      ),
+    }),
+  ).toThrow(/material/);
+  expect(() =>
+    validateDesignAttributes(
+      "Build a house with two windows on each floor",
+      offlinePlan("house with two windows"),
+    ),
+  ).not.toThrow();
+});

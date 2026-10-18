@@ -20,6 +20,10 @@ export interface OfflineOptions {
   thickness?: number;
   doors?: number;
   windows?: number;
+  windowWidth?: number;
+  windowHeight?: number;
+  windowCounts?: number[];
+  doorOffset?: number;
   material?: MaterialId;
   roof?: "flat" | "none";
   appearance?: import("../../shared/planSchema.mjs").BuildingTemplate["appearance"];
@@ -88,7 +92,7 @@ export function offlinePlan(
   const floors =
     options.floors ??
     number(
-      /(?:with\s+)?(one|two|three|four|five|six|seven|eight|nine|ten|twenty|fifty|\d+)\s*(?:-?stor(?:y|ey)|floors?|levels?)\b/,
+      /(?:with\s+)?(one|two|three|four|five|six|seven|eight|nine|ten|twenty|fifty|\d+)\s*(?:-?stor(?:y|ey|ies|eys)|floors?|levels?)\b/,
       number(
         /\b(?:floors|levels)\s+(\d+)\b/,
         kind === "tower" ? 5 : kind === "office" ? 3 : 1,
@@ -324,6 +328,7 @@ export function offlinePlan(
         [0, y + floorT / 2, 0],
         "concrete",
       );
+      const levelWindows = options.windowCounts?.[level] ?? windows;
       const bottom = y + floorT,
         frontZ = d / 2 - t / 2,
         wallMaterial = material;
@@ -348,14 +353,18 @@ export function offlinePlan(
         if (side === 1 && level === 0)
           for (let i = 0; i < doors; i++)
             holes.push({
-              x: doors === 1 ? 0 : i === 0 ? -w / 4 : w / 4,
+              x:
+                (doors === 1 ? 0 : i === 0 ? -w / 4 : w / 4) +
+                (options.doorOffset ?? 0),
               width: 1,
               bottom: 0,
               height: 2.1,
               role: "door",
             });
         const count =
-          side === 1 ? Math.ceil(windows / 2) : Math.floor(windows / 2);
+          side === 1
+            ? Math.ceil(levelWindows / 2)
+            : Math.floor(levelWindows / 2);
         for (let i = 0; i < count; i++)
           holes.push({
             x:
@@ -364,9 +373,9 @@ export function offlinePlan(
                   ? -w * 0.31
                   : w * 0.31
                 : (i - (count - 1) / 2) * 1.7,
-            width: 1,
+            width: options.windowWidth ?? 1,
             bottom: 1.1,
-            height: 1,
+            height: options.windowHeight ?? 1,
             role: "window",
           });
         holes.sort((a, b) => a.x - b.x);
@@ -471,6 +480,18 @@ export function offlinePlan(
       thickness: t,
       doors,
       windows,
+      ...(options.windowWidth === undefined
+        ? {}
+        : { windowWidth: options.windowWidth }),
+      ...(options.windowHeight === undefined
+        ? {}
+        : { windowHeight: options.windowHeight }),
+      ...(options.windowCounts === undefined
+        ? {}
+        : { windowCounts: options.windowCounts.slice(0, floors) }),
+      ...(options.doorOffset === undefined
+        ? {}
+        : { doorOffset: options.doorOffset }),
       material,
       roof,
     },

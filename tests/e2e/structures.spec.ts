@@ -1,3 +1,4 @@
+import { setPlannerMode } from "../helpers/workspaceTools";
 import { showLeft } from "../helpers/workspaceTools";
 import { showTools, showGestureSettings } from "../helpers/workspaceTools";
 import { test, expect } from "../helpers/editorTest";
@@ -11,6 +12,7 @@ async function ask(page: Page, text: string) {
 async function ready(page: Page) {
   await page.goto("/?testInput");
   await target(page);
+  await setPlannerMode(page, "offline");
   await ask(page, "Build a house without doors");
   await page
     .getByRole("button", { name: "Confirm construction", exact: true })
@@ -281,7 +283,7 @@ test("mocked Ollama edit intents preview, unsupported/invalid requests and stale
 }) => {
   await ready(page);
   await showTools(page, "ai");
-  await page.getByLabel("Planner mode", { exact: true }).selectOption("llm");
+  await setPlannerMode(page, "llm");
   const base = await scene(page);
   await page.route("**/api/planner/edit", (route) =>
     route.fulfill({

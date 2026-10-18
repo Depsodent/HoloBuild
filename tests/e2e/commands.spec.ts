@@ -1,3 +1,4 @@
+import { setPlannerMode } from "../helpers/workspaceTools";
 import { offlinePlan } from "../../src/generation/offline";
 import { showTools } from "../helpers/workspaceTools";
 import { test, expect, type Page } from "@playwright/test";
@@ -10,11 +11,14 @@ async function command(page: Page, text: string) {
 async function ready(page: Page) {
   await page.goto("/?testInput");
   await target(page);
+  await setPlannerMode(page, "commands");
   await showTools(page, "ai");
 }
 async function mock(page: Page, unsupported = false) {
   await page.addInitScript(
     ({ unsupported }) => {
+      if (localStorage.getItem("holobuild.voice-auto-submit.v1") === null)
+        localStorage.setItem("holobuild.voice-auto-submit.v1", "true");
       class Fake {
         continuous = false;
         interimResults = false;
@@ -315,9 +319,7 @@ test("Commands explains natural-language builds without sending an AI request", 
     return route.fulfill({ status: 503, json: { error: "unexpected" } });
   });
   await ready(page);
-  await page
-    .getByLabel("Planner mode", { exact: true })
-    .selectOption("commands");
+  await setPlannerMode(page, "commands");
   await command(page, "Build a small house with four walls and a roof");
   await expect(page.getByLabel("Command result")).toContainText(
     "Switch from Commands",
@@ -377,7 +379,7 @@ test("typed and final speech share LLM quota diagnostics and recover in browsers
     );
   });
   await ready(page);
-  await page.getByLabel("Planner mode", { exact: true }).selectOption("llm");
+  await setPlannerMode(page, "llm");
   const prompt = "Build a small house with four walls and a roof";
   await command(page, prompt);
   await expect(page.getByLabel("Generation result")).toContainText(

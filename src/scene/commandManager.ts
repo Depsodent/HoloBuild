@@ -52,7 +52,7 @@ export type Command =
       base?: SceneObject[];
       prepared?: StructureResult;
     }
-  | { type: "create"; objectType?: ObjectType }
+  | { type: "create"; objectType?: ObjectType; prepared?: SceneObject }
   | { type: "import"; object: SceneObject }
   | { type: "construct"; objects: SceneObject[]; contacts?: [string, string][] }
   | {
@@ -60,7 +60,8 @@ export type Command =
       id: string;
       patch: Partial<Omit<SceneObject, "id" | "type">>;
     }
-  | { type: "delete" | "duplicate"; id: string }
+  | { type: "delete"; id: string }
+  | { type: "duplicate"; id: string; preparedId?: string }
   | { type: "reset" }
   | { type: "replace"; objects: SceneObject[] };
 export function execute(command: Command): boolean {
@@ -148,11 +149,18 @@ export function execute(command: Command): boolean {
       selectedId = model.id;
     } else if (command.type === "create") {
       const kind = command.objectType ?? "cube";
-      const cube = createObject(kind, [
-        (objects.length * 1.5) % 9,
-        SHAPES[kind].size[1] / 2,
-        0,
-      ]);
+      const cube = command.prepared
+        ? objectSchema.parse(command.prepared)
+        : createObject(kind, [
+            (objects.length * 1.5) % 9,
+            SHAPES[kind].size[1] / 2,
+            0,
+          ]);
+      if (
+        command.prepared &&
+        (cube.type !== kind || cube.construction || cube.model)
+      )
+        throw Error("Invalid primitive preview.");
       const free = findFreePosition(cube, objects);
       if (!free) throw Error("No free placement");
       cube.position = free;
@@ -215,7 +223,7 @@ export function execute(command: Command): boolean {
         const original = objects[index];
         const copy = {
           ...original,
-          id: crypto.randomUUID(),
+          id: command.preparedId ?? crypto.randomUUID(),
           name: original.name.slice(0, 55) + " copy",
           position: [
             original.position[0] + 1.5,

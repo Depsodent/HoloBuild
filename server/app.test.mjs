@@ -96,7 +96,10 @@ test("real HTTP adapter forwards allowlisted model, bounded data, secret only se
   assert.deepEqual(data.plan, plan);
   assert.equal(request.headers.Authorization, "Bearer test-backend-only");
   assert.equal(JSON.parse(request.body).model, "local-test");
-  assert.match(JSON.parse(request.body).messages[0].content, /validated six-part/);
+  assert.match(
+    JSON.parse(request.body).messages[0].content,
+    /validated six-part/,
+  );
   assert.ok(!JSON.stringify(data).includes("test-backend-only"));
   assert.equal(
     (await post(url, { prompt: "house", model: "not-allowed" })).status,
@@ -454,4 +457,87 @@ test("disconnecting streamed client cancels the active provider request", async 
   for (let i = 0; i < 50 && !providerSignal?.aborted; i++)
     await new Promise((r) => setTimeout(r, 10));
   assert.equal(providerSignal?.aborted, true);
+});
+
+test("validation-aware retry is explicit, bounded, and preserves the original provider prompt", async (t) => {
+  let sent;
+  let calls = 0;
+  const url = await fixture(t, async (_endpoint, init) => {
+    calls++;
+    sent = JSON.parse(init.body);
+    return Response.json({
+      choices: [{ message: { content: JSON.stringify(plan) } }],
+    });
+  });
+  for (const validationFeedback of [
+    { reason: "overlap", attempt: 2 },
+    { reason: "unknown", attempt: 1 },
+    { reason: "bounds", attempt: 1, secret: "x" },
+  ])
+    assert.equal(
+      (await post(url, { prompt: "build a house", validationFeedback })).status,
+      422,
+    );
+  assert.equal(calls, 0);
+  const result = await post(url, {
+    prompt: "build a house",
+    validationFeedback: { reason: "overlap", attempt: 1 },
+  });
+  assert.equal(result.status, 200);
+  assert.equal(calls, 1);
+  assert.match(sent.messages[1].content, /build a house/);
+  assert.match(sent.messages[1].content, /overlap/);
+});
+test("bounded conversation summary reaches edit interpreter; oversize history rejected before provider call", async (t) => {
+  let sent;
+  let calls = 0;
+  const context = {
+    ...editContext,
+    conversation: [{ role: "user", text: "Make it two stories" }],
+    details: {
+      id: editContext.selected,
+      dimensions: [6, 3.4, 6],
+      requestedDesign: "Build a house",
+      roles: [
+        { role: "wall", count: 4, color: "#ffffff", material: "concrete" },
+      ],
+    },
+  };
+  const output = {
+    version: 1,
+    operation: {
+      type: "batch",
+      operations: [
+        { type: "color", role: "roof", color: "#508ee8" },
+        { type: "design", windowScale: 1.2 },
+      ],
+    },
+  };
+  const url = await fixture(t, async (_endpoint, init) => {
+    calls++;
+    sent = JSON.parse(init.body);
+    return Response.json({
+      choices: [{ message: { content: JSON.stringify(output) } }],
+    });
+  });
+  assert.equal(
+    (await editPost(url, { prompt: "Blue roof and larger windows", context }))
+      .status,
+    200,
+  );
+  assert.deepEqual(JSON.parse(sent.messages[1].content).context, context);
+  for (const conversation of [
+    Array.from({ length: 7 }, () => ({ role: "user", text: "x" })),
+    [{ role: "user", text: "x".repeat(161) }],
+  ])
+    assert.equal(
+      (
+        await editPost(url, {
+          prompt: "edit house",
+          context: { ...context, conversation },
+        })
+      ).status,
+      422,
+    );
+  assert.equal(calls, 1);
 });

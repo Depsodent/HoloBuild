@@ -1,3 +1,4 @@
+import { setPlannerMode } from "../helpers/workspaceTools";
 import { showTools, openWorkspaceSection } from "../helpers/workspaceTools";
 import { test, expect, type Page } from "@playwright/test";
 import { target, hold, poseAt } from "../helpers/gestureInput";
@@ -8,6 +9,7 @@ async function open(page: Page, key: string) {
 async function ready(page: Page) {
   await page.goto("/?testInput");
   await target(page);
+  await setPlannerMode(page, "offline");
   await open(page, "tools.voice");
 }
 async function plan(
@@ -250,7 +252,7 @@ test("mocked LLM validates to the same preview and clearly labels its source", a
   );
   await ready(page);
   await showTools(page, "ai");
-  await page.getByLabel("Planner mode", { exact: true }).selectOption("llm");
+  await setPlannerMode(page, "llm");
   await plan(page, "Build a room");
   await expect(page.getByLabel("Planner source")).toContainText(
     "LLM · mock-local",
@@ -275,7 +277,7 @@ test("invalid LLM output fails safely; Auto fallback is explicit and never calle
   );
   await ready(page);
   await showTools(page, "ai");
-  await page.getByLabel("Planner mode", { exact: true }).selectOption("llm");
+  await setPlannerMode(page, "llm");
   await showTools(page, "ai");
   await page.getByLabel("Ask HoloBuild", { exact: true }).fill("Build a house");
   await page.getByRole("button", { name: "Send request", exact: true }).click();
@@ -289,8 +291,8 @@ test("invalid LLM output fails safely; Auto fallback is explicit and never calle
     1,
   );
   await showTools(page, "ai");
-  await page.getByLabel("Planner mode", { exact: true }).selectOption("auto");
-  await plan(page);
+  await setPlannerMode(page, "auto");
+  await plan(page, "Build a house with a gabled roof");
   await expect(page.getByLabel("Planner source")).toContainText(
     "Offline fallback",
   );
@@ -315,7 +317,7 @@ test("Cancel aborts a pending model plan and late responses never create a previ
   });
   await ready(page);
   await showTools(page, "ai");
-  await page.getByLabel("Planner mode", { exact: true }).selectOption("llm");
+  await setPlannerMode(page, "llm");
   await showTools(page, "ai");
   await page.getByLabel("Ask HoloBuild", { exact: true }).fill("Build a house");
   await page.getByRole("button", { name: "Send request", exact: true }).click();
@@ -336,6 +338,7 @@ test("text and final voice route explicit structures to preview; simple commands
   page,
 }) => {
   await page.addInitScript(() => {
+    localStorage.setItem("holobuild.voice-auto-submit.v1", "true");
     class Speech {
       onstart: (() => void) | null = null;
       onresult: ((e: unknown) => void) | null = null;
@@ -355,6 +358,7 @@ test("text and final voice route explicit structures to preview; simple commands
   });
   await ready(page);
   await showTools(page, "ai");
+  await setPlannerMode(page, "commands");
   await page.getByLabel("Ask HoloBuild", { exact: true }).fill("Create a cube");
   await page.getByRole("button", { name: "Send request", exact: true }).click();
   expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
@@ -364,6 +368,7 @@ test("text and final voice route explicit structures to preview; simple commands
   await page
     .getByRole("button", { name: "Start listening", exact: true })
     .click();
+  await setPlannerMode(page, "offline");
   const speak = () =>
     page.evaluate(() => {
       (
@@ -424,6 +429,18 @@ test("generated parts remain targetable by the existing gesture ray/controller",
 test("planner budget defaults to 120s, pending requests are deduplicated and SSE labels real provider", async ({
   page,
 }) => {
+  await page.route("**/api/planner/status", (route) =>
+    route.fulfill({
+      json: {
+        configured: true,
+        models: ["mock-local"],
+        model: "mock-local",
+        provider: "Ollama",
+        timeoutMs: 120000,
+        connection: "connected",
+      },
+    }),
+  );
   let calls = 0;
   let finish: () => void = () => {};
   const gate = new Promise<void>((r) => (finish = r));
@@ -438,7 +455,7 @@ test("planner budget defaults to 120s, pending requests are deduplicated and SSE
     });
   });
   await ready(page);
-  await page.getByLabel("Planner mode").selectOption("llm");
+  await setPlannerMode(page, "llm");
   await page.getByLabel("Ask HoloBuild", { exact: true }).fill("Build a room");
   await page.getByRole("button", { name: "Send request", exact: true }).click();
   await expect(page.getByLabel("Planner activity")).toContainText("Connecting");

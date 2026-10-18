@@ -1,3 +1,4 @@
+import { validateDesignAttributes } from "./designValidation";
 import { plannerFailure, plannerDeadline } from "./plannerTransport";
 import { usePlannerProgress } from "./plannerTransport";
 import { recordClientValidation } from "./plannerTransport";
@@ -114,6 +115,7 @@ export async function generatePlan(
       const validating = performance.now();
       const plan = planSchema.parse(result.plan);
       materializePlan(plan);
+      validateDesignAttributes(prompt, plan);
       recordClientValidation(validating);
       return {
         plan,

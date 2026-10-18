@@ -46,9 +46,13 @@ export function requestedAppearance(
           "\\b" + role + "s?(?:[ ]+(?:to|are|in|is|a|the))*[ ]+" + c + "\\b",
         ).test(text),
     );
-    const material = new RegExp("\\bwood(?:en)?[ ]+" + role + "s?\\b").test(
-      text,
-    )
+    const material = new RegExp(
+      "\\bwood(?:en)?(?: front)?[ ]+" +
+        role +
+        "s?\\b|\\b" +
+        role +
+        "s?(?: to| is| in| of)* wood\\b",
+    ).test(text)
       ? "wood"
       : undefined;
     if (color || material)

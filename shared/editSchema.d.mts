@@ -2,7 +2,17 @@ import type { z } from "zod";
 import type { Vec3 } from "../src/scene/objectTypes";
 import type { MaterialId } from "../src/scene/materialPresets";
 import type { PlanPart } from "./planSchema.mjs";
-export type StructureOperation =
+export type AtomicStructureOperation =
+  | {
+      type: "design";
+      floors?: number;
+      windows?: number;
+      level?: number;
+      windowScale?: number;
+      doorOffset?: number;
+      doors?: number;
+      roof?: "flat" | "none";
+    }
   | { type: "select" | "duplicate" | "ungroup" | "delete" }
   | { type: "move"; delta: Vec3 }
   | { type: "rotate"; angle: number }
@@ -30,12 +40,27 @@ export type StructureOperation =
     }
   | { type: "unsupported"; reason: string }
   | { type: "clarify"; question: string };
+export type StructureOperation =
+  | AtomicStructureOperation
+  | { type: "batch"; operations: AtomicStructureOperation[] };
 export interface EditPlan {
   version: 1;
   target?: string;
   operation: StructureOperation;
 }
 export interface EditContext {
+  conversation?: { role: "user" | "assistant"; text: string }[];
+  details?: {
+    id: string;
+    dimensions: Vec3;
+    requestedDesign: string;
+    roles: {
+      role: PlanPart["role"];
+      count: number;
+      color: string;
+      material: MaterialId;
+    }[];
+  };
   selected: string | null;
   structures: {
     id: string;

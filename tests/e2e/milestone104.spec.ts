@@ -1,3 +1,4 @@
+import { setPlannerMode } from "../helpers/workspaceTools";
 import { test, expect } from "@playwright/test";
 import { showTools } from "../helpers/workspaceTools";
 const prompt =
@@ -7,9 +8,7 @@ test("detailed house retains six real segmented windows and appearance through h
 }) => {
   await page.goto("/?testInput");
   await showTools(page, "ai");
-  await page
-    .getByLabel("Planner mode", { exact: true })
-    .selectOption("offline");
+  await setPlannerMode(page, "offline");
   await page.getByLabel("Ask HoloBuild", { exact: true }).fill(prompt);
   await page.getByRole("button", { name: "Send request", exact: true }).click();
   await expect(
@@ -61,4 +60,134 @@ test("detailed house retains six real segmented windows and appearance through h
   await expect
     .poll(() => page.evaluate(() => window.__HOLO_TEST__!.scene()))
     .toEqual(after);
+});
+
+test("default assistant refines a confirmed structure through a real multi-turn preview and shared history", async ({
+  page,
+}) => {
+  await page.goto("/?testInput");
+  await showTools(page, "ai");
+  await expect(
+    page.getByLabel("Planner mode", { exact: true }),
+  ).not.toBeVisible();
+  const ask = async (text: string) => {
+    await page.getByLabel("Ask HoloBuild", { exact: true }).fill(text);
+    await page
+      .getByRole("button", { name: "Send request", exact: true })
+      .click();
+  };
+  const scene = () => page.evaluate(() => window.__HOLO_TEST__!.scene());
+  await ask("Can you make a small modern home?");
+  await expect(
+    page.getByLabel("Construction plan preview", { exact: true }),
+  ).toBeVisible();
+  const base = await scene();
+  await ask("Yes.");
+  const initial = await scene();
+  expect(initial.length).toBeGreaterThan(base.length);
+  await expect(
+    page.getByRole("log", { name: "Design conversation" }),
+  ).toContainText("Would you like to make any changes");
+  await ask("Give it a blue roof and larger windows");
+  await expect(
+    page.getByLabel("Structure modification preview", { exact: true }),
+  ).toBeVisible();
+  expect(await scene()).toEqual(initial);
+  await ask("Looks good.");
+  const refined = await scene();
+  expect(refined.find((p) => p.construction?.role === "roof")?.color).toBe(
+    "#508ee8",
+  );
+  await ask("Make it two stories");
+  await expect(
+    page.getByLabel("Structure modification preview", { exact: true }),
+  ).toBeVisible();
+  await ask("Perfect.");
+  const two = await scene();
+  expect(
+    two.find((p) => p.construction)?.construction?.structure?.template?.floors,
+  ).toBe(2);
+  expect(two.find((p) => p.construction?.role === "roof")?.color).toBe(
+    "#508ee8",
+  );
+  await ask("Actually, undo that.");
+  expect(await scene()).toEqual(refined);
+  await ask("Redo");
+  expect(await scene()).toEqual(two);
+  await ask("Add a balcony");
+  await expect(
+    page.getByRole("log", { name: "Design conversation" }),
+  ).toContainText("not supported");
+  expect(await scene()).toEqual(two);
+  await ask("That's perfect, I'm done.");
+  await expect(
+    page.getByRole("log", { name: "Design conversation" }),
+  ).toContainText("design is complete");
+  await page
+    .getByRole("button", { name: "New design conversation", exact: true })
+    .click();
+  expect(await scene()).toEqual(two);
+  await expect(
+    page.getByRole("log", { name: "Design conversation" }),
+  ).toContainText("New conversation");
+});
+test("manual voice transcript remains editable and speech failures preserve typed input", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    class Speech {
+      onstart: (() => void) | null = null;
+      onerror: ((e: { error: string }) => void) | null = null;
+      onresult: ((e: unknown) => void) | null = null;
+      start() {
+        this.onstart?.();
+      }
+      abort() {}
+      constructor() {
+        (window as unknown as { voice104: Speech }).voice104 = this;
+      }
+    }
+    Object.defineProperty(window, "SpeechRecognition", {
+      value: Speech,
+      configurable: true,
+    });
+  });
+  await page.goto("/?testInput");
+  await showTools(page, "ai");
+  const input = page.getByLabel("Ask HoloBuild", { exact: true });
+  await input.fill("Build a house");
+  await page
+    .getByRole("button", { name: "Start listening", exact: true })
+    .click();
+  await page.evaluate(() =>
+    (
+      window as unknown as {
+        voice104: { onerror: (e: { error: string }) => void };
+      }
+    ).voice104.onerror({ error: "network" }),
+  );
+  await expect(input).toHaveValue("Build a house");
+  await expect(page.getByLabel("Listening status")).toContainText(
+    "Speech service network",
+  );
+  await page
+    .getByRole("button", { name: "Start listening", exact: true })
+    .click();
+  await page.evaluate(() =>
+    (
+      window as unknown as { voice104: { onresult: (e: unknown) => void } }
+    ).voice104.onresult({
+      resultIndex: 0,
+      results: [{ isFinal: true, 0: { transcript: "Generate a home" } }],
+    }),
+  );
+  await expect(input).toHaveValue("Generate a home");
+  await expect(
+    page.getByLabel("Construction plan preview", { exact: true }),
+  ).toHaveCount(0);
+  await input.fill("Generate a home with two windows");
+  await page.getByRole("button", { name: "Send request", exact: true }).click();
+  await expect(
+    page.getByLabel("Construction plan preview", { exact: true }),
+  ).toBeVisible();
 });

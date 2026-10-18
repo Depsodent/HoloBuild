@@ -177,8 +177,38 @@ export function applyStructure(
   input: StructureOperation,
   snap = false,
 ): StructureResult {
-  const operation = operationSchema.parse(input),
-    original = members(objects, structureId);
+  const operation = operationSchema.parse(input);
+  if (operation.type === "batch") {
+    let result: StructureResult | undefined;
+    for (const op of operation.operations) {
+      if (
+        [
+          "select",
+          "delete",
+          "duplicate",
+          "ungroup",
+          "unsupported",
+          "clarify",
+        ].includes(op.type)
+      )
+        throw Error(
+          "Use separate requests for selection/deletion/duplication or unsupported changes.",
+        );
+      result = applyStructure(
+        result?.objects ?? objects,
+        structureId,
+        op,
+        snap,
+      );
+    }
+    return {
+      ...result!,
+      summary:
+        operation.operations.length +
+        " validated changes; one Undo restores them.",
+    };
+  }
+  const original = members(objects, structureId);
   let info = structureInfo(original),
     parts = structuredClone(original),
     nextId = structureId;
@@ -303,7 +333,8 @@ export function applyStructure(
           }
         }
     if (!found) throw Error("No free location for a duplicate structure.");
-  } else if (operation.type === "floors") {
+  } else if (operation.type === "floors" || operation.type === "design") {
+    const action = operation.type === "floors" ? operation.action : undefined;
     const recipe = info.template;
     if (!recipe || !["house", "tower", "office"].includes(recipe.kind))
       throw Error(
@@ -335,33 +366,72 @@ export function applyStructure(
         "Template no longer matches the components. Floor redesign cancelled.",
       );
     if (
-      operation.action === "duplicate" &&
+      (operation.type === "floors" ? action : "design") === "duplicate" &&
       (operation.level === undefined || operation.level >= recipe.floors)
     )
       throw Error("Choose an existing floor (1-based in the UI).");
-    if (operation.action === "height" && operation.height === undefined)
+    if (
+      operation.type === "floors" &&
+      operation.action === "height" &&
+      operation.height === undefined
+    )
       throw Error("Specify a storey height of 2.5-5 m.");
     const floors =
-      recipe.floors +
-      (operation.action === "remove"
-        ? -1
-        : operation.action === "height"
-          ? 0
-          : 1);
+      operation.type === "design"
+        ? (operation.floors ?? recipe.floors)
+        : recipe.floors +
+          (action === "remove" ? -1 : action === "height" ? 0 : 1);
     const template = {
       ...recipe,
       floors,
-      ...(operation.action === "height" ? { height: operation.height! } : {}),
+      ...(operation.type !== "design"
+        ? {}
+        : {
+            ...(operation.windows === undefined
+              ? {}
+              : operation.level === undefined
+                ? { windows: operation.windows, windowCounts: undefined }
+                : {
+                    windowCounts: Array.from({ length: floors }, (_, i) =>
+                      i === operation.level
+                        ? operation.windows!
+                        : (recipe.windowCounts?.[i] ?? recipe.windows),
+                    ),
+                  }),
+            ...(operation.windowScale === undefined
+              ? {}
+              : {
+                  windowWidth:
+                    (recipe.windowWidth ?? 1) * operation.windowScale,
+                  windowHeight:
+                    (recipe.windowHeight ?? 1) * operation.windowScale,
+                }),
+            ...(operation.doorOffset === undefined
+              ? {}
+              : { doorOffset: operation.doorOffset }),
+            ...(operation.doors === undefined
+              ? {}
+              : { doors: operation.doors }),
+            ...(operation.roof === undefined ? {} : { roof: operation.roof }),
+          }),
+      ...(action === "height"
+        ? { height: (operation as { height: number }).height }
+        : {}),
     };
     const layouts = info.floorLayouts
       ? [...info.floorLayouts]
       : Array.from({ length: recipe.floors }, (_, i) =>
           i === 0 ? ("ground" as const) : ("upper" as const),
         );
-    if (operation.action === "remove") layouts.pop();
-    if (operation.action === "add") layouts.push("upper");
-    if (operation.action === "duplicate")
-      layouts.push(layouts[operation.level!]);
+    if (action === "remove") layouts.pop();
+    if (action === "add") layouts.push("upper");
+    if (action === "duplicate") layouts.push(layouts[operation.level!]);
+    if (operation.type === "design") {
+      if (operation.level !== undefined && operation.level >= floors)
+        throw Error("That floor does not exist.");
+      while (layouts.length < floors) layouts.push("upper");
+      layouts.length = floors;
+    }
     const built = { objects: templateGeometry(template, layouts) };
     info.floorLayouts = layouts;
     const lookup = new Map(original.map((o) => [o.construction!.partId, o]));
@@ -381,14 +451,24 @@ export function applyStructure(
                 (operation.level ?? recipe.floors - 1) &&
               p.construction!.role === c.role,
           );
-      const exact = lookup.get(c.partId);
+      const candidate = lookup.get(c.partId);
+      const exact =
+        candidate?.construction?.role === c.role ? candidate : undefined;
+      const matching =
+        old?.construction?.role === c.role
+          ? old
+          : original.find(
+              (p) =>
+                p.construction?.role === c.role &&
+                p.construction.level === c.level,
+            );
       return transformPart(
         {
           ...o,
           id: exact?.id ?? crypto.randomUUID(),
-          material: old?.material ?? o.material,
-          color: old?.color ?? o.color,
-          surface: old?.surface,
+          material: matching?.material ?? o.material,
+          color: matching?.color ?? o.color,
+          surface: matching?.surface,
           construction: { ...c, structureId },
         },
         frameMatrix(info),

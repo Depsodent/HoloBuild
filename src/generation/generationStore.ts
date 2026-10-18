@@ -1,3 +1,4 @@
+import { confirmedDesign } from "./conversationStore";
 import { plannerPreferences, persistPlanner } from "./plannerPreferences";
 import { plannerStage } from "./plannerTransport";
 import { cancelEdit, useEditStore } from "./editStore";
@@ -9,7 +10,7 @@ import { execute } from "../scene/commandManager";
 import { useSceneStore } from "../scene/sceneStore";
 export const useGenerationStore = create(() => ({
   prompt: "",
-  mode: "offline" as PlannerMode,
+  mode: "auto" as PlannerMode,
   options: {} as OfflineOptions,
   model: "",
   timeoutMs: plannerPreferences().timeoutMs,
@@ -69,7 +70,11 @@ export function cancelUnconfirmedGeneration() {
 }
 export async function planStructure(
   prompt = useGenerationStore.getState().prompt,
-  options: { retry?: boolean; strategy?: "procedural" } = {},
+  options: {
+    retry?: boolean;
+    strategy?: "procedural";
+    defaults?: OfflineOptions;
+  } = {},
 ) {
   if (useGenerationStore.getState().status === "planning") return;
   const previous = useGenerationStore.getState();
@@ -97,7 +102,7 @@ export async function planStructure(
     const result = await generatePlan(
       prompt,
       options.strategy ? "offline" : mode,
-      offlineOptions,
+      { ...options.defaults, ...offlineOptions },
       {
         ...(model ? { model } : {}),
         timeoutMs,
@@ -165,6 +170,10 @@ export function confirmStructure() {
   ) {
     s.setSelectionMode("structure");
     s.select(prepared.objects[0].id);
+    confirmedDesign(
+      prepared.objects[0].construction!.structureId,
+      "Your " + prepared.plan.name + " is ready.",
+    );
     plannerStage("Complete");
     useGenerationStore.setState({
       prepared: null,

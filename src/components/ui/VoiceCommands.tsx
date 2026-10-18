@@ -1,3 +1,11 @@
+import {
+  dispatchAssistant,
+  cancelAssistantPreview,
+} from "../../generation/assistant";
+import {
+  useConversationStore,
+  newConversation,
+} from "../../generation/conversationStore";
 import { useToolsStore } from "../../workspace/toolsStore";
 import { PlannerActivity } from "./PlannerActivity";
 import { plannerStage } from "../../generation/plannerTransport";
@@ -36,7 +44,12 @@ import {
 export function VoiceCommands() {
   const generation = useGenerationStore();
   const editStatus = useEditStore((s) => s.status);
-  const input = generation.prompt;
+  const [assistantMode, setAssistantMode] = useState(true);
+  const [draft, setDraft] = useState("");
+  const input = assistantMode ? draft : generation.prompt;
+  const conversation = useConversationStore((s) => s.messages);
+  const assistantRef = useRef(assistantMode);
+  assistantRef.current = assistantMode;
   const [commandsOnly, setCommandsOnly] = useState(false);
   const [heard, setHeard] = useState(""),
     [busy, setBusy] = useState(false);
@@ -58,9 +71,9 @@ export function VoiceCommands() {
   const view = useToolsStore((s) => s.aiView);
   const [autoSubmit, setAutoSubmit] = useState(() => {
     try {
-      return localStorage.getItem("holobuild.voice-auto-submit.v1") !== "false";
+      return localStorage.getItem("holobuild.voice-auto-submit.v1") === "true";
     } catch {
-      return true;
+      return false;
     }
   });
   const autoSubmitRef = useRef(autoSubmit);
@@ -68,6 +81,16 @@ export function VoiceCommands() {
   const busyRef = useRef(false);
 
   async function dispatch(text: string): Promise<CommandResult> {
+    if (assistantMode && !commandsOnly)
+      return dispatchAssistant(
+        text,
+        {
+          mode: generation.mode,
+          model: generation.model,
+          timeoutMs: generation.timeoutMs,
+        },
+        interpreter,
+      );
     const route = routeInput(text);
     if (
       isStructureEdit(text, !!useSceneStore.getState().selectedStructureId) ||
@@ -131,14 +154,18 @@ export function VoiceCommands() {
       (text) => {
         if (!mounted.current || busyRef.current) return;
         setHeard(text);
-        updateGeneration({ prompt: text });
+        if (assistantRef.current) setDraft(text);
+        else updateGeneration({ prompt: text });
         if (!autoSubmitRef.current) return;
         busyRef.current = true;
         setBusy(true);
         void dispatchRef
           .current(text)
           .then((r) => {
-            if (mounted.current) setResult(r);
+            if (mounted.current) {
+              setResult(r);
+              if (r.ok && assistantRef.current) setDraft("");
+            }
           })
           .finally(() => {
             busyRef.current = false;
@@ -177,7 +204,10 @@ export function VoiceCommands() {
     controller.current?.stop();
     try {
       const r = await dispatch(input);
-      if (mounted.current) setResult(r);
+      if (mounted.current) {
+        setResult(r);
+        if (r.ok && assistantMode) setDraft("");
+      }
     } finally {
       busyRef.current = false;
       if (mounted.current) setBusy(false);
@@ -186,6 +216,32 @@ export function VoiceCommands() {
   return (
     <section aria-label="Ask HoloBuild tools">
       <div className="voice-commands">
+        <h3>Chat with HoloBuild</h3>
+        <div
+          className="design-conversation"
+          role="log"
+          aria-label="Design conversation"
+          aria-live="polite"
+          tabIndex={0}
+        >
+          {conversation.map((m) => (
+            <p key={m.id} className={m.role}>
+              <strong>{m.role === "user" ? "You" : "HoloBuild"}</strong>{" "}
+              {m.text}
+            </p>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            controller.current?.stop();
+            cancelAssistantPreview();
+            newConversation();
+            setDraft("");
+          }}
+        >
+          New design conversation
+        </button>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -199,7 +255,11 @@ export function VoiceCommands() {
               value={input}
               maxLength={1200}
               placeholder="Create a cube or build a house"
-              onChange={(e) => updateGeneration({ prompt: e.target.value })}
+              onChange={(e) =>
+                assistantMode
+                  ? setDraft(e.target.value)
+                  : updateGeneration({ prompt: e.target.value })
+              }
             />
             <button
               type="button"
@@ -219,24 +279,28 @@ export function VoiceCommands() {
               {active ? <MicOff size={16} /> : <Mic size={16} />}
             </button>
           </div>
-          <label className="ask-mode">
-            Mode
-            <select
-              aria-label="Planner mode"
-              value={commandsOnly ? "commands" : generation.mode}
-              onChange={(e) => {
-                setCommandsOnly(e.target.value === "commands");
-                if (e.target.value === "commands") updateGeneration({});
-                if (e.target.value !== "commands")
-                  updateGeneration({ mode: e.target.value as PlannerMode });
-              }}
-            >
-              <option value="commands">Commands</option>
-              <option value="offline">Offline</option>
-              <option value="auto">Auto</option>
-              <option value="llm">LLM</option>
-            </select>
-          </label>
+          <div hidden={view !== "settings"}>
+            <label className="ask-mode">
+              Mode
+              <select
+                aria-label="Planner mode"
+                value={commandsOnly ? "commands" : generation.mode}
+                onChange={(e) => {
+                  setDraft(input);
+                  setAssistantMode(e.target.value !== "commands");
+                  setCommandsOnly(e.target.value === "commands");
+                  if (e.target.value === "commands") updateGeneration({});
+                  if (e.target.value !== "commands")
+                    updateGeneration({ mode: e.target.value as PlannerMode });
+                }}
+              >
+                <option value="commands">Commands</option>
+                <option value="offline">Offline</option>
+                <option value="auto">Auto</option>
+                <option value="llm">LLM</option>
+              </select>
+            </label>
+          </div>
           <button
             type="submit"
             disabled={
@@ -254,7 +318,7 @@ export function VoiceCommands() {
           <button
             onClick={() => {
               controller.current?.stop();
-              cancelUnconfirmedGeneration();
+              cancelAssistantPreview();
               setHeard("");
               setResult(interpreter.cancel());
             }}
@@ -300,6 +364,18 @@ export function VoiceCommands() {
               Cancel command
             </button>
           </div>
+        )}
+        {(generation.prepared || useEditStore.getState().prepared) && (
+          <button
+            type="button"
+            onClick={() => {
+              controller.current?.stop();
+              cancelAssistantPreview();
+              setDraft("");
+            }}
+          >
+            Request changes
+          </button>
         )}
         <StructureEditReview />
         <nav className="ai-secondary-nav" aria-label="AI views">

@@ -25,6 +25,10 @@ export interface BuildingTemplate {
   thickness: number;
   doors: number;
   windows: number;
+  windowWidth?: number;
+  windowHeight?: number;
+  windowCounts?: number[];
+  doorOffset?: number;
   material: MaterialId;
   roof: "flat" | "none";
 }

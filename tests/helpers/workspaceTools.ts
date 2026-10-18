@@ -63,3 +63,12 @@ export async function showLeft(
   });
   if ((await b.getAttribute("aria-selected")) !== "true") await b.click();
 }
+
+export async function setPlannerMode(
+  page: Page,
+  mode: "commands" | "offline" | "auto" | "llm",
+) {
+  await showAISettings(page);
+  await page.getByLabel("Planner mode", { exact: true }).selectOption(mode);
+  await page.getByRole("button", { name: "Request", exact: true }).click();
+}

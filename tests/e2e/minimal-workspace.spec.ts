@@ -1,3 +1,4 @@
+import { setPlannerMode } from "../helpers/workspaceTools";
 import { showLeft } from "../helpers/workspaceTools";
 import { openWorkspaceSection } from "../helpers/workspaceTools";
 import { test, expect, type Page } from "@playwright/test";
@@ -107,11 +108,11 @@ test("one Ask field runs commands and previews plans only when pending; confirm 
   await expect(
     page.getByRole("button", { name: "Check model connection", exact: true }),
   ).not.toBeVisible();
-  await page.getByLabel("Planner mode").selectOption("commands");
+  await setPlannerMode(page, "commands");
   await input.fill("Create a sphere");
   await input.press("Enter");
   await expect(page.getByLabel("Command result")).toHaveText("Created sphere.");
-  await page.getByLabel("Planner mode").selectOption("offline");
+  await setPlannerMode(page, "offline");
   await input.fill("Build a house");
   await input.press("Enter");
   await expect(

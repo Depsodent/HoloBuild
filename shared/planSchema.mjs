@@ -61,6 +61,10 @@ export const templateSchema = z
     thickness: z.number().min(0.1).max(0.4),
     doors: z.number().int().min(0).max(2),
     windows: z.number().int().min(0).max(4),
+    windowWidth: z.number().min(0.5).max(1.4).optional(),
+    windowHeight: z.number().min(0.5).max(1.5).optional(),
+    windowCounts: z.array(z.number().int().min(0).max(4)).max(6).optional(),
+    doorOffset: z.number().min(-2).max(2).optional(),
     material: z.enum(materials),
     roof: z.enum(["flat", "none"]),
   })

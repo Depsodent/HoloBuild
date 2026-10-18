@@ -1,3 +1,5 @@
+import { confirmedDesign, useConversationStore } from "./conversationStore";
+import type { Command } from "../scene/commandManager";
 import { plannerStage } from "./plannerTransport";
 import { create } from "zustand";
 import {
@@ -5,6 +7,7 @@ import {
   members,
   structureIds,
   structureInfo,
+  structureBox,
   type StructureResult,
 } from "../scene/structures";
 import { useSceneStore } from "../scene/sceneStore";
@@ -17,6 +20,7 @@ import type {
 } from "../../shared/editSchema.mjs";
 import type { SceneObject } from "../scene/objectTypes";
 interface PreparedEdit {
+  command?: Command;
   result: StructureResult;
   operation: StructureOperation;
   base: SceneObject[];
@@ -49,22 +53,64 @@ export function cancelEdit() {
 }
 export function editContext(): EditContext {
   const s = useSceneStore.getState();
+  const current =
+    s.selectedStructureId ??
+    s.objects.find((o) => o.id === s.selectedId)?.construction?.structureId;
+  const candidates = structureIds(s.objects);
+  const selectedParts = current ? members(s.objects, current) : [];
+  const box = selectedParts.length ? structureBox(selectedParts) : null;
+  const roleSummary = [
+    ...new Set(selectedParts.map((p) => p.construction!.role)),
+  ].map((role) => {
+    const parts = selectedParts.filter((p) => p.construction!.role === role);
+    return {
+      role,
+      count: parts.length,
+      color: parts[0].color,
+      material: parts[0].material,
+    };
+  });
   return {
     selected:
       s.selectedStructureId ??
       s.objects.find((o) => o.id === s.selectedId)?.construction?.structureId ??
       null,
-    structures: structureIds(s.objects).map((id) => {
-      const p = members(s.objects, id),
-        info = structureInfo(p);
-      return {
-        id,
-        name: info.name,
-        type: info.type,
-        count: p.length,
-        ...(info.template ? { floors: info.template.floors } : {}),
-      };
-    }),
+    conversation: useConversationStore
+      .getState()
+      .messages.slice(-6)
+      .map((m) => ({ role: m.role, text: m.text.slice(0, 160) })),
+    ...(box && current
+      ? {
+          details: {
+            id: current,
+            dimensions: [
+              box.max.x - box.min.x,
+              box.max.y - box.min.y,
+              box.max.z - box.min.z,
+            ] as [number, number, number],
+            requestedDesign: useConversationStore
+              .getState()
+              .designRequest.slice(0, 400),
+            roles: roleSummary,
+          },
+        }
+      : {}),
+    structures: [
+      ...(current ? [current] : []),
+      ...candidates.filter((id) => id !== current),
+    ]
+      .slice(0, 12)
+      .map((id) => {
+        const p = members(s.objects, id),
+          info = structureInfo(p);
+        return {
+          id,
+          name: info.name,
+          type: info.type,
+          count: p.length,
+          ...(info.template ? { floors: info.template.floors } : {}),
+        };
+      }),
   };
 }
 export function resolveStructure(
@@ -111,6 +157,7 @@ export function resolveStructure(
 export async function requestEdit(
   prompt: string,
   settings: { mode: PlannerMode; model?: string; timeoutMs?: number },
+  operation?: StructureOperation,
 ) {
   if (useEditStore.getState().status === "planning") return;
   cancelEdit();
@@ -130,16 +177,21 @@ export async function requestEdit(
     if (s.preview)
       throw Error("Finish the active manipulation before planning an edit.");
     const expectedTarget = resolveStructure(undefined, context, prompt);
-    const { plan, source } = await interpretEdit(
-      prompt,
-      context,
-      settings.mode,
-      {
-        ...(settings.model ? { model: settings.model } : {}),
-        timeoutMs: settings.timeoutMs,
-      },
-      abort.signal,
-    );
+    const { plan, source } = operation
+      ? {
+          plan: { version: 1 as const, target: expectedTarget, operation },
+          source: "Validated scene operation",
+        }
+      : await interpretEdit(
+          prompt,
+          context,
+          settings.mode,
+          {
+            ...(settings.model ? { model: settings.model } : {}),
+            timeoutMs: settings.timeoutMs,
+          },
+          abort.signal,
+        );
     if (version !== request || abort.signal.aborted) return;
     if (plan.operation.type === "clarify") throw Error(plan.operation.question);
     if (plan.operation.type === "unsupported")
@@ -235,20 +287,67 @@ export function confirmEdit() {
     return false;
   }
   // Reuse the validated exact preview, including freshly allocated duplicate IDs.
-  const ok = execute({
-    type: "structure",
-    structureId: p.target,
-    operation: p.operation,
-    base: p.base,
-    prepared: p.result,
-  });
+  const ok = execute(
+    p.command ?? {
+      type: "structure",
+      structureId: p.target,
+      operation: p.operation,
+      base: p.base,
+      prepared: p.result,
+    },
+  );
   if (ok) {
     plannerStage("Complete");
+    confirmedDesign(
+      p.target || useConversationStore.getState().target,
+      "Changes applied.",
+    );
     useEditStore.setState({
       prepared: null,
       status: "complete",
-      message: "Structure edit confirmed. One Undo restores it.",
+      message: "Change confirmed. One Undo restores it.",
     });
   }
+  if (!ok) useEditStore.setState({ message: useSceneStore.getState().status });
   return ok;
+}
+
+export function prepareComponentCommand(
+  command: Command,
+  objects: SceneObject[],
+  parts: SceneObject[],
+  summary: string,
+) {
+  cancelEdit();
+  const s = useSceneStore.getState();
+  if (s.preview) throw Error("Finish the active manipulation first.");
+  useEditStore.setState({
+    status: "preview",
+    message: summary,
+    source: "Validated scene operation",
+    prepared: {
+      command,
+      result: { objects, parts, structureId: "", summary },
+      operation: { type: "select" },
+      base: s.objects,
+      selected: s.selectedId,
+      selectionMode: s.selectionMode,
+      selectedGroup: s.selectedStructureId,
+      target: "",
+      affected: [
+        ...new Set([
+          ...s.objects
+            .filter(
+              (o) =>
+                JSON.stringify(o) !==
+                JSON.stringify(objects.find((p) => p.id === o.id)),
+            )
+            .map((o) => o.id),
+          ...parts
+            .filter((o) => !s.objects.some((p) => p.id === o.id))
+            .map((o) => o.id),
+        ]),
+      ],
+    },
+  });
 }

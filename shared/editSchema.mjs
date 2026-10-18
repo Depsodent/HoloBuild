@@ -10,7 +10,20 @@ const scale = z.tuple([
   z.number().finite().min(0.1).max(20),
   z.number().finite().min(0.1).max(20),
 ]);
-export const operationSchema = z.discriminatedUnion("type", [
+const atomicOperationSchema = z.discriminatedUnion("type", [
+  z
+    .object({
+      type: z.literal("design"),
+      floors: z.number().int().min(1).max(6).optional(),
+      windows: z.number().int().min(0).max(4).optional(),
+      level: z.number().int().min(0).max(5).optional(),
+      windowScale: z.number().min(0.5).max(1.4).optional(),
+      doorOffset: z.number().min(-2).max(2).optional(),
+      doors: z.number().int().min(0).max(2).optional(),
+      roof: z.enum(["flat", "none"]).optional(),
+    })
+    .strict()
+    .refine((o) => Object.keys(o).length > 1, "Choose a design change."),
   z.object({ type: z.literal("select") }).strict(),
   z.object({ type: z.literal("move"), delta }).strict(),
   z
@@ -86,6 +99,15 @@ export const operationSchema = z.discriminatedUnion("type", [
     })
     .strict(),
 ]);
+export const operationSchema = z.union([
+  atomicOperationSchema,
+  z
+    .object({
+      type: z.literal("batch"),
+      operations: z.array(atomicOperationSchema).min(2).max(4),
+    })
+    .strict(),
+]);
 export const editPlanSchema = z
   .object({
     version: z.literal(1),
@@ -96,6 +118,41 @@ export const editPlanSchema = z
 export const editContextSchema = z
   .object({
     selected: z.string().uuid().nullable(),
+    conversation: z
+      .array(
+        z
+          .object({
+            role: z.enum(["user", "assistant"]),
+            text: z.string().max(160),
+          })
+          .strict(),
+      )
+      .max(6)
+      .optional(),
+    details: z
+      .object({
+        id: z.string().uuid(),
+        dimensions: z.tuple([
+          z.number().finite().min(0).max(200),
+          z.number().finite().min(0).max(200),
+          z.number().finite().min(0).max(200),
+        ]),
+        requestedDesign: z.string().max(400),
+        roles: z
+          .array(
+            z
+              .object({
+                role: z.enum(roles),
+                count: z.number().int().min(1).max(200),
+                color: z.string().regex(/^#[a-fA-F0-9]{6}$/),
+                material: z.enum(materials),
+              })
+              .strict(),
+          )
+          .max(7),
+      })
+      .strict()
+      .optional(),
     structures: z
       .array(
         z

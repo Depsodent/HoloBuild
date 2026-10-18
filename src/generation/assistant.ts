@@ -1,0 +1,414 @@
+import { colorPatch } from "../scene/colors";
+import { conversationIntent, refinementOperation } from "./conversationIntent";
+import {
+  conversationMessage,
+  useConversationStore,
+  newConversation,
+} from "./conversationStore";
+import {
+  useGenerationStore,
+  planStructure,
+  cancelGeneration,
+  confirmStructure,
+} from "./generationStore";
+import {
+  useEditStore,
+  requestEdit,
+  cancelEdit,
+  confirmEdit,
+  prepareComponentCommand,
+} from "./editStore";
+import { useSceneStore } from "../scene/sceneStore";
+import { members, structureInfo } from "../scene/structures";
+import { parseCommand, type Intent } from "../commands/parser";
+import { deterministicEdit } from "./editPlanner";
+import { offlinePlan } from "./offline";
+import { materializePlan } from "./engine";
+import { DESIGN_COLORS } from "./designLanguage";
+import { bounds, placement, findFreePosition } from "../interaction/placement";
+import { createObject, SHAPES } from "../scene/objectFactory";
+import {
+  objectSchema,
+  type SceneObject,
+  type Vec3,
+} from "../scene/objectTypes";
+import { undo, redo, type Command } from "../scene/commandManager";
+import type { PlannerMode } from "./planner";
+import type {
+  CommandInterpreter,
+  CommandResult,
+} from "../commands/interpreter";
+let busy = false,
+  version = 0;
+export function cancelAssistantPreview() {
+  version++;
+  cancelGeneration();
+  cancelEdit();
+  conversationMessage(
+    "assistant",
+    "Preview cancelled. Your existing scene is unchanged.",
+  );
+}
+function activeStructure(input: string) {
+  const s = useSceneStore.getState(),
+    part = s.objects.find((o) => o.id === s.selectedId);
+  const selected =
+    s.selectedStructureId ??
+    (/\b(?:all|every|whole|entire|roof|walls|windows|floors?|stor(?:y|ies)|storeys?|entrance|house|building)\b/i.test(
+      input,
+    )
+      ? part?.construction?.structureId
+      : null);
+  if (selected) return selected;
+  const current = useConversationStore.getState().target;
+  return !s.selectedId && current && members(s.objects, current).length
+    ? current
+    : null;
+}
+export async function dispatchAssistant(
+  raw: string,
+  settings: { mode: PlannerMode; model?: string; timeoutMs?: number },
+  interpreter: CommandInterpreter,
+): Promise<CommandResult> {
+  if (busy)
+    return {
+      ok: false,
+      message: "A request is running. Wait or cancel it first.",
+    };
+  busy = true;
+  const token = ++version;
+  conversationMessage("user", raw);
+  const respond = (text: string, ok = true) => {
+    if (token === version) conversationMessage("assistant", text);
+    return { ok, message: "" };
+  };
+  try {
+    const scene = useSceneStore.getState(),
+      group = activeStructure(raw),
+      intent = conversationIntent(raw, !!group);
+    if (intent.kind === "restart") {
+      cancelGeneration();
+      cancelEdit();
+      newConversation();
+      return { ok: true, message: "" };
+    }
+    if (intent.kind === "cancel") {
+      cancelAssistantPreview();
+      return { ok: true, message: "" };
+    }
+    if (intent.kind === "confirm") {
+      if (useEditStore.getState().prepared) {
+        const ok = confirmEdit();
+        return ok
+          ? { ok: true, message: "" }
+          : respond(useEditStore.getState().message, false);
+      }
+      if (useGenerationStore.getState().prepared) {
+        confirmStructure();
+        return useGenerationStore.getState().status === "complete"
+          ? { ok: true, message: "" }
+          : respond(useGenerationStore.getState().message, false);
+      }
+      return respond(
+        "There is no pending preview. Describe a design or a change.",
+        false,
+      );
+    }
+    if (intent.kind === "undo" || intent.kind === "redo") {
+      cancelGeneration();
+      cancelEdit();
+      if (!(intent.kind === "undo" ? scene.past : scene.future).length)
+        return respond("Nothing to " + intent.kind + ".", false);
+      (intent.kind === "undo" ? undo : redo)();
+      return respond(
+        intent.kind === "undo"
+          ? "Undid the last action. Your other changes are preserved."
+          : "Redid the action.",
+      );
+    }
+    if (intent.kind === "finish") {
+      if (
+        useGenerationStore.getState().prepared ||
+        useEditStore.getState().prepared
+      )
+        return respond(
+          "A preview is still pending. Confirm it or cancel it before finishing.",
+          false,
+        );
+      useConversationStore.setState({ finished: true });
+      return respond(
+        "Your design is complete. Save your project, or start a new conversation whenever you are ready.",
+      );
+    }
+    if (intent.kind === "explain") {
+      if (group) {
+        const p = members(scene.objects, group),
+          info = structureInfo(p);
+        return respond(
+          info.name +
+            ": " +
+            p.length +
+            " components" +
+            (info.template
+              ? ", " +
+                info.template.floors +
+                " floors, " +
+                info.template.windows +
+                " windows per floor by default"
+              : "") +
+            ". This is a visual construction model, not an engineering design.",
+        );
+      }
+      const part = scene.objects.find((o) => o.id === scene.selectedId);
+      return respond(
+        part
+          ? part.name +
+              " (" +
+              part.type +
+              "), color " +
+              part.color +
+              ", material " +
+              part.material +
+              ". Select a whole structure for floor and window-layout changes."
+          : "Select an object or structure to describe.",
+      );
+    }
+    if (intent.kind === "create") {
+      if (/\bbridge support\b/i.test(raw))
+        return respond(
+          "Would you like one cylinder support, or a complete bridge with a deck and four supports?",
+          false,
+        );
+      cancelEdit();
+      let procedural = false;
+      const defaults =
+        !/\bwindows?\b/i.test(raw) &&
+        /\b(?:house|home|cottage|residential)\b/i.test(raw)
+          ? { windows: 2 }
+          : {};
+      if (settings.mode === "auto") {
+        try {
+          const plan = offlinePlan(raw, {
+            ...defaults,
+            ...useGenerationStore.getState().options,
+          });
+          materializePlan(plan);
+          procedural = !plan.warnings.some((w) =>
+            /unsupported details|pitched|gable/i.test(w),
+          );
+        } catch {
+          /* Flexible requests use the configured planner, never a guessed template. */
+        }
+      }
+      useConversationStore.setState({ designRequest: raw, finished: false });
+      await planStructure(
+        raw,
+        procedural ? { strategy: "procedural", defaults } : {},
+      );
+      const state = useGenerationStore.getState();
+      return respond(
+        state.prepared
+          ? "I have prepared " +
+              state.prepared.plan.name +
+              " (" +
+              state.prepared.objects.length +
+              " parts). " +
+              (state.source === "procedural"
+                ? "Built with validated construction primitives. " +
+                  (defaults.windows ? "Default: two windows per floor. " : "")
+                : state.source === "offline"
+                  ? "This is an Offline template, not a Gemini design. "
+                  : "AI-generated and validated. ") +
+              "Review the preview, then confirm or request changes."
+          : state.message,
+        state.status === "preview",
+      );
+    }
+    if (useGenerationStore.getState().prepared)
+      return respond(
+        "The new design is still a preview. Confirm it first to refine that structure, or cancel and describe a replacement.",
+        false,
+      );
+    if (
+      group &&
+      (intent.kind === "refine" ||
+        /\broof|walls?|windows?|floors?|entrance\b/i.test(raw))
+    ) {
+      if (scene.selectedStructureId !== group) {
+        scene.setSelectionMode("structure");
+        scene.select(members(scene.objects, group)[0].id);
+      }
+      const info = structureInfo(members(scene.objects, group)),
+        proposal = refinementOperation(intent.text, info.template);
+      if (proposal.message && !proposal.operation)
+        return respond(proposal.message, false);
+      let operation = proposal.operation;
+      if (!operation) {
+        try {
+          operation = deterministicEdit(intent.text).operation;
+        } catch {
+          /* The configured LLM may interpret flexible supported requests. */
+        }
+      }
+      cancelGeneration("");
+      await requestEdit(raw, settings, operation);
+      const state = useEditStore.getState();
+      return respond(
+        state.status === "preview"
+          ? "I have prepared changes to " +
+              info.name +
+              ". " +
+              (proposal.message ?? state.message) +
+              " Confirm to apply them as one undoable action."
+          : state.message,
+        state.status === "preview" || state.status === "complete",
+      );
+    }
+    let quick: Intent;
+    try {
+      quick = parseCommand(intent.text);
+    } catch {
+      const color = Object.entries(DESIGN_COLORS).find(([name]) =>
+        new RegExp("\\b" + name + "\\b").test(intent.text.toLowerCase()),
+      );
+      if (color && scene.selectedId) quick = { type: "color", color: color[1] };
+      else
+        return respond(
+          "What would you like to build or change? For example, make a house, select a structure and change its roof color, or describe a supported transform.",
+          false,
+        );
+    }
+    if (["select", "deselect", "save"].includes(quick.type)) {
+      const result = await interpreter.run(intent.text);
+      return respond(result.message, result.ok);
+    }
+    if (quick.type === "undo" || quick.type === "redo")
+      return respond("Use Undo or Redo to change history.", false);
+    cancelGeneration("");
+    cancelEdit();
+    const fresh = useSceneStore.getState();
+    let command: Command,
+      parts: SceneObject[],
+      objects = fresh.objects;
+    if (quick.type === "create") {
+      const object = createObject(quick.shape, [
+          (objects.length * 1.5) % 9,
+          SHAPES[quick.shape].size[1] / 2,
+          0,
+        ]),
+        position = findFreePosition(object, objects);
+      if (!position) throw Error("There is no free placement for that shape.");
+      object.position = position;
+      command = { type: "create", objectType: quick.shape, prepared: object };
+      parts = [object];
+      objects = [...objects, object];
+    } else if (quick.type === "clear") {
+      command = { type: "reset" };
+      parts = [];
+      objects = [];
+    } else {
+      const original = objects.find((o) => o.id === fresh.selectedId);
+      if (!original) throw Error("Select the object to change first.");
+      if (quick.type === "delete") {
+        command = { type: "delete", id: original.id };
+        parts = [];
+        objects = objects.filter((o) => o.id !== original.id);
+      } else if (quick.type === "duplicate") {
+        const copy = {
+          ...structuredClone(original),
+          id: crypto.randomUUID(),
+          name: original.name.slice(0, 55) + " copy",
+          position: [
+            original.position[0] + 1.5,
+            original.position[1],
+            original.position[2],
+          ] as Vec3,
+        };
+        delete copy.construction;
+        const position = findFreePosition(copy, objects);
+        if (!position) throw Error("No free placement for the duplicate.");
+        copy.position = position;
+        command = { type: "duplicate", id: original.id, preparedId: copy.id };
+        parts = [copy];
+        objects = [...objects, copy];
+      } else {
+        const patch: Partial<SceneObject> = {};
+        if (quick.type === "color")
+          Object.assign(patch, colorPatch(original, quick.color));
+        if (quick.type === "material") patch.material = quick.material;
+        if (quick.type === "move") {
+          const directions: Record<string, Vec3> = {
+            right: [1, 0, 0],
+            left: [-1, 0, 0],
+            up: [0, 1, 0],
+            down: [0, -1, 0],
+            forward: [0, 0, -1],
+            backward: [0, 0, 1],
+            back: [0, 0, 1],
+          };
+          const delta = directions[quick.direction];
+          if (!delta) throw Error("Specify a direction.");
+          patch.position = original.position.map(
+            (v, i) => v + delta[i] * quick.amount,
+          ) as Vec3;
+        }
+        if (quick.type === "rotate")
+          patch.rotation = [
+            original.rotation[0],
+            original.rotation[1] + (quick.amount * Math.PI) / 180,
+            original.rotation[2],
+          ];
+        if (quick.type === "scale")
+          patch.scale = original.scale.map((v) => v * quick.amount) as Vec3;
+        const candidate = objectSchema.parse({ ...original, ...patch });
+        if (patch.rotation || patch.scale) {
+          if (Math.abs(bounds(original).min.y) < 0.01) {
+            candidate.position = [...candidate.position];
+            candidate.position[1] -= bounds(candidate).min.y;
+          }
+        }
+        if (patch.position || patch.rotation || patch.scale) {
+          const valid = placement(
+            candidate,
+            candidate.position,
+            objects,
+            fresh.snap,
+          );
+          if (!valid.valid)
+            throw Error("That transform has an invalid placement.");
+          candidate.position = valid.position;
+        }
+        command = {
+          type: "update",
+          id: original.id,
+          patch: {
+            ...patch,
+            ...(patch.position || patch.rotation || patch.scale
+              ? { position: candidate.position }
+              : {}),
+          },
+        };
+        parts = [candidate];
+        objects = objects.map((o) => (o.id === candidate.id ? candidate : o));
+      }
+    }
+    prepareComponentCommand(
+      command,
+      objects,
+      parts,
+      "Preview selected component changes. Confirm to apply; Cancel leaves your scene unchanged.",
+    );
+    return respond(
+      "I have prepared the component change. Review and confirm it.",
+    );
+  } catch (error) {
+    return respond(
+      error instanceof Error
+        ? error.message
+        : "The request could not be completed; your scene is unchanged.",
+      false,
+    );
+  } finally {
+    busy = false;
+  }
+}
