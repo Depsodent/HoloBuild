@@ -96,6 +96,7 @@ test("real HTTP adapter forwards allowlisted model, bounded data, secret only se
   assert.deepEqual(data.plan, plan);
   assert.equal(request.headers.Authorization, "Bearer test-backend-only");
   assert.equal(JSON.parse(request.body).model, "local-test");
+  assert.match(JSON.parse(request.body).messages[0].content, /validated six-part/);
   assert.ok(!JSON.stringify(data).includes("test-backend-only"));
   assert.equal(
     (await post(url, { prompt: "house", model: "not-allowed" })).status,

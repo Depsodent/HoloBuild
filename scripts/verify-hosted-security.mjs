@@ -19,6 +19,7 @@ for (const file of [".env.gemini.local", ".env.hosted.local"]) {
 }
 const checks = [];
 async function check(url, options = {}) {
+  console.log("Checking " + new URL(url).pathname);
   const response = await fetch(url, {
     ...options,
     signal: AbortSignal.timeout(15000),

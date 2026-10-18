@@ -1,0 +1,70 @@
+{
+  "queriedAt": "2026-10-18T06:31:04.297Z",
+  "actualVercelRuntime": true,
+  "logs": [
+    {
+      "timestamp": "2026-10-18T06:30:02.989Z",
+      "requestId": "7e115a54-5b15-4033-a8b7-bae944af4bbd",
+      "platformRequestId": "bom1::mk57b-1792305002683-ecc581690f43",
+      "status": 429,
+      "kind": "rate-limit",
+      "phase": "request",
+      "identitySource": "vercel",
+      "retryAfterSeconds": 57
+    },
+    {
+      "timestamp": "2026-10-18T06:29:50.097Z",
+      "requestId": "86513544-eb22-4b39-a661-8da98a96675f",
+      "platformRequestId": "bom1::pzqft-1792304989752-5ce0e426021b",
+      "status": 403,
+      "kind": "request",
+      "phase": "request",
+      "identitySource": "vercel"
+    },
+    {
+      "timestamp": "2026-10-18T06:29:49.395Z",
+      "requestId": "4b08f62d-a212-41d2-9659-350e62872f1e",
+      "platformRequestId": "bom1::pssg5-1792304989273-194ba941d438",
+      "status": 403,
+      "kind": "request",
+      "phase": "request",
+      "identitySource": "vercel"
+    },
+    {
+      "timestamp": "2026-10-18T06:29:48.907Z",
+      "requestId": "e08aa714-8d6e-4382-bf11-4a062d83c284",
+      "platformRequestId": "bom1::cv6gr-1792304988781-5746a82857a3",
+      "status": 403,
+      "kind": "request",
+      "phase": "request",
+      "identitySource": "vercel"
+    },
+    {
+      "timestamp": "2026-10-18T06:29:20.378Z",
+      "requestId": "e2b14668-4357-46da-9f64-8def3bff0d75",
+      "platformRequestId": "sfo1::dz8ml-1792304960296-0f2486704663",
+      "status": 403,
+      "kind": "request",
+      "phase": "request",
+      "identitySource": "vercel"
+    },
+    {
+      "timestamp": "2026-10-18T06:29:09.382Z",
+      "requestId": "d91990f9-721a-480f-a848-4cded61d7996",
+      "platformRequestId": "sfo1::rc6bh-1792304949270-d438784ff1ad",
+      "status": 403,
+      "kind": "request",
+      "phase": "request",
+      "identitySource": "vercel"
+    },
+    {
+      "timestamp": "2026-10-18T06:29:09.354Z",
+      "requestId": "cc2d6544-d520-4661-b050-8bcfdb8f5b36",
+      "platformRequestId": "sfo1::cw6gz-1792304949264-9968e965ee92",
+      "status": 403,
+      "kind": "request",
+      "phase": "request",
+      "identitySource": "vercel"
+    }
+  ]
+}

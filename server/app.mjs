@@ -1,3 +1,4 @@
+import { constructionGuidance } from "./constructionGuidance.mjs";
 import { randomUUID } from "node:crypto";
 import { PlannerError } from "./plannerError.mjs";
 import {
@@ -449,7 +450,7 @@ export function createPlannerHandler(
           ? geminiRequest(
               config,
               model,
-              editing ? editSystem : system,
+              editing ? editSystem : system + "\n" + constructionGuidance,
               editing
                 ? JSON.stringify({ request: prompt, context: args.context })
                 : prompt,
@@ -469,7 +470,12 @@ export function createPlannerHandler(
           body: JSON.stringify({
             model,
             messages: [
-              { role: "system", content: editing ? editSystem : system },
+              {
+                role: "system",
+                content: editing
+                  ? editSystem
+                  : system + "\n" + constructionGuidance,
+              },
               {
                 role: "user",
                 content: editing

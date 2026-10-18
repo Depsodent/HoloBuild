@@ -216,5 +216,16 @@
     "limit": 100,
     "observedAt": "2026-10-18T06:27:31.999Z",
     "note": "Retained daily counter; below cap, does not establish transient store/IP/concurrency availability."
+  },
+  "liveReproduction": {
+    "date": "2026-10-18",
+    "housePromptOnEdgeAndChromium": "Both rejected overlapping generated geometry after HTTP200",
+    "samePhysicalLaptop": true,
+    "friendAttributionConfirmed": false,
+    "diagnosticReferences": [
+      "1c674789-93d9-4977-b3b4-9eff6f3a77fe",
+      "8e2e75fe-e30c-4f6a-b1d8-978b387780c3"
+    ],
+    "correction": "Validated geometry example added to provider guidance only; validators unchanged"
   }
 }

@@ -83,6 +83,7 @@ test("Gemini maps native requests, verifies the configured model, and preserves 
   assert.deepEqual(data.plan, plan);
   assert.equal(request.generationConfig.responseMimeType, "application/json");
   assert.ok(request.generationConfig.responseJsonSchema);
+  assert.match(request.systemInstruction.parts[0].text, /validated six-part/);
   assert.ok(!request.messages);
   assert.equal(request.contents[0].role, "user");
   assert.ok(!JSON.stringify(data).includes(env.GEMINI_API_KEY));

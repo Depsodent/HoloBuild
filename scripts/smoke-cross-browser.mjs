@@ -15,6 +15,8 @@ for (const channel of ["msedge", undefined]) {
   const page = await browser.newPage({
     viewport: { width: 1440, height: 960 },
   });
+  page.setDefaultTimeout(15000);
+  page.setDefaultNavigationTimeout(30000);
   const errors = [];
   page.on("pageerror", () => errors.push("pageerror"));
   try {
@@ -40,11 +42,15 @@ for (const channel of ["msedge", undefined]) {
       .getByRole("button", { name: "Send request", exact: true })
       .click();
     const response = await responsePending;
+    const stream = await response.text();
+    await fs.writeFile(
+      ".cache/cross-browser-" + (channel || "chromium") + "-response.txt",
+      stream,
+    );
     await expect(
       page.getByLabel("Construction plan preview", { exact: true }),
-    ).toBeVisible({ timeout: 45000 });
+    ).toBeVisible({ timeout: 10000 });
     const previewMs = performance.now() - started;
-    const stream = await response.text();
     assert.ok(!stream.includes("event: error"));
     assert.equal(response.status(), 200);
     async function saved() {

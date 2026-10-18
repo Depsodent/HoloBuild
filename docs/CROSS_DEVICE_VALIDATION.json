@@ -1,8 +1,8 @@
 {
   "testedAt": "2026-10-18T06:27:32.002Z",
   "unit": {
-    "passed": 253,
-    "files": 28
+    "passed": 255,
+    "files": 29
   },
   "backend": {
     "passed": 39
@@ -37,5 +37,6 @@
     "mainGzipKB": 424.62
   },
   "secretAudit": "No unresolved matches in source/history/bundle",
-  "physicalFriendDeviceVerified": false
+  "physicalFriendDeviceVerified": false,
+  "providerGuidanceRegression": "Validated reference geometry and strict overlap rejection; both provider payloads asserted; no client or validator change"
 }
