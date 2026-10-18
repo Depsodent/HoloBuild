@@ -1,0 +1,111 @@
+{
+  "validatedAt": "2026-10-18T09:05:54.410Z",
+  "baseline": "d7e1011",
+  "localStageCheckpoints": [
+    "bda998d",
+    "4e6f062"
+  ],
+  "publication": {
+    "pushed": false,
+    "deployed": false,
+    "production": "https://holobuild.vercel.app",
+    "unchangedProductionSource": "7a101e6",
+    "explicitOwnerApprovalRequired": true
+  },
+  "checks": {
+    "typescript": "passed",
+    "eslint": "passed",
+    "unit": {
+      "passed": 288,
+      "files": 31
+    },
+    "backend": {
+      "passed": 42
+    },
+    "browser": {
+      "uniqueCasesVerified": 120,
+      "unresolved": 0,
+      "skipped": 0,
+      "fullRun": {
+        "startTime": "2026-10-18T08:34:33.765Z",
+        "duration": 1309054.215,
+        "expected": 116,
+        "skipped": 0,
+        "unexpected": 3,
+        "flaky": 0
+      },
+      "targetedRun": {
+        "startTime": "2026-10-18T08:57:39.018Z",
+        "duration": 248412.14899999998,
+        "expected": 25,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "explanation": "Full serial run:116 passed,3 failed. Final focused25 passed includes all three corrected cases and new Part-scope coexistence test. A development hot reload invalidated command-confirmation state; target ambiguity required a genuine safeguard; provider-boundary fixtures now use flexible phrasing so deterministic requests are not falsely expected to invoke a model."
+    },
+    "productionBuild": {
+      "passed": true,
+      "viteSeconds": 22.57,
+      "licensePackages": 70,
+      "unresolvedNotices": 0,
+      "warnings": [
+        "Existing upstream Zod pure-annotation warnings",
+        "Existing large main chunk warning"
+      ],
+      "assets": [
+        {
+          "file": "index-BwCLbeXF.js",
+          "sha256": "581fd01f49e32f86450541c89fbc512f562db0ee796d3c66c532e23b34d11a4e"
+        },
+        {
+          "file": "index-Cdu7voKS.css",
+          "sha256": "823a43d2d2b877f9b866b6b9d441ed508fc0cc9d34f24bc3a8a5e5f8794e0f51"
+        }
+      ]
+    },
+    "security": {
+      "findings": [],
+      "workingFiles": 296,
+      "historicalBlobs": 763,
+      "bundleFiles": 85,
+      "knownFakeCredentialURLFixtureReviewed": true,
+      "auditedAt": "2026-10-18T09:06:26.719Z"
+    }
+  },
+  "localGemini": {
+    "ok": true,
+    "model": "gemini-3.5-flash-lite",
+    "providerRequests": 2,
+    "generationPreviewMs": 5224,
+    "editPreviewMs": 4380,
+    "pageErrors": [],
+    "productionBuild": true,
+    "developmentTestBridge": false,
+    "receipt": "MILESTONE_104_LOCAL_GEMINI.json"
+  },
+  "quota": {
+    "readAt": "2026-10-18T08:53:08.327Z",
+    "publicAdmitted": 15,
+    "dailyLimit": 100,
+    "activeLeases": 0,
+    "perIpPerMinute": 5,
+    "concurrentLimit": 2,
+    "noSafeguardsRelaxed": true,
+    "localProviderCalls": 2
+  },
+  "localUrls": {
+    "development": "http://127.0.0.1:5175/",
+    "productionPreview": "http://127.0.0.1:5176/",
+    "plannerStatus": "http://127.0.0.1:5180/api/planner/status"
+  },
+  "limitations": [
+    "Friend historical device-specific cause remains unproven.",
+    "No physical webcam/microphone/friend-device acceptance claim; gesture/speech regression inputs are simulated.",
+    "No stairs, balconies or hinged/functional doors; fixed panels in real segmented openings.",
+    "Tightly fitted component-only door/window transforms may reject collisions; use a supported Structure layout edit.",
+    "Template layout reconstruction requires intact house/tower/office metadata.",
+    "New public workflows await explicit publication approval.",
+    "Pattern-based secret audit is not an absolute guarantee."
+  ]
+}

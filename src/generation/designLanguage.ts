@@ -2,8 +2,11 @@ import type { BuildingTemplate, PlanPart } from "../../shared/planSchema.mjs";
 export function normalizeDesignRequest(input: string) {
   return input
     .trim()
+    .replace(/[’]/g, "'")
     .replace(/[.!?]+$/g, "")
     .replace(/^(?:please\s+)?(?:can|could|would) you\s+(?:please\s+)?/i, "")
+    .replace(/^please\s+/i, "")
+    .replace(/^i(?:'d| would) like\s+/i, "Build ")
     .replace(/^i (?:want|need|would like)\s+(?:you to\s+)?/i, "Build ")
     .replace(/\b(?:make|build|create) me\b/i, "Build")
     .replace(/\b(?:home|cottage|residential building)\b/gi, "house")

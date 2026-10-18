@@ -191,3 +191,85 @@ test("manual voice transcript remains editable and speech failures preserve type
     page.getByLabel("Construction plan preview", { exact: true }),
   ).toBeVisible();
 });
+
+test("Part-scoped natural editing coexists with mouse selection, inspector edits and explicit whole-structure commands", async ({
+  page,
+}) => {
+  await page.goto("/?testInput");
+  await showTools(page, "ai");
+  const ask = async (text: string) => {
+    await page.getByLabel("Ask HoloBuild", { exact: true }).fill(text);
+    await page
+      .getByRole("button", { name: "Send request", exact: true })
+      .click();
+  };
+  const scene = () => page.evaluate(() => window.__HOLO_TEST__!.scene());
+  await ask("Build a house with two windows");
+  await ask("Yes");
+  const initial = await scene();
+  const wall = initial.find((o) => o.construction?.role === "wall")!;
+  await page.getByLabel("Selection mode").selectOption("component");
+  await page.getByRole("tab", { name: "Collection", exact: true }).click();
+  await page.getByLabel("Search scene objects").fill(wall.name);
+  await page
+    .locator(".scene-list button")
+    .filter({ hasText: wall.name })
+    .last()
+    .click();
+  await expect(page.locator(".inspector > h2")).toContainText(wall.name);
+  await ask("Make this wall blue");
+  await expect(
+    page.getByLabel("Structure modification preview", { exact: true }),
+  ).toBeVisible();
+  expect(await scene()).toEqual(initial);
+  await ask("Yes");
+  const blue = await scene();
+  expect(
+    blue.filter((o, i) => JSON.stringify(o) !== JSON.stringify(initial[i])),
+  ).toHaveLength(1);
+  expect(blue.find((o) => o.id === wall.id)?.color).toBe("#0000ff");
+  expect(blue.find((o) => o.id === wall.id)?.construction).toEqual(
+    wall.construction,
+  );
+  await expect(page.getByLabel("Selection mode")).toHaveValue("component");
+  await page.getByRole("tab", { name: "Inspector", exact: true }).click();
+  const appearance = page.locator(
+    '[data-accordion-key="inspector.appearance"]',
+  );
+  if ((await appearance.getAttribute("open")) === null)
+    await appearance.locator(":scope > summary").click();
+  await page.getByLabel("Material", { exact: true }).selectOption("brick");
+  const inspected = await scene();
+  expect(inspected.find((o) => o.id === wall.id)?.material).toBe("brick");
+  await ask("Make this wall yellow");
+  await expect(
+    page.getByLabel("Structure modification preview", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("tab", { name: "Inspector", exact: true }).click();
+  await page.getByLabel("Material", { exact: true }).selectOption("wood");
+  const latest = await scene();
+  await ask("Yes");
+  expect(await scene()).toEqual(latest);
+  await expect(
+    page.getByRole("log", { name: "Design conversation" }),
+  ).toContainText("changed");
+  await ask("Cancel");
+  await ask("Change all the walls to yellow");
+  await expect(
+    page.getByLabel("Structure modification preview", { exact: true }),
+  ).toBeVisible();
+  expect(await scene()).toEqual(latest);
+  await ask("Yes");
+  const whole = await scene();
+  expect(
+    whole
+      .filter((o) => o.construction?.role === "wall")
+      .every((o) => o.color === "#f5d76e"),
+  ).toBe(true);
+  expect(whole.find((o) => o.id === wall.id)?.material).toBe("wood");
+  await expect(page.getByLabel("Selection mode")).toHaveValue("structure");
+  await ask("Undo");
+  expect(await scene()).toEqual(latest);
+  await ask("Redo");
+  expect(await scene()).toEqual(whole);
+});

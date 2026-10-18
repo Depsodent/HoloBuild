@@ -253,3 +253,150 @@ it("entrance and width refinements preserve door material and structure identity
     scene().objects.find((o) => o.construction?.role === "door"),
   ).toMatchObject({ material: "wood", color: "#aa79df" });
 });
+it("Part wall color changes exactly one component; inspector updates invalidate the preview safely", async () => {
+  await chat("Build a house");
+  await chat("Yes");
+  const wall = scene().objects.find((o) => o.construction?.role === "wall")!;
+  scene().setSelectionMode("component");
+  scene().select(wall.id);
+  const base = scene().objects;
+  await chat("Make this wall blue");
+  expect(useEditStore.getState().status).toBe("preview");
+  expect(scene().objects).toBe(base);
+  expect(useEditStore.getState().prepared!.target).toBe("");
+  await chat("Yes");
+  expect(scene().selectedId).toBe(wall.id);
+  expect(scene().selectionMode).toBe("component");
+  expect(scene().selectedStructureId).toBeNull();
+  expect(
+    scene().objects.filter(
+      (o, i) => JSON.stringify(o) !== JSON.stringify(base[i]),
+    ),
+  ).toHaveLength(1);
+  expect(scene().objects.find((o) => o.id === wall.id)?.color).toBe("#0000ff");
+  expect(scene().objects.find((o) => o.id === wall.id)?.construction).toEqual(
+    wall.construction,
+  );
+  await chat("Make this wall yellow");
+  const current = scene().objects;
+  useSceneStore.setState({
+    objects: current.map((o) =>
+      o.id === wall.id ? { ...o, material: "brick" } : o,
+    ),
+  });
+  await chat("Yes");
+  expect(useEditStore.getState().message).toMatch(/changed/);
+  expect(scene().objects.find((o) => o.id === wall.id)?.material).toBe("brick");
+});
+it("an explicit all-walls request promotes Part selection to the intended structure only", async () => {
+  await chat("Build a house");
+  await chat("Yes");
+  const wall = scene().objects.find((o) => o.construction?.role === "wall")!;
+  scene().setSelectionMode("component");
+  scene().select(wall.id);
+  const base = scene().objects;
+  await chat("Change all the walls to yellow");
+  expect(useEditStore.getState().status).toBe("preview");
+  expect(scene().objects).toBe(base);
+  await chat("Yes");
+  expect(
+    scene()
+      .objects.filter((o) => o.construction?.role === "wall")
+      .every((o) => o.color === "#f5d76e"),
+  ).toBe(true);
+  expect(scene().selectedStructureId).toBe(wall.construction!.structureId);
+});
+it("ambiguous resize and component reference with Structure selected ask before any proposal", async () => {
+  await chat("Build a house");
+  await chat("Yes");
+  const base = scene().objects;
+  await chat("Resize this entire house");
+  expect(useEditStore.getState().prepared).toBeNull();
+  expect(useConversationStore.getState().messages.at(-1)?.text).toMatch(
+    /scale factor|dimensions/,
+  );
+  await chat("Make this wall blue");
+  expect(useEditStore.getState().prepared).toBeNull();
+  expect(useConversationStore.getState().messages.at(-1)?.text).toMatch(
+    /Choose Part/,
+  );
+  expect(scene().objects).toBe(base);
+});
+it("selected window width and door movement never silently move the entire structure", async () => {
+  await chat("Build a house with two windows");
+  await chat("Yes");
+  const window = scene().objects.find(
+    (o) => o.construction?.role === "window",
+  )!;
+  scene().setSelectionMode("component");
+  scene().select(window.id);
+  const base = scene().objects;
+  await chat("Make the selected window wider");
+  expect(scene().objects).toBe(base);
+  expect(scene().selectionMode).toBe("component");
+  if (useEditStore.getState().prepared)
+    expect(useEditStore.getState().prepared!.target).toBe("");
+  else
+    expect(useConversationStore.getState().messages.at(-1)?.text).toMatch(
+      /collide|opening/,
+    );
+  const door = scene().objects.find((o) => o.construction?.role === "door")!;
+  scene().select(door.id);
+  await chat("Move this door to the right");
+  expect(scene().objects).toBe(base);
+  expect(scene().selectionMode).toBe("component");
+  if (useEditStore.getState().prepared)
+    expect(useEditStore.getState().prepared!.target).toBe("");
+  else
+    expect(useConversationStore.getState().messages.at(-1)?.text).toMatch(
+      /collide|opening/,
+    );
+});
+it("assistant primitive creation remains available while a structure or different part is selected", async () => {
+  await chat("Build a house");
+  await chat("Yes");
+  await chat("Create a wall");
+  expect(useEditStore.getState().status, useEditStore.getState().message).toBe(
+    "preview",
+  );
+  expect(useEditStore.getState().prepared!.result.parts[0].type).toBe("wall");
+});
+it("Part and all-wall edits preserve every object in a second structure", async () => {
+  await chat("Build a house");
+  await chat("Yes");
+  const original = scene().selectedStructureId!;
+  await chat("Duplicate this building");
+  await chat("Yes");
+  const other = scene().objects.filter(
+    (o) => o.construction?.structureId !== original,
+  );
+  const wall = scene().objects.find(
+    (o) =>
+      o.construction?.structureId === original &&
+      o.construction.role === "wall",
+  )!;
+  scene().setSelectionMode("component");
+  scene().select(wall.id);
+  await chat("Make this wall blue");
+  await chat("Yes");
+  expect(
+    scene().objects.filter((o) => o.construction?.structureId !== original),
+  ).toEqual(other);
+  await chat("Change all the walls to yellow");
+  await chat("Yes");
+  expect(
+    scene().objects.filter((o) => o.construction?.structureId !== original),
+  ).toEqual(other);
+});
+it("deselection with multiple structures requires clarification before interpreting a vague move", async () => {
+  await chat("Build a house");
+  await chat("Yes");
+  await chat("Duplicate this building");
+  await chat("Yes");
+  scene().select(null);
+  const base = scene().objects;
+  await chat("Move the whole house right");
+  expect(useEditStore.getState().status).toBe("error");
+  expect(useEditStore.getState().message).toMatch(/Which structure|ambiguous/);
+  expect(scene().objects).toBe(base);
+});

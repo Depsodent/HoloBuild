@@ -301,7 +301,7 @@ test("mocked Ollama edit intents preview, unsupported/invalid requests and stale
       },
     }),
   );
-  await ask(page, "Replace the roof of the house with polished metal");
+  await ask(page, "Give my house a shiny metallic top");
   await expect(page.getByLabel("Edit planner source")).toContainText(
     "LLM edit",
   );

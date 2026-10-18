@@ -151,7 +151,7 @@ test("ambiguous/contradictory model targets and selection-mode changes cannot co
     .filter({ hasText: "slab" })
     .first()
     .click();
-  await ask(page, "Delete the whole building");
+  await ask(page, "Remove the whole building using the current design");
   await expect(page.getByLabel("Structure edit result")).toContainText(
     "target differs",
   );
@@ -167,7 +167,7 @@ test("ambiguous/contradictory model targets and selection-mode changes cannot co
   ).toBeEnabled();
   await page
     .getByLabel("Selection mode", { exact: true })
-    .selectOption("structure");
+    .selectOption("component");
   await expect(
     page.getByRole("button", { name: "Confirm structure edit", exact: true }),
   ).toBeDisabled();

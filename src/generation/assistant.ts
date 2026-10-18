@@ -1,3 +1,4 @@
+import { yawRotation } from "../interaction/twoHandMath";
 import { colorPatch } from "../scene/colors";
 import { conversationIntent, refinementOperation } from "./conversationIntent";
 import {
@@ -19,12 +20,12 @@ import {
   prepareComponentCommand,
 } from "./editStore";
 import { useSceneStore } from "../scene/sceneStore";
-import { members, structureInfo } from "../scene/structures";
+import { members, structureInfo, structureIds } from "../scene/structures";
 import { parseCommand, type Intent } from "../commands/parser";
 import { deterministicEdit } from "./editPlanner";
 import { offlinePlan } from "./offline";
 import { materializePlan } from "./engine";
-import { DESIGN_COLORS } from "./designLanguage";
+import { DESIGN_COLORS, requestedAppearance } from "./designLanguage";
 import { bounds, placement, findFreePosition } from "../interaction/placement";
 import { createObject, SHAPES } from "../scene/objectFactory";
 import {
@@ -54,14 +55,15 @@ function activeStructure(input: string) {
     part = s.objects.find((o) => o.id === s.selectedId);
   const selected =
     s.selectedStructureId ??
-    (/\b(?:all|every|whole|entire|roof|walls|windows|floors?|stor(?:y|ies)|storeys?|entrance|house|building)\b/i.test(
-      input,
-    )
+    (/\b(?:all|every|whole|entire|structure|house|building)\b/i.test(input)
       ? part?.construction?.structureId
       : null);
   if (selected) return selected;
   const current = useConversationStore.getState().target;
-  return !s.selectedId && current && members(s.objects, current).length
+  return !s.selectedId &&
+    structureIds(s.objects).length === 1 &&
+    current &&
+    members(s.objects, current).length
     ? current
     : null;
 }
@@ -86,6 +88,10 @@ export async function dispatchAssistant(
     const scene = useSceneStore.getState(),
       group = activeStructure(raw),
       intent = conversationIntent(raw, !!group);
+    const primitiveRequest =
+      /^(?:create|add|insert|make) (?:a |an )?(?:cube|sphere|cylinder|cone|wall|floor)$/i.test(
+        intent.text,
+      );
     if (intent.kind === "restart") {
       cancelGeneration();
       cancelEdit();
@@ -230,7 +236,52 @@ export async function dispatchAssistant(
         false,
       );
     if (
+      !group &&
+      !scene.selectedId &&
+      structureIds(scene.objects).length > 0 &&
+      /\b(?:whole|entire|structure|house|building|walls|roof|windows|floors)\b/i.test(
+        intent.text,
+      ) &&
+      /^(?:move|change|make|give|add|remove|resize|scale|rotate|delete|replace)\b/i.test(
+        intent.text,
+      )
+    ) {
+      let operation;
+      try {
+        operation = deterministicEdit(intent.text).operation;
+      } catch {
+        /* Flexible wording is interpreted only after target resolution. */
+      }
+      await requestEdit(raw, settings, operation);
+      const result = useEditStore.getState();
+      return respond(
+        result.message,
+        result.status === "preview" || result.status === "complete",
+      );
+    }
+    if (
       group &&
+      /\b(?:this|that|(?:the )?selected) (?:wall|door|window|roof|floor|component)\b/i.test(
+        intent.text,
+      ) &&
+      !/\b(?:all|every|whole|entire)\b/i.test(intent.text)
+    )
+      return respond(
+        "A whole structure is selected. Choose Part and select the intended component, or explicitly ask to change all matching components.",
+        false,
+      );
+    if (
+      group &&
+      /^resize\b/i.test(intent.text) &&
+      !/\d|larger|smaller|wider|narrower/i.test(intent.text)
+    )
+      return respond(
+        "What scale factor or dimensions should I use for this structure? For example, make the entire house 20% larger.",
+        false,
+      );
+    if (
+      group &&
+      !primitiveRequest &&
       (intent.kind === "refine" ||
         /\broof|walls?|windows?|floors?|entrance\b/i.test(raw))
     ) {
@@ -265,19 +316,78 @@ export async function dispatchAssistant(
       );
     }
     let quick: Intent;
-    try {
-      quick = parseCommand(intent.text);
-    } catch {
-      const color = Object.entries(DESIGN_COLORS).find(([name]) =>
-        new RegExp("\\b" + name + "\\b").test(intent.text.toLowerCase()),
+    const selectedPart = scene.objects.find((o) => o.id === scene.selectedId);
+    const requestedRole = intent.text
+      .match(/\b(wall|door|window|roof|floor)s?\b/i)?.[1]
+      .toLowerCase();
+    if (
+      selectedPart &&
+      !primitiveRequest &&
+      requestedRole &&
+      !group &&
+      selectedPart.construction?.role !== requestedRole &&
+      selectedPart.type !== requestedRole
+    )
+      return respond(
+        "The selected part is not that " +
+          requestedRole +
+          ". Select the intended component or choose Structure for a group change.",
+        false,
       );
-      if (color && scene.selectedId) quick = { type: "color", color: color[1] };
-      else
-        return respond(
-          "What would you like to build or change? For example, make a house, select a structure and change its roof color, or describe a supported transform.",
-          false,
+    const componentText = intent.text.replace(
+      /\b(?:(?:the )?selected|this|that|the) (?:wall|door|window|roof|floor|component)\b/gi,
+      "the selected object",
+    );
+    const wider = /\b(?:wider|narrower)\b/i.test(componentText);
+    if (
+      /^resize\b/i.test(intent.text) &&
+      group &&
+      !/\d|larger|smaller|wider|narrower/i.test(intent.text)
+    )
+      return respond(
+        "What scale factor or dimension should I use for the selected structure? For example, make the entire house 20% larger.",
+        false,
+      );
+    if (wider && selectedPart && !group) {
+      quick = {
+        type: "scale",
+        amount: /narrower/i.test(componentText) ? 0.8 : 1.2,
+      };
+    } else
+      try {
+        quick = parseCommand(componentText);
+      } catch {
+        const move = componentText.match(
+          /^move (?:the selected object|it)(?: to)? (?:the )?(left|right|up|down|forward|backward)$/i,
         );
-    }
+        if (move && selectedPart)
+          quick = {
+            type: "move",
+            direction: move[1].toLowerCase(),
+            amount: 0.25,
+          };
+        else {
+          const color = Object.entries(DESIGN_COLORS).find(([name]) =>
+            new RegExp("\\b" + name + "\\b").test(intent.text.toLowerCase()),
+          );
+          const appearance = selectedPart?.construction?.role
+            ? requestedAppearance(intent.text)[selectedPart.construction.role]
+            : undefined;
+          if (appearance?.material && !color)
+            quick = { type: "material", material: appearance.material };
+          else if (
+            color &&
+            scene.selectedId &&
+            /^(?:make|change|set|paint|give|apply)\b/i.test(intent.text)
+          )
+            quick = { type: "color", color: color[1] };
+          else
+            return respond(
+              "What would you like to build or change? For example, make a house, select a structure and change its roof color, or describe a supported transform.",
+              false,
+            );
+        }
+      }
     if (["select", "deselect", "save"].includes(quick.type)) {
       const result = await interpreter.run(intent.text);
       return respond(result.message, result.ok);
@@ -354,12 +464,12 @@ export async function dispatchAssistant(
         }
         if (quick.type === "rotate")
           patch.rotation = [
-            original.rotation[0],
-            original.rotation[1] + (quick.amount * Math.PI) / 180,
-            original.rotation[2],
+            ...yawRotation(original.rotation, (quick.amount * Math.PI) / 180),
           ];
         if (quick.type === "scale")
-          patch.scale = original.scale.map((v) => v * quick.amount) as Vec3;
+          patch.scale = original.scale.map(
+            (v, i) => v * (wider && i !== 0 ? 1 : quick.amount),
+          ) as Vec3;
         const candidate = objectSchema.parse({ ...original, ...patch });
         if (patch.rotation || patch.scale) {
           if (Math.abs(bounds(original).min.y) < 0.01) {
@@ -375,7 +485,9 @@ export async function dispatchAssistant(
             fresh.snap,
           );
           if (!valid.valid)
-            throw Error("That transform has an invalid placement.");
+            throw Error(
+              "That transform would collide or leave the workspace. Scene unchanged. For a door/window in a segmented opening, select Structure and request an entrance or window-layout change so its opening is rebuilt safely.",
+            );
           candidate.position = valid.position;
         }
         command = {
@@ -399,7 +511,12 @@ export async function dispatchAssistant(
       "Preview selected component changes. Confirm to apply; Cancel leaves your scene unchanged.",
     );
     return respond(
-      "I have prepared the component change. Review and confirm it.",
+      "I have prepared the selected component change. Review and confirm it." +
+        (quick.type === "move" && !/\d/.test(intent.text)
+          ? " Default move: 0.25m."
+          : wider
+            ? " Default width change: 20% on its local X axis."
+            : ""),
     );
   } catch (error) {
     return respond(

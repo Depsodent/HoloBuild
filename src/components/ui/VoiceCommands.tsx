@@ -48,6 +48,10 @@ export function VoiceCommands() {
   const [draft, setDraft] = useState("");
   const input = assistantMode ? draft : generation.prompt;
   const conversation = useConversationStore((s) => s.messages);
+  const logRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
+  }, [conversation]);
   const assistantRef = useRef(assistantMode);
   assistantRef.current = assistantMode;
   const [commandsOnly, setCommandsOnly] = useState(false);
@@ -218,6 +222,7 @@ export function VoiceCommands() {
       <div className="voice-commands">
         <h3>Chat with HoloBuild</h3>
         <div
+          ref={logRef}
           className="design-conversation"
           role="log"
           aria-label="Design conversation"

@@ -1,2 +1,32 @@
-
-.design-conversation{max-height:220px;overflow-y:auto;overflow-wrap:anywhere;min-width:0;border:1px solid #254452;border-radius:8px;padding:8px;scrollbar-gutter:stable}.design-conversation p{margin:0 0 9px;font-size:12px;line-height:1.5}.design-conversation strong{display:block;font-size:10px;color:#61e6d4}.design-conversation .user{padding:6px;background:#17313b;border-radius:6px}.voice-commands h3{font-size:14px;margin:4px 0 8px}.voice-commands button{white-space:normal}
+.design-conversation {
+  max-height: 220px;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  border: 1px solid #254452;
+  border-radius: 8px;
+  padding: 8px;
+  scrollbar-gutter: stable;
+}
+.design-conversation p {
+  margin: 0 0 9px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.design-conversation strong {
+  display: block;
+  font-size: 10px;
+  color: #61e6d4;
+}
+.design-conversation .user {
+  padding: 6px;
+  background: #17313b;
+  border-radius: 6px;
+}
+.voice-commands h3 {
+  font-size: 14px;
+  margin: 4px 0 8px;
+}
+.voice-commands button {
+  white-space: normal;
+}

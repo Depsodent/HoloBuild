@@ -1,0 +1,63 @@
+{
+  "testedAt": "2026-10-18T09:03:40.206Z",
+  "url": "http://127.0.0.1:5176",
+  "browser": "155.0.4283.45",
+  "physicalDeviceTested": false,
+  "publicDeploymentTested": false,
+  "steps": [
+    "Exact detailed design, confirmation, atomic history and production save UI",
+    "Compound refinement, same structure and exact history",
+    "Width, entrance preview and cancellation",
+    {
+      "name": "Real Gemini generation, validation, confirmation and exact history",
+      "previewMs": 5224,
+      "elapsedMs": 11505
+    },
+    {
+      "name": "Real Gemini contextual flexible edit and exact history",
+      "previewMs": 4380,
+      "elapsedMs": 11735
+    }
+  ],
+  "providerRequests": [
+    {
+      "path": "plan",
+      "http": 200,
+      "event": "event: result",
+      "requestId": "c4efe3c1-2253-4aab-bd85-8809dbe61f3f",
+      "provider": "Gemini",
+      "model": "gemini-3.5-flash-lite",
+      "timings": {
+        "firstTokenMs": 1847.8062999999966,
+        "headerMs": 1846.2335999999923,
+        "providerMs": 3007.428199999995,
+        "validationMs": 35.79069999999774,
+        "totalMs": 4298.324599999993,
+        "modelLoadMs": null,
+        "residentBefore": null,
+        "residentVramBytes": null
+      }
+    },
+    {
+      "path": "edit",
+      "http": 200,
+      "event": "event: result",
+      "requestId": "710a03f4-e0f6-4a40-9fab-3c541dce2cc8",
+      "provider": "Gemini",
+      "model": "gemini-3.5-flash-lite",
+      "timings": {
+        "firstTokenMs": 3000.207500000004,
+        "headerMs": 2999.8166000000056,
+        "providerMs": 3109.0464999999967,
+        "validationMs": 3.4596999999921536,
+        "totalMs": 3118.3012000000017,
+        "modelLoadMs": null,
+        "residentBefore": null,
+        "residentVramBytes": null
+      },
+      "operation": "move"
+    }
+  ],
+  "ok": true,
+  "pageErrors": []
+}
