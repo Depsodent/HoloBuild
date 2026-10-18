@@ -1,0 +1,65 @@
+{
+  "testedAt": "2026-10-18T09:14:32.597Z",
+  "url": "https://holobuild.vercel.app",
+  "browser": "155.0.4283.45",
+  "physicalDeviceTested": false,
+  "publicDeploymentTested": true,
+  "steps": [
+    "Exact detailed design, confirmation, atomic history and production save UI",
+    "Production Part selection changes one wall only, preserves metadata and unrelated components, exact history",
+    "Compound refinement, same structure and exact history",
+    "Width, entrance preview and cancellation",
+    {
+      "name": "Real Gemini generation, validation, confirmation and exact history",
+      "previewMs": 4303,
+      "elapsedMs": 10977
+    },
+    {
+      "name": "Real Gemini contextual flexible edit and exact history",
+      "previewMs": 3757,
+      "elapsedMs": 10997
+    },
+    "Production Structure targeting preserves every object in the other house and original standalone cube"
+  ],
+  "providerRequests": [
+    {
+      "path": "plan",
+      "http": 200,
+      "event": "event: result",
+      "requestId": "617e1376-edd6-4ec0-b77f-db089bf30781",
+      "provider": "Gemini",
+      "model": "gemini-3.5-flash-lite",
+      "timings": {
+        "firstTokenMs": 936.9462289999938,
+        "headerMs": 936.2802730000112,
+        "providerMs": 2200.3047999999835,
+        "validationMs": 4.433997999993153,
+        "totalMs": 2741.771938000049,
+        "modelLoadMs": null,
+        "residentBefore": null,
+        "residentVramBytes": null
+      }
+    },
+    {
+      "path": "edit",
+      "http": 200,
+      "event": "event: result",
+      "requestId": "a16fee39-15b7-43e8-bf84-7d8116885e18",
+      "provider": "Gemini",
+      "model": "gemini-3.5-flash-lite",
+      "timings": {
+        "firstTokenMs": 1230.0974900000147,
+        "headerMs": 1229.8567560000229,
+        "providerMs": 1376.635683999979,
+        "validationMs": 2.2341429999796674,
+        "totalMs": 1767.9563109999872,
+        "modelLoadMs": null,
+        "residentBefore": null,
+        "residentVramBytes": null
+      },
+      "operation": "move"
+    }
+  ],
+  "ok": true,
+  "pageErrors": []
+}

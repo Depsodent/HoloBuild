@@ -1,0 +1,334 @@
+import { beforeEach, afterEach, it, expect, vi } from "vitest";
+import { interpretConversation } from "../../src/generation/semanticAssistant";
+import {
+  dispatchAssistant,
+  cancelAssistantPreview,
+} from "../../src/generation/assistant";
+import {
+  useGenerationStore,
+  cancelGeneration,
+} from "../../src/generation/generationStore";
+import { useEditStore, cancelEdit } from "../../src/generation/editStore";
+import { useSceneStore } from "../../src/scene/sceneStore";
+import { offlinePlan } from "../../src/generation/offline";
+import { CommandInterpreter } from "../../src/commands/interpreter";
+import {
+  useConversationStore,
+  newConversation,
+} from "../../src/generation/conversationStore";
+const scene = () => useSceneStore.getState();
+const settings = { mode: "auto" as const };
+const chat = (s: string) =>
+  dispatchAssistant(s, settings, new CommandInterpreter(async () => {}));
+beforeEach(() => {
+  cancelGeneration();
+  cancelEdit();
+  newConversation();
+  useGenerationStore.setState({ mode: "auto", options: {} });
+  useSceneStore.setState({
+    objects: [],
+    past: [],
+    future: [],
+    selectedId: null,
+    selectedStructureId: null,
+    selectionMode: "component",
+    preview: null,
+    snap: false,
+  });
+});
+afterEach(() => {
+  cancelGeneration();
+  vi.unstubAllGlobals();
+});
+const design = () => offlinePlan("house floors 2 with two windows").template!;
+it("unmatched flexible language reaches the model once and prepares actual validated geometry", async () => {
+  const fetch = vi.fn(async (url: RequestInfo | URL) => {
+    expect(String(url)).toBe("/api/planner/assistant");
+    return Response.json({
+      source: "llm",
+      provider: "Gemini",
+      model: "test",
+      requestId: "semantic-1",
+      plan: {
+        kind: "create",
+        design: design(),
+        message: "A two-story house approximates the villa.",
+      },
+    });
+  });
+  vi.stubGlobal("fetch", fetch);
+  await chat("I want a modern two-storey villa.");
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(String(fetch.mock.calls[0]?.[0])).toBe("/api/planner/assistant");
+  expect(useGenerationStore.getState().status).toBe("preview");
+  expect(
+    useGenerationStore.getState().prepared!.objects.length,
+  ).toBeGreaterThan(6);
+  expect(scene().objects).toHaveLength(0);
+  expect(useConversationStore.getState().messages.at(-1)?.text).toMatch(
+    /validated design preview/,
+  );
+  await chat("Yes");
+  expect(scene().past).toHaveLength(1);
+  expect(scene().objects).toHaveLength(
+    useGenerationStore.getState().prepared?.objects.length ??
+      scene().objects.length,
+  );
+});
+it("clarifications and provider errors settle without claiming scene success", async () => {
+  vi.stubGlobal("fetch", async () =>
+    Response.json({
+      source: "llm",
+      plan: { kind: "clarify", message: "Which structure would you like?" },
+    }),
+  );
+  const r = await interpretConversation("Something for my garden", settings);
+  expect(r.ok).toBe(false);
+  expect(useGenerationStore.getState().status).toBe("idle");
+  expect(scene().past).toHaveLength(0);
+  vi.stubGlobal("fetch", async () =>
+    Response.json(
+      {
+        kind: "rate-limit",
+        error: "Too many requests; retry in 9 seconds.",
+        requestId: "safe-1041",
+      },
+      { status: 429 },
+    ),
+  );
+  await chat("I would like a villa");
+  expect(useGenerationStore.getState().status).toBe("error");
+  expect(useConversationStore.getState().messages.at(-1)?.text).toContain(
+    "safe-1041",
+  );
+  expect(scene().objects).toHaveLength(0);
+});
+it("cancellation ignores late model output and preserves the existing scene", async () => {
+  let release!: (r: Response) => void;
+  vi.stubGlobal(
+    "fetch",
+    () =>
+      new Promise<Response>((r) => {
+        release = r;
+      }),
+  );
+  const request = interpretConversation("Something residential", settings);
+  cancelAssistantPreview();
+  release(
+    Response.json({
+      source: "llm",
+      plan: { kind: "create", design: design(), message: "Ready" },
+    }),
+  );
+  await request;
+  expect(useGenerationStore.getState().prepared).toBeNull();
+  expect(useGenerationStore.getState().status).toBe("idle");
+  expect(scene().past).toHaveLength(0);
+});
+it("additive second-floor windows preserve the same house, materials, history and original lower floor", async () => {
+  await chat(
+    "Build a two-story house with two windows and yellow walls and a pink roof",
+  );
+  await chat("Yes");
+  const base = scene().objects;
+  const group = scene().selectedStructureId;
+  await chat("Add three windows to the second floor");
+  expect(useEditStore.getState().status, useEditStore.getState().message).toBe(
+    "preview",
+  );
+  expect(scene().objects).toBe(base);
+  await chat("Yes");
+  expect(scene().selectedStructureId).toBe(group);
+  expect(
+    scene().objects.filter(
+      (o) => o.construction?.role === "window" && o.construction.level === 1,
+    ),
+  ).toHaveLength(5);
+  expect(
+    scene().objects.filter(
+      (o) => o.construction?.role === "window" && o.construction.level === 0,
+    ),
+  ).toHaveLength(2);
+  expect(
+    scene()
+      .objects.filter((o) => o.construction?.role === "wall")
+      .every((o) => o.color === "#f5d76e"),
+  ).toBe(true);
+  expect(scene().past).toHaveLength(2);
+  await chat("Undo");
+  expect(scene().objects).toEqual(base);
+});
+it("model output cannot alter a different target or execute code", async () => {
+  vi.stubGlobal("fetch", async () =>
+    Response.json({
+      source: "llm",
+      requestId: "invalid-op",
+      plan: {
+        kind: "edit",
+        scope: "component",
+        target: crypto.randomUUID(),
+        operation: { type: "execute", code: "delete" },
+        message: "Done",
+      },
+    }),
+  );
+  const r = await interpretConversation("Improve this", settings);
+  expect(r.ok).toBe(false);
+  expect(scene().past).toHaveLength(0);
+  expect(useGenerationStore.getState().message).toContain("invalid-op");
+});
+import { createCube } from "../../src/scene/objectFactory";
+it("model-backed component edit preserves selection, other objects and exact shared history", async () => {
+  const cube = createCube([0, 0.5, 0]),
+    other = createCube([5, 0.5, 0]);
+  useSceneStore.setState({ objects: [cube, other], selectedId: cube.id });
+  vi.stubGlobal("fetch", async () =>
+    Response.json({
+      source: "llm",
+      plan: {
+        kind: "edit",
+        scope: "component",
+        target: cube.id,
+        operation: { type: "scale", factors: [1, 0.5, 1] },
+        message: "A half-height version of the selected cube.",
+      },
+    }),
+  );
+  const base = scene().objects;
+  const r = await interpretConversation(
+    "I prefer this component half as tall",
+    settings,
+  );
+  expect(r.ok).toBe(true);
+  expect(scene().objects).toBe(base);
+  await chat("Yes");
+  expect(scene().selectedId).toBe(cube.id);
+  expect(scene().objects[1]).toEqual(other);
+  expect(scene().objects[0].scale).toEqual([1, 0.5, 1]);
+  expect(scene().past).toHaveLength(1);
+  await chat("Undo");
+  expect(scene().objects).toEqual(base);
+});
+it("a model cannot redirect an all-parts request into a single component", async () => {
+  const cube = createCube();
+  useSceneStore.setState({ objects: [cube], selectedId: cube.id });
+  vi.stubGlobal("fetch", async () =>
+    Response.json({
+      source: "llm",
+      plan: {
+        kind: "edit",
+        scope: "component",
+        target: cube.id,
+        operation: { type: "color", color: "#0000ff" },
+        message: "Blue",
+      },
+    }),
+  );
+  const r = await interpretConversation(
+    "Every component needs a new finish",
+    settings,
+  );
+  expect(r.ok).toBe(false);
+  expect(useEditStore.getState().prepared).toBeNull();
+  expect(scene().past).toHaveLength(0);
+});
+it("unsupported architecture cannot be silently omitted from a model design", async () => {
+  vi.stubGlobal("fetch", async () =>
+    Response.json({
+      source: "llm",
+      plan: { kind: "create", design: design(), message: "Here is your house" },
+    }),
+  );
+  const r = await interpretConversation(
+    "A villa with balconies and a staircase",
+    settings,
+  );
+  expect(r.ok).toBe(false);
+  expect(useGenerationStore.getState().prepared).toBeNull();
+  expect(scene().objects).toHaveLength(0);
+});
+it("a selected imported model material proposal disables original surfaces only in its preview", async () => {
+  const model = {
+    ...createCube(),
+    type: "model" as const,
+    model: {
+      assetId: "a".repeat(64),
+      size: [1, 1, 1] as [number, number, number],
+      originalMaterials: true,
+    },
+  };
+  useSceneStore.setState({ objects: [model], selectedId: model.id });
+  vi.stubGlobal("fetch", async () =>
+    Response.json({
+      source: "llm",
+      plan: {
+        kind: "edit",
+        scope: "component",
+        target: model.id,
+        operation: { type: "material", material: "wood" },
+        message: "Use a wood finish",
+      },
+    }),
+  );
+  await interpretConversation("A timber finish would suit this part", settings);
+  expect(scene().objects[0].model?.originalMaterials).toBe(true);
+  expect(useEditStore.getState().prepared!.result.parts[0]).toMatchObject({
+    material: "wood",
+    model: { originalMaterials: false, assetId: model.model.assetId },
+  });
+  expect(scene().past).toHaveLength(0);
+});
+it("a fresh interpretation clears geometry-retry metadata from a previous unrelated request", async () => {
+  useGenerationStore.setState({ retryReason: "overlap", retryCount: 1 });
+  vi.stubGlobal("fetch", async () =>
+    Response.json({
+      source: "llm",
+      plan: { kind: "clarify", message: "What dimensions would you like?" },
+    }),
+  );
+  await interpretConversation("A sheltered garden place", settings);
+  expect(useGenerationStore.getState().retryReason).toBeNull();
+  expect(useGenerationStore.getState().retryCount).toBe(0);
+});
+it("flexible interpretation retains custom primitive-plan generation beyond templates", async () => {
+  const plan = {
+    version: 1 as const,
+    name: "A platform",
+    units: "meters" as const,
+    objects: [
+      {
+        id: "slab",
+        name: "Platform",
+        role: "floor" as const,
+        type: "floor" as const,
+        position: [0, 0.1, 0] as [number, number, number],
+        rotation: [0, 0, 0] as [number, number, number],
+        dimensions: [4, 0.2, 4] as [number, number, number],
+        material: "concrete" as const,
+        color: "#ffffff",
+      },
+    ],
+    contacts: [],
+    warnings: [],
+  };
+  vi.stubGlobal("fetch", async () =>
+    Response.json({
+      source: "llm",
+      provider: "Gemini",
+      plan: { kind: "compose", plan, message: "One concrete platform slab" },
+    }),
+  );
+  const r = await interpretConversation(
+    "A flat place to display my models",
+    settings,
+  );
+  expect(r.ok).toBe(true);
+  expect(useGenerationStore.getState().prepared!.objects).toHaveLength(1);
+  expect(useGenerationStore.getState().notice).toContain(
+    "validated generated geometry",
+  );
+  expect(scene().objects).toHaveLength(0);
+  await chat("Yes");
+  expect(scene().objects).toHaveLength(1);
+  expect(scene().past).toHaveLength(1);
+});

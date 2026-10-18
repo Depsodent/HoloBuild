@@ -70,7 +70,20 @@ export function editContext(): EditContext {
       material: parts[0].material,
     };
   });
+  const part = s.objects.find((o) => o.id === s.selectedId);
   return {
+    selection: {
+      mode: s.selectedStructureId ? "structure" : part ? "component" : "none",
+      ...(part
+        ? {
+            id: part.id,
+            type: part.type,
+            role: part.construction?.role,
+            position: part.position,
+            scale: part.scale,
+          }
+        : {}),
+    },
     selected:
       s.selectedStructureId ??
       s.objects.find((o) => o.id === s.selectedId)?.construction?.structureId ??
@@ -83,6 +96,7 @@ export function editContext(): EditContext {
       ? {
           details: {
             id: current,
+            template: structureInfo(selectedParts).template,
             dimensions: [
               box.max.x - box.min.x,
               box.max.y - box.min.y,

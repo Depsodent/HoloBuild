@@ -1,7 +1,7 @@
 import type { z } from "zod";
 import type { Vec3 } from "../src/scene/objectTypes";
 import type { MaterialId } from "../src/scene/materialPresets";
-import type { PlanPart } from "./planSchema.mjs";
+import type { PlanPart, BuildingTemplate } from "./planSchema.mjs";
 export type AtomicStructureOperation =
   | {
       type: "design";
@@ -49,11 +49,20 @@ export interface EditPlan {
   operation: StructureOperation;
 }
 export interface EditContext {
+  selection?: {
+    mode: "component" | "structure" | "none";
+    id?: string;
+    type?: string;
+    role?: PlanPart["role"];
+    position?: Vec3;
+    scale?: Vec3;
+  };
   conversation?: { role: "user" | "assistant"; text: string }[];
   details?: {
     id: string;
     dimensions: Vec3;
     requestedDesign: string;
+    template?: BuildingTemplate;
     roles: {
       role: PlanPart["role"];
       count: number;

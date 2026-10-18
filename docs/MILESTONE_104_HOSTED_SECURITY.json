@@ -1,0 +1,38 @@
+{
+  "checkedAt": "2026-10-18T09:14:01.310Z",
+  "url": "https://holobuild.vercel.app",
+  "aiEnabled": true,
+  "checks": [
+    {
+      "check": "HTTP redirects to HTTPS",
+      "passed": true
+    },
+    {
+      "check": "Anonymous HTTPS and security headers",
+      "passed": true
+    },
+    {
+      "check": "Public AI explicitly enabled",
+      "passed": true
+    },
+    {
+      "check": "Untrusted Origin and CORS preflight denied",
+      "passed": true
+    },
+    {
+      "check": "Private local/config/server paths not served",
+      "passed": true
+    },
+    {
+      "check": "Deployed JS matches audited local build and has no private values",
+      "passed": true,
+      "scripts": 5
+    },
+    {
+      "check": "MediaPipe assets, WASM MIME and license evidence",
+      "passed": true
+    }
+  ],
+  "geminiCalled": false,
+  "credentialsPrinted": false
+}

@@ -46,6 +46,7 @@ export function VoiceCommands() {
   const editStatus = useEditStore((s) => s.status);
   const [assistantMode, setAssistantMode] = useState(true);
   const [draft, setDraft] = useState("");
+  const composerRef = useRef<HTMLInputElement>(null);
   const input = assistantMode ? draft : generation.prompt;
   const conversation = useConversationStore((s) => s.messages);
   const logRef = useRef<HTMLDivElement>(null);
@@ -256,6 +257,7 @@ export function VoiceCommands() {
           <label htmlFor="construction-command">Ask HoloBuild</label>
           <div className="ask-input-row">
             <input
+              ref={composerRef}
               id="construction-command"
               value={input}
               maxLength={1200}
@@ -421,7 +423,15 @@ export function VoiceCommands() {
             Auto-submit final transcript
           </label>
         )}
-        <StructureGenerator view={view} />
+        <StructureGenerator
+          view={view}
+          onExample={(text) => {
+            if (assistantMode) setDraft(text);
+            else updateGeneration({ prompt: text });
+            useToolsStore.setState({ aiView: "main" });
+            requestAnimationFrame(() => composerRef.current?.focus());
+          }}
+        />
         {view === "help" && (
           <Accordion id="tools.voice-help" title="Help & examples">
             <p>

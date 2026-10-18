@@ -1,3 +1,4 @@
+import { cancelInterpretation } from "./interpretationRequest";
 import { confirmedDesign } from "./conversationStore";
 import { plannerPreferences, persistPlanner } from "./plannerPreferences";
 import { plannerStage } from "./plannerTransport";
@@ -27,6 +28,7 @@ export const useGenerationStore = create(() => ({
 let controller: AbortController | null = null,
   request = 0;
 export function cancelGeneration(message = "Plan cancelled. Scene unchanged.") {
+  cancelInterpretation();
   plannerStage("Idle");
   request++;
   controller?.abort();

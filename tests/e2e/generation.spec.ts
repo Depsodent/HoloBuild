@@ -292,13 +292,30 @@ test("invalid LLM output fails safely; Auto fallback is explicit and never calle
   );
   await showTools(page, "ai");
   await setPlannerMode(page, "auto");
-  await plan(page, "Build a house with a gabled roof");
-  await expect(page.getByLabel("Planner source")).toContainText(
-    "Offline fallback",
+  await page.route("**/api/planner/assistant", (route) =>
+    route.fulfill({
+      json: {
+        source: "llm",
+        plan: {
+          kind: "clarify",
+          message: "Pitched roofs are unsupported. Would a flat roof work?",
+        },
+      },
+    }),
   );
+  await page
+    .getByLabel("Ask HoloBuild", { exact: true })
+    .fill("Build a house with a gabled roof");
+  await page.getByRole("button", { name: "Send request", exact: true }).click();
+  await expect(
+    page.getByRole("log", { name: "Design conversation" }),
+  ).toContainText("Pitched roofs are unsupported");
   await expect(
     page.getByLabel("Construction plan preview", { exact: true }),
-  ).toContainText("Offline");
+  ).toHaveCount(0);
+  await setPlannerMode(page, "offline");
+  await plan(page, "Build a house");
+  await expect(page.getByLabel("Planner source")).toContainText("Offline");
 });
 test("Cancel aborts a pending model plan and late responses never create a preview", async ({
   page,

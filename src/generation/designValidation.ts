@@ -1,7 +1,11 @@
-import { Color } from "three";
+import { Color, SRGBColorSpace } from "three";
 import type { ConstructionPlan } from "../../shared/planSchema.mjs";
 import { numeric } from "../commands/parser";
-import { normalizeDesignRequest, requestedAppearance } from "./designLanguage";
+import {
+  normalizeDesignRequest,
+  requestedAppearance,
+  DESIGN_COLORS,
+} from "./designLanguage";
 /** Reject omitted explicit requirements; never rewrite a provider's geometry. */
 export function validateDesignAttributes(
   input: string,
@@ -79,17 +83,25 @@ export function validateDesignAttributes(
           " material. Scene unchanged.",
       );
     if (value.color) {
-      const expected = new Color(value.color).getHSL({ h: 0, s: 0, l: 0 });
+      const expected = new Color(value.color).getHSL(
+        { h: 0, s: 0, l: 0 },
+        SRGBColorSpace,
+      );
       if (
         parts.some((p) => {
-          const c = new Color(p.color).getHSL({ h: 0, s: 0, l: 0 });
+          const c = new Color(p.color).getHSL(
+            { h: 0, s: 0, l: 0 },
+            SRGBColorSpace,
+          );
           return expected.s < 0.15
             ? Math.abs(c.l - expected.l) > 0.2
             : c.s < 0.2 ||
-                Math.min(
-                  Math.abs(c.h - expected.h),
-                  1 - Math.abs(c.h - expected.h),
-                ) > 0.1;
+                (value.color === DESIGN_COLORS.purple
+                  ? c.h < 0.7 || c.h > 0.87
+                  : Math.min(
+                      Math.abs(c.h - expected.h),
+                      1 - Math.abs(c.h - expected.h),
+                    ) > 0.1);
         })
       )
         throw Error(

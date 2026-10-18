@@ -30,8 +30,10 @@ const examples = [
 ];
 export function StructureGenerator({
   view = "main",
+  onExample,
 }: {
   view?: "main" | "settings" | "help";
+  onExample?: (text: string) => void;
 }) {
   const s = useGenerationStore(),
     objects = useSceneStore((state) => state.objects),
@@ -380,7 +382,8 @@ export function StructureGenerator({
               <button
                 key={text}
                 onClick={() => {
-                  updateGeneration({ prompt: text });
+                  if (onExample) onExample(text);
+                  else updateGeneration({ prompt: text });
                   openTools("ai");
                 }}
               >

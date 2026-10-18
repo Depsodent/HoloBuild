@@ -1,0 +1,60 @@
+{
+  "testedAt": "2026-10-18T14:31:30.745Z",
+  "url": "http://127.0.0.1:5176",
+  "browser": "155.0.4283.45",
+  "physicalDeviceTested": false,
+  "public1041Tested": false,
+  "contexts": [
+    {
+      "scenario": "Genuine Gemini flexible detailed interpretation, same-structure roof/window/width refinements, confirmation and exact history",
+      "previewMs": 2786,
+      "provider": [
+        {
+          "http": 200,
+          "event": "event: result",
+          "requestId": "26da0e5a-b03e-4d83-ba93-f60a7de854a2",
+          "provider": "Gemini",
+          "model": "gemini-3.5-flash-lite",
+          "kind": "create",
+          "timings": {
+            "firstTokenMs": 1598.1307999999844,
+            "headerMs": 1597.8578999999445,
+            "providerMs": 2087.5745999999926,
+            "validationMs": 2.9021000000066124,
+            "totalMs": 2094.5650000000023,
+            "modelLoadMs": null,
+            "residentBefore": null,
+            "residentVramBytes": null
+          }
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "scenario": "Fresh context, genuine Gemini Part resize, preview, confirmation and exact history",
+      "elapsedMs": 5433,
+      "provider": [
+        {
+          "http": 200,
+          "event": "event: result",
+          "requestId": "951d77ac-a9c3-4e41-b5cd-b48de3669693",
+          "provider": "Gemini",
+          "model": "gemini-3.5-flash-lite",
+          "kind": "edit",
+          "timings": {
+            "firstTokenMs": 1913.2467999999644,
+            "headerMs": 1913.0106000000378,
+            "providerMs": 2178.7515999999596,
+            "validationMs": 5.462899999925867,
+            "totalMs": 2190.814999999944,
+            "modelLoadMs": null,
+            "residentBefore": null,
+            "residentVramBytes": null
+          }
+        }
+      ],
+      "pageErrors": []
+    }
+  ],
+  "ok": true
+}

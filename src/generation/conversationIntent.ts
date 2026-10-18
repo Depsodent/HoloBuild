@@ -154,6 +154,11 @@ export function refinementOperation(
       index === undefined
     )
       n /= recipe.floors;
+    if (/^add\b/.test(t.trim()) && !per && recipe)
+      n +=
+        index === undefined
+          ? recipe.windows
+          : (recipe.windowCounts?.[index] ?? recipe.windows);
     ops.push({
       type: "design",
       windows: n,

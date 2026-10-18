@@ -1,0 +1,83 @@
+{
+  "checkedAt": "2026-10-18T09:13:12.509Z",
+  "deploymentId": "dpl_AcZJYqVw8giuZ4QAHfPjjEoA3cef",
+  "sourceCheckpoint": "4e5ae51482ff4286ab6b034eef7e4c97350257cd",
+  "readyState": "READY",
+  "url": "https://holobuild.vercel.app",
+  "accountPlan": "hobby",
+  "protectedVariables": [
+    {
+      "key": "PLANNER_MODE",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "LLM_PROVIDER",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "GEMINI_MODEL",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "GEMINI_API_KEY",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "LLM_TIMEOUT_MS",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "APP_ORIGINS",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "PUBLIC_AI_ENABLED",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "PUBLIC_AI_DAILY_LIMIT",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "UPSTASH_REDIS_REST_URL",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    },
+    {
+      "key": "UPSTASH_REDIS_REST_TOKEN",
+      "type": "sensitive",
+      "target": [
+        "production"
+      ]
+    }
+  ],
+  "noEnvironmentChanges": true,
+  "noPaidServiceActivated": true,
+  "rollbackDeployment": "dpl_6eSMkDs2CK7SaqYSDQvGSPpZ8g6e"
+}

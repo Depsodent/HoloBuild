@@ -1,3 +1,4 @@
+import { interpretConversation } from "./semanticAssistant";
 import { yawRotation } from "../interaction/twoHandMath";
 import { colorPatch } from "../scene/colors";
 import { conversationIntent, refinementOperation } from "./conversationIntent";
@@ -206,6 +207,10 @@ export async function dispatchAssistant(
           /* Flexible requests use the configured planner, never a guessed template. */
         }
       }
+      if (settings.mode === "auto" && !procedural) {
+        const result = await interpretConversation(raw, settings);
+        return respond(result.message, result.ok);
+      }
       useConversationStore.setState({ designRequest: raw, finished: false });
       await planStructure(
         raw,
@@ -381,11 +386,10 @@ export async function dispatchAssistant(
             /^(?:make|change|set|paint|give|apply)\b/i.test(intent.text)
           )
             quick = { type: "color", color: color[1] };
-          else
-            return respond(
-              "What would you like to build or change? For example, make a house, select a structure and change its roof color, or describe a supported transform.",
-              false,
-            );
+          else {
+            const result = await interpretConversation(raw, settings);
+            return respond(result.message, result.ok);
+          }
         }
       }
     if (["select", "deselect", "save"].includes(quick.type)) {
@@ -445,7 +449,12 @@ export async function dispatchAssistant(
         const patch: Partial<SceneObject> = {};
         if (quick.type === "color")
           Object.assign(patch, colorPatch(original, quick.color));
-        if (quick.type === "material") patch.material = quick.material;
+        if (quick.type === "material") {
+          patch.material = quick.material;
+          patch.surface = undefined;
+          if (original.model)
+            patch.model = { ...original.model, originalMaterials: false };
+        }
         if (quick.type === "move") {
           const directions: Record<string, Vec3> = {
             right: [1, 0, 0],

@@ -682,3 +682,40 @@ test("hosted JSON and SSE terminal responses wait for lease release before closi
     else assert.deepEqual((await response.json()).plan, plan);
   }
 });
+test("Gemini assistant interpretation uses constrained native schema and bounded scene context", async (t) => {
+  let sent;
+  const interpreted = {
+    kind: "clarify",
+    message: "Would a flat-roof house suit your garden?",
+  };
+  const url = await fixture(t, async (_url, init) => {
+    if (init.method !== "POST") return Response.json(metadata);
+    sent = JSON.parse(init.body);
+    return Response.json(completion({ response: JSON.stringify(interpreted) }));
+  });
+  const r = await fetch(url + "/api/planner/assistant", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      prompt: "Something sheltered for my garden",
+      context: { selected: null, structures: [], conversation: [] },
+    }),
+  });
+  assert.equal(r.status, 200);
+  const data = await r.json();
+  assert.deepEqual(data.plan, interpreted);
+  assert.equal(data.provider, "Gemini");
+  assert.equal(sent.generationConfig.responseJsonSchema.type, "object");
+  assert.equal(sent.generationConfig.responseJsonSchema.anyOf, undefined);
+  assert.equal(
+    sent.generationConfig.responseJsonSchema.properties.response.type,
+    "string",
+  );
+  assert.equal(sent.generationConfig.maxOutputTokens, 10000);
+  assert.match(sent.systemInstruction.parts[0].text, /segmented openings/);
+  assert.equal(
+    JSON.parse(sent.contents[0].parts[0].text).request,
+    "Something sheltered for my garden",
+  );
+  assert.ok(!JSON.stringify(data).includes(env.GEMINI_API_KEY));
+});

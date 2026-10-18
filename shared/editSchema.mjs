@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { materials, roles } from "./planSchema.mjs";
+import { materials, roles, templateSchema } from "./planSchema.mjs";
 const delta = z.tuple([
   z.number().finite().min(-50).max(50),
   z.number().finite().min(-40).max(40),
@@ -15,7 +15,7 @@ const atomicOperationSchema = z.discriminatedUnion("type", [
     .object({
       type: z.literal("design"),
       floors: z.number().int().min(1).max(6).optional(),
-      windows: z.number().int().min(0).max(4).optional(),
+      windows: z.number().int().min(0).max(6).optional(),
       level: z.number().int().min(0).max(5).optional(),
       windowScale: z.number().min(0.5).max(1.4).optional(),
       doorOffset: z.number().min(-2).max(2).optional(),
@@ -118,6 +118,17 @@ export const editPlanSchema = z
 export const editContextSchema = z
   .object({
     selected: z.string().uuid().nullable(),
+    selection: z
+      .object({
+        mode: z.enum(["component", "structure", "none"]),
+        id: z.string().uuid().optional(),
+        type: z.string().max(20).optional(),
+        role: z.enum(roles).optional(),
+        position: delta.optional(),
+        scale: scale.optional(),
+      })
+      .strict()
+      .optional(),
     conversation: z
       .array(
         z
@@ -138,6 +149,7 @@ export const editContextSchema = z
           z.number().finite().min(0).max(200),
         ]),
         requestedDesign: z.string().max(400),
+        template: templateSchema.optional(),
         roles: z
           .array(
             z

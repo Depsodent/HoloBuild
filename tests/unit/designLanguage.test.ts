@@ -60,3 +60,29 @@ it("rejects missing explicit requirements without repairing provider geometry", 
     ),
   ).not.toThrow();
 });
+
+it("compares named design colors in display space without requiring one palette hex", () => {
+  const plan = offlinePlan(detailed);
+  const tinted = {
+    ...plan,
+    objects: plan.objects.map((p) => ({
+      ...p,
+      color:
+        p.role === "door"
+          ? "#800080"
+          : p.role === "wall"
+            ? "#ffd700"
+            : p.role === "roof"
+              ? "#ffc0cb"
+              : p.color,
+    })),
+  };
+  expect(() => validateDesignAttributes(detailed, tinted)).not.toThrow();
+  const wrong = {
+    ...tinted,
+    objects: tinted.objects.map((p) =>
+      p.role === "door" ? { ...p, color: "#0000ff" } : p,
+    ),
+  };
+  expect(() => validateDesignAttributes(detailed, wrong)).toThrow(/door color/);
+});

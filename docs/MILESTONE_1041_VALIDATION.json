@@ -1,0 +1,147 @@
+{
+  "validatedAt": "2026-10-18T14:33:44.565Z",
+  "baseline": "4e5ae51482ff4286ab6b034eef7e4c97350257cd",
+  "publication": {
+    "pushed": false,
+    "deployed": false,
+    "productionUnchanged": "4e5ae51",
+    "requiresExplicitApproval": true
+  },
+  "checks": {
+    "typescript": "passed",
+    "eslint": "passed",
+    "unit": {
+      "passed": 300,
+      "files": 32,
+      "command": "npx vitest run --maxWorkers=2",
+      "note": "An unconstrained concurrent run had a procedural-texture test timeout; bounded-worker full rerun passed without changing its deadline."
+    },
+    "backend": {
+      "passed": 46
+    },
+    "browser": {
+      "discovered": 127,
+      "verified": 127,
+      "missing": [],
+      "fullRun": {
+        "startTime": "2026-10-18T13:30:05.558Z",
+        "duration": 1438985.301,
+        "expected": 124,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "focusedFinal": {
+        "startTime": "2026-10-18T14:25:59.321Z",
+        "duration": 202465.501,
+        "expected": 16,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "runs": [
+        {
+          "evidence": ".cache/milestone1041-browser-full.json",
+          "startTime": "2026-10-18T13:30:05.558Z",
+          "duration": 1438985.301,
+          "expected": 124,
+          "skipped": 0,
+          "unexpected": 1,
+          "flaky": 0
+        },
+        {
+          "evidence": ".cache/milestone1041-browser-targeted.json",
+          "startTime": "2026-10-18T13:55:02.849Z",
+          "duration": 86227.572,
+          "expected": 8,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        },
+        {
+          "evidence": ".cache/milestone1041-browser-compose.json",
+          "startTime": "2026-10-18T14:01:54.746Z",
+          "duration": 9945.703000000001,
+          "expected": 1,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        },
+        {
+          "evidence": ".cache/milestone1041-browser-final.json",
+          "startTime": "2026-10-18T14:25:59.321Z",
+          "duration": 202465.501,
+          "expected": 16,
+          "skipped": 0,
+          "unexpected": 1,
+          "flaky": 0
+        },
+        {
+          "evidence": ".cache/milestone1041-browser-rerender-retry.json",
+          "startTime": "2026-10-18T14:31:00.471Z",
+          "duration": 11380.537,
+          "expected": 1,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ],
+      "notes": [
+        "Full serial suite:124/125 passed; camera context startup failed before app execution, unchanged isolated rerun passed.",
+        "Final relevant generation/conversation rerun:16/17 passed; stale-preview test button rerender timed out under load, unchanged isolated rerun passed in11.4s.",
+        "All currently discovered cases have passing execution evidence across full and targeted runs. This is not a claim of one uninterrupted127/127 run."
+      ]
+    },
+    "productionBuild": {
+      "passed": true,
+      "durationSeconds": 32.6,
+      "entry": "dist/assets/index-FeDAUXgd.js",
+      "packageNotices": 70,
+      "unresolvedNotices": 0,
+      "warnings": [
+        "Existing dependency PURE annotations",
+        "Existing large main bundle"
+      ]
+    },
+    "security": {
+      "passed": true,
+      "evidence": "PUBLICATION_AUDIT.json",
+      "secretValuesPrinted": false,
+      "serverOnlyCredentials": true,
+      "hostedLimitsUnchanged": {
+        "perIpPerMinute": 5,
+        "admittedPerUtcDay": 100,
+        "concurrent": 2
+      }
+    }
+  },
+  "liveGemini": {
+    "passed": true,
+    "evidence": "MILESTONE_1041_LOCAL_GEMINI.json",
+    "model": "gemini-3.5-flash-lite",
+    "browser": "155.0.4283.45",
+    "productionPreview": "http://127.0.0.1:5176",
+    "freshContexts": 2,
+    "successfulProviderRequests": 2,
+    "pageErrors": [],
+    "notes": [
+      "Synthetic local diagnostic requests preceded the final two successful acceptance calls; not only two calls in this entire development session.",
+      "Provider initially rejected the combined decoder schema with generic400INVALID_ARGUMENT; a minimal schema succeeded, and the bounded transport fixed the failure.",
+      "Runtime validation rejected an invalid total-height interpretation; instructions now explicitly define per-storey height. No geometry was repaired.",
+      "Display-sRGB color validation fixes a false rejection of standard CSS purple and still rejects a blue door."
+    ]
+  },
+  "services": {
+    "frontend": "http://127.0.0.1:5175",
+    "productionPreview": "http://127.0.0.1:5176",
+    "planner": "http://127.0.0.1:5180"
+  },
+  "limitations": [
+    "Public10.4.1 acceptance awaits explicit deployment approval.",
+    "Physical friend-laptop, webcam and microphone acceptance not performed.",
+    "Multiple browser contexts and simulated speech/landmarks do not prove physical cross-device reliability.",
+    "Live Ollama was not rerun; compatible-adapter tests passed.",
+    "Arbitrary architecture remains subject to supported primitives, geometry budgets and placement constraints.",
+    "Model output can still fail strict validation; errors preserve the scene and provide a safe reference."
+  ]
+}

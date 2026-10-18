@@ -1,0 +1,282 @@
+{
+  "reviewedAt": "2026-10-18T09:21:08.335Z",
+  "deploymentId": "dpl_AcZJYqVw8giuZ4QAHfPjjEoA3cef",
+  "runtimeRecords": 11,
+  "runtime": [
+    {
+      "timestamp": "2026-10-18T09:17:11.953Z",
+      "level": "warn",
+      "path": "/api/planner/plan",
+      "requestId": "q47vf-1792315031621-a5bf8934b43b",
+      "kind": "rate-limit",
+      "status": 429,
+      "reference": "2212642b-069c-4a91-939f-dfd5160cc03d",
+      "retryAfterSeconds": 48
+    },
+    {
+      "timestamp": "2026-10-18T09:17:03.504Z",
+      "level": "warn",
+      "path": "/api/planner/connection",
+      "requestId": "2hzpm-1792315023201-593a74ef351b",
+      "kind": "rate-limit",
+      "status": 429,
+      "reference": "d9f6c8ec-03e3-4919-bfbd-776dacf19ca7",
+      "retryAfterSeconds": 56
+    },
+    {
+      "timestamp": "2026-10-18T09:13:23.446Z",
+      "level": "warn",
+      "path": "/api/planner/status",
+      "requestId": "w8sl5-1792314803326-a93bc183ee98",
+      "kind": "request",
+      "status": 403,
+      "reference": "eaf7c574-6a5a-4ab0-9555-d6cb79aa861c"
+    },
+    {
+      "timestamp": "2026-10-18T09:13:23.178Z",
+      "level": "warn",
+      "path": "/api/planner/status",
+      "requestId": "x9dgb-1792314803066-7901a2e10822",
+      "kind": "request",
+      "status": 403,
+      "reference": "ff7f9235-1111-4caf-b6ed-8a18f5095617"
+    },
+    {
+      "timestamp": "2026-10-18T09:13:22.919Z",
+      "level": "warn",
+      "path": "/api/planner/status",
+      "requestId": "qjv8r-1792314802801-6b76e9022254",
+      "kind": "request",
+      "status": 403,
+      "reference": "7919d795-a471-4ce8-b453-252eec1f31f0"
+    },
+    {
+      "timestamp": "2026-10-18T09:11:15.524Z",
+      "level": "warn",
+      "path": "/api/planner/status",
+      "requestId": "nzdkb-1792314675401-e06a5c1607a6",
+      "kind": "request",
+      "status": 403,
+      "reference": "5520eef0-1621-4962-86bd-a5c7b63260e7"
+    },
+    {
+      "timestamp": "2026-10-18T09:11:14.693Z",
+      "level": "warn",
+      "path": "/api/planner/status",
+      "requestId": "mn5pn-1792314674351-fa0ef2bbb230",
+      "kind": "request",
+      "status": 403,
+      "reference": "b3a006d7-0e8d-4588-8c62-efbf38b633b9"
+    },
+    {
+      "timestamp": "2026-10-18T09:11:13.508Z",
+      "level": "warn",
+      "path": "/api/planner/status",
+      "requestId": "x7kxv-1792314673376-f495e1325655",
+      "kind": "request",
+      "status": 403,
+      "reference": "1cadf94f-3a2d-4889-827b-73351590ac4e"
+    },
+    {
+      "timestamp": "2026-10-18T09:10:54.669Z",
+      "level": "warn",
+      "path": "/api/planner/status",
+      "requestId": "zm8tt-1792314654588-fcdbc0c04762",
+      "kind": "request",
+      "status": 403,
+      "reference": "682fd409-ef01-4e2c-aeb2-94b2041462ba"
+    },
+    {
+      "timestamp": "2026-10-18T09:10:43.136Z",
+      "level": "warn",
+      "path": "/api/planner/status",
+      "requestId": "kqct7-1792314643065-ac4e533dccc1",
+      "kind": "request",
+      "status": 403,
+      "reference": "7634c021-1e85-443d-a98a-841470c599fa"
+    },
+    {
+      "timestamp": "2026-10-18T09:10:43.117Z",
+      "level": "warn",
+      "path": "/api/planner/status",
+      "requestId": "9w589-1792314642947-38adeeeb39e9",
+      "kind": "request",
+      "status": 403,
+      "reference": "1fb68557-c3c8-4c3b-98e7-ce3fbe82a9a7"
+    }
+  ],
+  "requestRecords": 24,
+  "requests": [
+    {
+      "timestamp": "2026-10-18T09:18:01.447Z",
+      "path": "/api/planner/connection",
+      "method": "POST",
+      "status": 200,
+      "requestId": "x7kxv-1792315081447-33135c99eb45"
+    },
+    {
+      "timestamp": "2026-10-18T09:17:11.621Z",
+      "path": "/api/planner/plan",
+      "method": "POST",
+      "status": 429,
+      "requestId": "q47vf-1792315031621-a5bf8934b43b"
+    },
+    {
+      "timestamp": "2026-10-18T09:17:08.227Z",
+      "path": "/api/planner/status",
+      "method": "GET",
+      "status": 200,
+      "requestId": "vl446-1792315028227-8ce450f00562"
+    },
+    {
+      "timestamp": "2026-10-18T09:17:03.201Z",
+      "path": "/api/planner/connection",
+      "method": "POST",
+      "status": 429,
+      "requestId": "2hzpm-1792315023201-593a74ef351b"
+    },
+    {
+      "timestamp": "2026-10-18T09:17:02.412Z",
+      "path": "/api/planner/connection",
+      "method": "POST",
+      "status": 200,
+      "requestId": "tznws-1792315022412-38360f36a1ca"
+    },
+    {
+      "timestamp": "2026-10-18T09:17:01.731Z",
+      "path": "/api/planner/connection",
+      "method": "POST",
+      "status": 200,
+      "requestId": "dm4k5-1792315021731-66ccdbf41bd6"
+    },
+    {
+      "timestamp": "2026-10-18T09:17:00.686Z",
+      "path": "/api/planner/connection",
+      "method": "POST",
+      "status": 200,
+      "requestId": "vl446-1792315020686-f550559e0693"
+    },
+    {
+      "timestamp": "2026-10-18T09:16:59.992Z",
+      "path": "/api/planner/connection",
+      "method": "POST",
+      "status": 200,
+      "requestId": "mjgsh-1792315019992-d947f167c8b2"
+    },
+    {
+      "timestamp": "2026-10-18T09:16:59.336Z",
+      "path": "/api/planner/connection",
+      "method": "POST",
+      "status": 200,
+      "requestId": "mjgsh-1792315019336-22472692fe7d"
+    },
+    {
+      "timestamp": "2026-10-18T09:15:42.744Z",
+      "path": "/api/planner/edit",
+      "method": "POST",
+      "status": 200,
+      "requestId": "kb75p-1792314942744-4ce11eae9570"
+    },
+    {
+      "timestamp": "2026-10-18T09:15:28.917Z",
+      "path": "/api/planner/plan",
+      "method": "POST",
+      "status": 200,
+      "requestId": "r9jj8-1792314928917-f2fb255db7f6"
+    },
+    {
+      "timestamp": "2026-10-18T09:14:38.697Z",
+      "path": "/api/planner/status",
+      "method": "GET",
+      "status": 200,
+      "requestId": "p5ft9-1792314878697-5bcd9bd0b399"
+    },
+    {
+      "timestamp": "2026-10-18T09:13:23.326Z",
+      "path": "/api/planner/status",
+      "method": "OPTIONS",
+      "status": 403,
+      "requestId": "w8sl5-1792314803326-a93bc183ee98"
+    },
+    {
+      "timestamp": "2026-10-18T09:13:23.066Z",
+      "path": "/api/planner/status",
+      "method": "POST",
+      "status": 403,
+      "requestId": "x9dgb-1792314803066-7901a2e10822"
+    },
+    {
+      "timestamp": "2026-10-18T09:13:22.801Z",
+      "path": "/api/planner/status",
+      "method": "GET",
+      "status": 403,
+      "requestId": "qjv8r-1792314802801-6b76e9022254"
+    },
+    {
+      "timestamp": "2026-10-18T09:13:22.447Z",
+      "path": "/api/planner/status",
+      "method": "GET",
+      "status": 200,
+      "requestId": "6vl5t-1792314802447-36af2c2016fc"
+    },
+    {
+      "timestamp": "2026-10-18T09:12:38.312Z",
+      "path": "/api/planner/status",
+      "method": "GET",
+      "status": 200,
+      "requestId": "qc8gb-1792314758312-8fec58e5c518"
+    },
+    {
+      "timestamp": "2026-10-18T09:11:15.401Z",
+      "path": "/api/planner/status",
+      "method": "OPTIONS",
+      "status": 403,
+      "requestId": "nzdkb-1792314675401-e06a5c1607a6"
+    },
+    {
+      "timestamp": "2026-10-18T09:11:14.351Z",
+      "path": "/api/planner/status",
+      "method": "POST",
+      "status": 403,
+      "requestId": "mn5pn-1792314674351-fa0ef2bbb230"
+    },
+    {
+      "timestamp": "2026-10-18T09:11:13.376Z",
+      "path": "/api/planner/status",
+      "method": "GET",
+      "status": 403,
+      "requestId": "x7kxv-1792314673376-f495e1325655"
+    },
+    {
+      "timestamp": "2026-10-18T09:11:12.247Z",
+      "path": "/api/planner/status",
+      "method": "GET",
+      "status": 200,
+      "requestId": "vl446-1792314672247-02d112d580bf"
+    },
+    {
+      "timestamp": "2026-10-18T09:10:54.588Z",
+      "path": "/api/planner/status",
+      "method": "GET",
+      "status": 403,
+      "requestId": "zm8tt-1792314654588-fcdbc0c04762"
+    },
+    {
+      "timestamp": "2026-10-18T09:10:43.065Z",
+      "path": "/api/planner/status",
+      "method": "GET",
+      "status": 403,
+      "requestId": "kqct7-1792314643065-ac4e533dccc1"
+    },
+    {
+      "timestamp": "2026-10-18T09:10:42.947Z",
+      "path": "/api/planner/status",
+      "method": "GET",
+      "status": 403,
+      "requestId": "9w589-1792314642947-38adeeeb39e9"
+    }
+  ],
+  "unexpectedRuntimeErrors": [],
+  "serverErrorRequests": [],
+  "interpretation": "403 entries correspond to deliberate untrusted-origin checks and non-production-host deployment probes. Two429 entries match the intentional metadata/UI rate-limit test. Successful plan/edit returned HTTP200 and were independently verified as SSE result events with valid scene changes in the public workflow receipt. No prompts, credentials or raw IP addresses are included."
+}

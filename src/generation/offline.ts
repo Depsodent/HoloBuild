@@ -181,7 +181,7 @@ export function offlinePlan(
     ["wall thickness", t, 0.1, 0.4],
     ["floors", floors, 1, 6],
     ["doors", doors, 0, 2],
-    ["windows", windows, 0, 4],
+    ["windows", windows, 0, 6],
   ] as const) {
     if (!Number.isFinite(value) || value < min || value > max)
       throw Error(`Offline ${label} must be ${min}–${max}.`);

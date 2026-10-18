@@ -541,3 +541,92 @@ test("bounded conversation summary reaches edit interpreter; oversize history re
     );
   assert.equal(calls, 1);
 });
+
+test("assistant endpoint interprets bounded flexible requests through the protected compatible adapter", async (t) => {
+  let sent;
+  const interpreted = {
+    kind: "create",
+    design: {
+      kind: "house",
+      width: 6,
+      depth: 6,
+      height: 3,
+      floors: 2,
+      thickness: 0.2,
+      doors: 1,
+      windows: 3,
+      roof: "flat",
+      material: "concrete",
+    },
+    message: "A two-story house with three windows per floor.",
+  };
+  const url = await fixture(t, async (_url, init) => {
+    sent = JSON.parse(init.body);
+    return Response.json({
+      choices: [{ message: { content: JSON.stringify(interpreted) } }],
+    });
+  });
+  const r = await fetch(url + "/api/planner/assistant", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      prompt: "I would like a villa",
+      context: editContext,
+    }),
+  });
+  assert.equal(r.status, 200);
+  assert.deepEqual((await r.json()).plan, interpreted);
+  assert.equal(sent.max_tokens, 10000);
+  assert.match(sent.messages[0].content, /Never claim execution/);
+  assert.deepEqual(JSON.parse(sent.messages[1].content).context, editContext);
+});
+test("assistant rejects executable or unbounded responses without changing endpoint safeguards", async (t) => {
+  const url = await fixture(t, async () =>
+    Response.json({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({ kind: "execute", code: "run" }),
+          },
+        },
+      ],
+    }),
+  );
+  const r = await fetch(url + "/api/planner/assistant", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      prompt: "Something flexible",
+      context: editContext,
+    }),
+  });
+  assert.equal(r.status, 422);
+  assert.ok((await r.json()).requestId);
+});
+
+test("assistant transport envelope preserves strict runtime validation", async () => {
+  const { parseModelAssistant } = await import("../shared/assistantSchema.mjs");
+  const wrap = (value) => JSON.stringify({ response: JSON.stringify(value) });
+  assert.deepEqual(
+    parseModelAssistant(wrap({ kind: "clarify", message: "Which structure?" })),
+    { kind: "clarify", message: "Which structure?" },
+  );
+  for (const value of [
+    { kind: "create", message: "Ready", design: { kind: "house", width: -1 } },
+    {
+      kind: "edit",
+      message: "Ready",
+      scope: "component",
+      target: "wrong",
+      operation: { kind: "delete" },
+    },
+    { kind: "clarify", message: "Hello", code: "execute" },
+  ])
+    assert.throws(() => parseModelAssistant(wrap(value)));
+  assert.throws(() =>
+    parseModelAssistant(JSON.stringify({ response: "{}", secret: "no" })),
+  );
+  assert.throws(() =>
+    parseModelAssistant(JSON.stringify({ response: "not json" })),
+  );
+});

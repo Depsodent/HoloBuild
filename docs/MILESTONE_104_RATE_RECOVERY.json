@@ -1,0 +1,53 @@
+{
+  "testedAt": "2026-10-18T09:16:57.701Z",
+  "url": "https://holobuild.vercel.app",
+  "admittedBefore": 17,
+  "metadataRequests": [
+    {
+      "status": 200,
+      "requestId": "e681a429-1dd2-4dbd-b56d-d2d08b73a37b"
+    },
+    {
+      "status": 200,
+      "requestId": "276a7b8e-70ad-4b6e-af37-8e0d1decd0e8"
+    },
+    {
+      "status": 200,
+      "requestId": "0a042199-f42e-405b-9876-34391c10f2e2"
+    },
+    {
+      "status": 200,
+      "requestId": "5dfad72f-70b5-48b4-8406-8322edd89c55"
+    },
+    {
+      "status": 200,
+      "requestId": "d1fc33ce-1724-418f-be05-cebcd0bae911"
+    },
+    {
+      "status": 429,
+      "kind": "rate-limit",
+      "requestId": "d9f6c8ec-03e3-4919-bfbd-776dacf19ca7",
+      "retryAfterSeconds": 56
+    }
+  ],
+  "physicalDeviceTested": false,
+  "uiDenial": {
+    "status": 429,
+    "kind": "rate-limit",
+    "requestId": "2212642b-069c-4a91-939f-dfd5160cc03d",
+    "retryAfterSeconds": 48,
+    "inputPreserved": true,
+    "sceneUnchanged": true
+  },
+  "offlineAvailableDuringThrottle": true,
+  "waitedMs": 47290,
+  "recovery": {
+    "status": 200,
+    "modelVerified": true
+  },
+  "admittedAfter": 17,
+  "activeLeases": 0,
+  "ok": true,
+  "geminiGenerationCalls": 0,
+  "pageErrors": []
+}
