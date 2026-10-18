@@ -157,7 +157,8 @@ export function createPlannerHandler(
     const requestId = randomUUID();
     res.setHeader("X-Request-ID", requestId);
     let eventMode = false,
-      phase = "request";
+      phase = "request",
+      release;
     const wantsEvents = req.headers.accept?.includes("text/event-stream");
     const started = performance.now();
     const event = (type, data) => {
@@ -181,7 +182,30 @@ export function createPlannerHandler(
           ...detail,
         });
     };
-    const send = (code, data) => {
+    const releaseLease = async () => {
+      const pending = release;
+      release = undefined;
+      if (pending)
+        await pending().catch(() => {
+          if (config.hosted)
+            console.warn(
+              JSON.stringify({
+                event: "planner-cleanup",
+                timestamp: new Date().toISOString(),
+                requestId,
+                kind: "quota-store-release",
+              }),
+            );
+        });
+    };
+    const send = async (code, data) => {
+      // Complete cleanup while the serverless response is still active.
+      await releaseLease();
+      if (data.timings)
+        data = {
+          ...data,
+          timings: { ...data.timings, totalMs: performance.now() - started },
+        };
       data = { ...data, requestId };
       if (code >= 400) {
         data = {
@@ -310,7 +334,7 @@ export function createPlannerHandler(
     res.on("close", () => {
       if (!res.writableEnded) abort.abort();
     });
-    let timer, release;
+    let timer;
     const disconnected = () => {
       if (!res.writableEnded) abort.abort();
     };
@@ -544,7 +568,7 @@ export function createPlannerHandler(
           ? geminiText(data)
           : data.choices?.[0]?.message?.content,
       );
-      send(200, {
+      await send(200, {
         source: "llm",
         model,
         plan,
@@ -563,7 +587,7 @@ export function createPlannerHandler(
     } catch (error) {
       // Never echo provider response bodies, credentials, URLs or prompts.
       if (error instanceof PlannerError) {
-        send(error.status, {
+        await send(error.status, {
           kind: error.kind,
           error: error.message,
           retryAfterSeconds: error.retryAfterSeconds,
@@ -572,7 +596,7 @@ export function createPlannerHandler(
       }
       const validation =
         error instanceof z.ZodError || error instanceof SyntaxError;
-      send(abort.signal.aborted ? 504 : validation ? 422 : 502, {
+      await send(abort.signal.aborted ? 504 : validation ? 422 : 502, {
         kind: abort.signal.aborted
           ? "timeout"
           : validation
@@ -593,18 +617,7 @@ export function createPlannerHandler(
     } finally {
       clearTimeout(timer);
       req.off("aborted", disconnected);
-      if (release)
-        await release().catch(() => {
-          if (config.hosted)
-            console.warn(
-              JSON.stringify({
-                event: "planner-cleanup",
-                timestamp: new Date().toISOString(),
-                requestId,
-                kind: "quota-store-release",
-              }),
-            );
-        });
+      await releaseLease();
       inFlight--;
     }
   };

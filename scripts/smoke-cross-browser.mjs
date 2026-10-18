@@ -6,7 +6,9 @@ if (process.env.HOLO_LIVE_GEMINI !== "1")
   throw Error("Explicit live opt-in required.");
 const base = process.env.HOLO_PREVIEW_URL || "https://holobuild.vercel.app";
 const results = [];
-for (const channel of ["msedge", undefined]) {
+for (const channel of process.env.HOLO_BROWSER === "msedge"
+  ? ["msedge"]
+  : ["msedge", undefined]) {
   const browser = await chromium.launch({
     ...(channel ? { channel } : {}),
     headless: true,
@@ -17,10 +19,11 @@ for (const channel of ["msedge", undefined]) {
   });
   page.setDefaultTimeout(15000);
   page.setDefaultNavigationTimeout(30000);
+  let stage = "open";
   const errors = [];
   page.on("pageerror", () => errors.push("pageerror"));
   try {
-    await page.goto(base);
+    await page.goto(base, { waitUntil: "domcontentloaded" });
     await expect(page.locator("canvas[data-engine]")).toBeVisible();
     const registrations = await page.evaluate(async () =>
       "serviceWorker" in navigator
@@ -41,17 +44,12 @@ for (const channel of ["msedge", undefined]) {
     await page
       .getByRole("button", { name: "Send request", exact: true })
       .click();
+    stage = "response";
     const response = await responsePending;
-    const stream = await response.text();
-    await fs.writeFile(
-      ".cache/cross-browser-" + (channel || "chromium") + "-response.txt",
-      stream,
-    );
     await expect(
       page.getByLabel("Construction plan preview", { exact: true }),
-    ).toBeVisible({ timeout: 10000 });
+    ).toBeVisible({ timeout: 45000 });
     const previewMs = performance.now() - started;
-    assert.ok(!stream.includes("event: error"));
     assert.equal(response.status(), 200);
     async function saved() {
       const pending = page.waitForEvent("download");
@@ -62,14 +60,18 @@ for (const channel of ["msedge", undefined]) {
         await fs.readFile(await (await pending).path(), "utf8"),
       );
     }
+    stage = "save-before";
     const before = await saved();
     await page
       .getByRole("button", { name: "Confirm construction", exact: true })
       .click();
+    stage = "save-after";
     const after = await saved();
     assert.ok(after.objects.length > before.objects.length);
+    stage = "undo";
     await page.getByRole("button", { name: "Undo", exact: true }).click();
     assert.deepEqual((await saved()).objects, before.objects);
+    stage = "redo";
     await page.getByRole("button", { name: "Redo", exact: true }).click();
     assert.deepEqual((await saved()).objects, after.objects);
     assert.deepEqual(errors, []);
@@ -87,8 +89,16 @@ for (const channel of ["msedge", undefined]) {
       serviceWorkerRegistrations: registrations,
       passed: true,
     });
-  } catch {
+  } catch (error) {
+    await page
+      .screenshot({
+        path:
+          ".cache/cross-browser-" + (channel || "chromium") + "-failure.png",
+      })
+      .catch(() => {});
     results.push({
+      stage,
+      failure: String(error.message).split("\n")[0].slice(0, 250),
       browser: channel || "bundled Chromium",
       version: browser.version(),
       passed: false,

@@ -632,3 +632,53 @@ test("metadata provider quota is actionable and makes no generation request", as
   assert.equal((await r.json()).kind, "provider-quota");
   assert.equal(calls, 1);
 });
+
+test("hosted JSON and SSE terminal responses wait for lease release before closing", async (t) => {
+  for (const stream of [false, true]) {
+    const began = Promise.withResolvers(),
+      finish = Promise.withResolvers();
+    const url = await fixture(
+      t,
+      async (endpoint, init) => {
+        if (endpoint === "https://demo.upstash.io") {
+          const command = JSON.parse(init.body);
+          if (command[0] === "ZREM") {
+            began.resolve();
+            await finish.promise;
+            return Response.json({ result: 1 });
+          }
+          return Response.json({ result: [1, 0] });
+        }
+        return Response.json(
+          init.method === "POST" ? completion(plan) : metadata,
+        );
+      },
+      {
+        PLANNER_MODE: "hosted",
+        APP_ORIGINS: "https://app.example",
+        PUBLIC_AI_ENABLED: "true",
+        UPSTASH_REDIS_REST_URL: "https://demo.upstash.io",
+        UPSTASH_REDIS_REST_TOKEN: "test-only",
+      },
+    );
+    let closed = false;
+    const pending = hostedPost(url, {
+      Host: "app.example",
+      Origin: "https://app.example",
+      ...(stream ? { Accept: "text/event-stream" } : {}),
+    }).then((r) => {
+      closed = true;
+      return r;
+    });
+    try {
+      await began.promise;
+      assert.equal(closed, false);
+    } finally {
+      finish.resolve();
+    }
+    const response = await pending;
+    assert.equal(response.status, 200);
+    if (stream) assert.match(await response.text(), /event: result/);
+    else assert.deepEqual((await response.json()).plan, plan);
+  }
+});

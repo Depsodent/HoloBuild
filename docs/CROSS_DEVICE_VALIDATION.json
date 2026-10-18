@@ -5,7 +5,7 @@
     "files": 29
   },
   "backend": {
-    "passed": 39
+    "passed": 40
   },
   "browser": {
     "total": 116,
@@ -38,5 +38,6 @@
   },
   "secretAudit": "No unresolved matches in source/history/bundle",
   "physicalFriendDeviceVerified": false,
-  "providerGuidanceRegression": "Validated reference geometry and strict overlap rejection; both provider payloads asserted; no client or validator change"
+  "providerGuidanceRegression": "Validated reference geometry and strict overlap rejection; both provider payloads asserted; no client or validator change",
+  "serverlessCleanupRegression": "JSON and SSE terminal responses wait for delayed Redis lease release; cleanup also remains in finally for disconnects"
 }

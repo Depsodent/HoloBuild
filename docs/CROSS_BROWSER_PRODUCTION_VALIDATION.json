@@ -1,0 +1,44 @@
+{
+  "testedAt": "2026-10-18T06:49:10.014Z",
+  "url": "https://holobuild.vercel.app",
+  "sameLaptop": true,
+  "sameNetwork": true,
+  "physicalFriendDeviceTested": false,
+  "microphoneTested": false,
+  "results": [
+    {
+      "browser": "msedge",
+      "version": "155.0.4283.45",
+      "freshProfile": true,
+      "httpStatus": 200,
+      "requestId": "29f571e1-c1a3-4eed-a7fc-781c4e44e98e",
+      "vercelId": "bom1::iad1::qfs6x-1792306140811-677bf586269f",
+      "previewMs": 7060.8508,
+      "partsAdded": 6,
+      "exactUndoRedo": true,
+      "pageErrors": 0,
+      "serviceWorkerRegistrations": 0,
+      "passed": true
+    },
+    {
+      "browser": "bundled Chromium",
+      "version": "156.0.8078.4",
+      "freshProfile": true,
+      "httpStatus": 200,
+      "requestId": "a71f05a5-4e66-4049-80e1-8b951544443c",
+      "vercelId": "bom1::iad1::d2cn2-1792306057782-cc8c2833874a",
+      "previewMs": 3292.0679999999993,
+      "partsAdded": 6,
+      "exactUndoRedo": true,
+      "pageErrors": 0,
+      "serviceWorkerRegistrations": 0,
+      "passed": true
+    }
+  ],
+  "notes": [
+    "Same physical laptop/network, distinct fresh Edge155 and bundled Chromium156 profiles; not independent devices.",
+    "Original run reproduced two geometry rejections before guidance (separate initial receipt).",
+    "Follow-up SSE body inspection failed in Playwright protocol despite a valid UI preview; removed the unsupported test-only inspection, retained all application validation assertions.",
+    "Edge experienced one navigation timeout before submitting a request; targeted retry using DOM readiness passed."
+  ]
+}
