@@ -89,3 +89,5 @@ If any launch gate fails, keep AI disabled and report it; local editing/Offline 
 ## Cross-device diagnostic patch
 
 The Oct18 investigation adds safe request references, categorized quota/store failures and Retry-After while preserving all quotas, exact origins, server-only credentials and fail-closed behavior. See [production troubleshooting](PRODUCTION_TROUBLESHOOTING.md), CROSS_DEVICE_INCIDENT.json and CROSS_DEVICE_REDIS_VALIDATION.json. The historical friend-specific root cause is not confirmed; HTTP200 may contain a streamed error. Public post-patch checks are recorded separately from initial launch receipts.
+
+Final cross-device patch source7a101e6 is deployed as dpl_6eSMkDs2CK7SaqYSDQvGSPpZ8g6e (READY). Native house generation and history passed after non-overlap guidance; hosted lease cleanup now completes before the terminal response, verified with immediate Redis count0. Quotas remain5/IP/minute,100 admitted attempts/UTCday and2 concurrent generations. Billing/settings/credentials unchanged. See CROSS_DEVICE_FINAL_DEPLOYMENT.json, CROSS_DEVICE_CLEANUP_PUBLIC.json and PRODUCTION_TROUBLESHOOTING.md.

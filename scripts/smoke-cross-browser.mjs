@@ -121,7 +121,8 @@ const report = {
   results,
 };
 await fs.writeFile(
-  "docs/CROSS_BROWSER_PRODUCTION_VALIDATION.json",
+  process.env.HOLO_CROSS_REPORT_PATH ||
+    "docs/CROSS_BROWSER_PRODUCTION_VALIDATION.json",
   JSON.stringify(report, null, 2) + "\n",
 );
 console.log(JSON.stringify(report, null, 2));

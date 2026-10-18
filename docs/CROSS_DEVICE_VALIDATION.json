@@ -39,5 +39,9 @@
   "secretAudit": "No unresolved matches in source/history/bundle",
   "physicalFriendDeviceVerified": false,
   "providerGuidanceRegression": "Validated reference geometry and strict overlap rejection; both provider payloads asserted; no client or validator change",
-  "serverlessCleanupRegression": "JSON and SSE terminal responses wait for delayed Redis lease release; cleanup also remains in finally for disconnects"
+  "serverlessCleanupRegression": "JSON and SSE terminal responses wait for delayed Redis lease release; cleanup also remains in finally for disconnects",
+  "finalDeployment": "dpl_6eSMkDs2CK7SaqYSDQvGSPpZ8g6e",
+  "deployedSourceCheckpoint": "7a101e6",
+  "finalPublicCleanupPassed": true,
+  "friendPhysicalAcceptancePending": true
 }

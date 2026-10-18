@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-10-18T06:56:32.124Z",
+  "deploymentId": "dpl_6eSMkDs2CK7SaqYSDQvGSPpZ8g6e",
+  "sourceCheckpoint": "7a101e6",
+  "readyState": "READY",
+  "productionUrl": "https://holobuild.vercel.app",
+  "protectedProductionSettings": 10,
+  "unsafeUploadPaths": 0,
+  "uploadedPathsInspected": 265,
+  "vercelBuildSeconds": 9.65,
+  "paidServiceActivated": false
+}

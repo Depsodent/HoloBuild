@@ -1,0 +1,27 @@
+{
+  "testedAt": "2026-10-18T06:56:05.390Z",
+  "url": "https://holobuild.vercel.app",
+  "sameLaptop": true,
+  "sameNetwork": true,
+  "physicalFriendDeviceTested": false,
+  "microphoneTested": false,
+  "results": [
+    {
+      "browser": "msedge",
+      "version": "155.0.4283.45",
+      "freshProfile": true,
+      "httpStatus": 200,
+      "requestId": "b6c17987-8262-40f4-b758-2349bae99189",
+      "vercelId": "bom1::iad1::cn2nn-1792306557287-ea0b1b0801fc",
+      "previewMs": 4298.301299999999,
+      "partsAdded": 6,
+      "exactUndoRedo": true,
+      "pageErrors": 0,
+      "serviceWorkerRegistrations": 0,
+      "passed": true
+    }
+  ],
+  "leaseCheckAt": "2026-10-18T06:56:06.468Z",
+  "redisLeaseCountImmediatelyAfterCompletedUI": 0,
+  "serverlessCleanupVerified": true
+}
