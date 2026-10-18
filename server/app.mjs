@@ -118,6 +118,13 @@ export function configuration(env = process.env) {
 const requestSchema = z
   .object({
     prompt: z.string().max(1200),
+    validationFeedback: z
+      .object({
+        reason: z.enum(["overlap", "grounding", "bounds"]),
+        attempt: z.literal(1),
+      })
+      .strict()
+      .optional(),
     model: z.string().max(120).optional(),
     timeoutMs: z.number().int().min(1000).max(120000).optional(),
   })
@@ -409,7 +416,13 @@ export function createPlannerHandler(
       }
       const editing = url.pathname.endsWith("/edit");
       const args = (editing ? editRequestSchema : requestSchema).parse(body),
-        prompt = cleanPrompt(args.prompt),
+        prompt =
+          cleanPrompt(args.prompt) +
+          (args.validationFeedback
+            ? "\nPrevious candidate was rejected for " +
+              args.validationFeedback.reason +
+              ". This is the single requested retry. Preserve ALL requested attributes. Recompute correct local-axis dimensions, contact faces and elevations; do not omit details or bypass constraints."
+            : ""),
         model = args.model || config.models[0];
       if (!config.models.includes(model))
         throw new PlannerError(

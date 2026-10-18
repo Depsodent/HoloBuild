@@ -14,6 +14,9 @@ export interface PlanPart {
   color: string;
 }
 export interface BuildingTemplate {
+  appearance?: Partial<
+    Record<PlanPart["role"], { color?: string; material?: MaterialId }>
+  >;
   kind: "house" | "room" | "tower" | "office" | "warehouse" | "shed" | "bridge";
   width: number;
   depth: number;

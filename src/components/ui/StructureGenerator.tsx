@@ -148,6 +148,11 @@ export function StructureGenerator({
             Cancel generation
           </button>
         )}
+        {s.retryReason && s.retryCount < 1 && (
+          <button onClick={() => void planStructure(s.prompt, { retry: true })}>
+            Retry AI once · uses one request
+          </button>
+        )}
         {s.prepared && (
           <section
             className="construction-review"
@@ -164,7 +169,11 @@ export function StructureGenerator({
             </button>
             <p>
               {s.prepared.objects.length} components ·{" "}
-              {s.source === "llm" ? "LLM" : "Offline"}
+              {s.source === "llm"
+                ? "LLM"
+                : s.source === "procedural"
+                  ? "Validated design"
+                  : "Offline"}
             </p>
             <p>
               Approx.{" "}

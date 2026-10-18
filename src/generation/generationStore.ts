@@ -18,6 +18,8 @@ export const useGenerationStore = create(() => ({
   notice: "",
   status: "idle" as "idle" | "planning" | "preview" | "error" | "complete",
   message: "Generate a plan, review it, then confirm construction.",
+  retryCount: 0,
+  retryReason: null as "overlap" | "grounding" | "bounds" | null,
   ghost: true,
   lastStructureId: "",
 }));
@@ -67,8 +69,12 @@ export function cancelUnconfirmedGeneration() {
 }
 export async function planStructure(
   prompt = useGenerationStore.getState().prompt,
+  options: { retry?: boolean; strategy?: "procedural" } = {},
 ) {
   if (useGenerationStore.getState().status === "planning") return;
+  const previous = useGenerationStore.getState();
+  if (options.retry && (!previous.retryReason || previous.retryCount >= 1))
+    return;
   cancelEdit();
   cancelGeneration();
   const version = ++request,
@@ -76,16 +82,34 @@ export async function planStructure(
   controller = abort;
   useGenerationStore.setState({
     prompt,
+    retryCount: options.retry ? previous.retryCount + 1 : 0,
+    retryReason: null,
     status: "planning",
     message: "Planning… No scene changes yet.",
   });
-  const { mode, options, model, timeoutMs } = useGenerationStore.getState();
+  const {
+    mode,
+    options: offlineOptions,
+    model,
+    timeoutMs,
+  } = useGenerationStore.getState();
   try {
     const result = await generatePlan(
       prompt,
-      mode,
-      options,
-      { ...(model ? { model } : {}), timeoutMs },
+      options.strategy ? "offline" : mode,
+      offlineOptions,
+      {
+        ...(model ? { model } : {}),
+        timeoutMs,
+        ...(options.retry && previous.retryReason
+          ? {
+              validationFeedback: {
+                reason: previous.retryReason,
+                attempt: 1 as const,
+              },
+            }
+          : {}),
+      },
       abort.signal,
     );
     if (version !== request || abort.signal.aborted) return;
@@ -94,8 +118,11 @@ export async function planStructure(
     useGenerationStore.setState({
       prepared,
       status: "preview",
-      source: result.source,
-      notice: result.notice,
+      source: options.strategy ? "procedural" : result.source,
+      notice: options.strategy
+        ? "Validated construction primitives. Flat roof and segmented openings; fixed door panel, no hinges or engineering simulation. No provider call."
+        : result.notice,
+      retryReason: geometryReason(result.notice),
       message:
         "Review the preview. Confirm construction adds one undoable batch.",
     });
@@ -105,6 +132,9 @@ export async function planStructure(
       useGenerationStore.setState({
         prepared: null,
         status: "error",
+        retryReason: geometryReason(
+          error instanceof Error ? error.message : "",
+        ),
         message:
           error instanceof Error
             ? error.message
@@ -149,4 +179,16 @@ export function confirmStructure() {
           ? "Construction rejected. Scene unchanged."
           : useSceneStore.getState().status,
     });
+}
+
+function geometryReason(
+  message: string,
+): "overlap" | "grounding" | "bounds" | null {
+  return /Excessive component overlap/.test(message)
+    ? "overlap"
+    : /below ground|grounded assembly/.test(message)
+      ? "grounding"
+      : /exceeds 32/.test(message)
+        ? "bounds"
+        : null;
 }

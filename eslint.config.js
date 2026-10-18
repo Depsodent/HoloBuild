@@ -6,6 +6,7 @@ export default ts.config(
   {
     ignores: [
       "dist",
+      ".cache",
       "node_modules",
       "playwright-report",
       "test-results",

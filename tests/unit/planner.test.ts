@@ -156,3 +156,49 @@ it("client geometry rejection retains the backend diagnostic reference", async (
     "Reference: client-validation-123",
   );
 });
+
+it("keeps both AI reference and fallback cause when both stages fail", async () => {
+  vi.stubGlobal("fetch", async () =>
+    Response.json(
+      { error: "AI temporarily unavailable", requestId: "primary-reference" },
+      { status: 503 },
+    ),
+  );
+  await expect(generatePlan("Build six things", "auto")).rejects.toThrow(
+    /primary-reference.*Offline fallback also failed/,
+  );
+});
+it("geometry retry is explicit, preserves input and is capped to one additional request", async () => {
+  const valid = offlinePlan("house"),
+    invalid = structuredClone(valid);
+  invalid.objects[1].position = [...invalid.objects[2].position];
+  const mock = vi
+    .fn()
+    .mockResolvedValueOnce(
+      Response.json({
+        source: "llm",
+        plan: invalid,
+        requestId: "geometry-ref",
+      }),
+    )
+    .mockResolvedValue(Response.json({ source: "llm", plan: valid }));
+  vi.stubGlobal("fetch", mock);
+  useGenerationStore.setState({
+    mode: "auto",
+    retryCount: 0,
+    retryReason: null,
+  });
+  await planStructure("Build a house");
+  expect(mock).toHaveBeenCalledTimes(1);
+  expect(useGenerationStore.getState().retryReason).toBe("overlap");
+  await planStructure("Build a house", { retry: true });
+  expect(mock).toHaveBeenCalledTimes(2);
+  expect(useGenerationStore.getState().retryCount).toBe(1);
+  expect(useGenerationStore.getState().prompt).toBe("Build a house");
+  const body = JSON.parse(mock.mock.calls[1][1].body);
+  expect(body.validationFeedback).toEqual({ reason: "overlap", attempt: 1 });
+  expect(body.prompt).toBe("Build a house");
+  await planStructure("Build a house", { retry: true });
+  expect(mock).toHaveBeenCalledTimes(2);
+  expect(useSceneStore.getState().objects).toHaveLength(0);
+});

@@ -25,6 +25,26 @@ const id = z.string().regex(/^[a-zA-Z0-9_-]{1,48}$/);
 export const contactsSchema = z.array(z.tuple([id, id])).max(240);
 export const templateSchema = z
   .object({
+    appearance: z
+      .object(
+        Object.fromEntries(
+          roles.map((role) => [
+            role,
+            z
+              .object({
+                color: z
+                  .string()
+                  .regex(/^#[a-fA-F0-9]{6}$/)
+                  .optional(),
+                material: z.enum(materials).optional(),
+              })
+              .strict()
+              .optional(),
+          ]),
+        ),
+      )
+      .strict()
+      .optional(),
     kind: z.enum([
       "house",
       "room",

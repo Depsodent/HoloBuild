@@ -1,4 +1,9 @@
 import {
+  normalizeDesignRequest,
+  requestedAppearance,
+  DESIGN_COLORS,
+} from "./designLanguage";
+import {
   cleanPrompt,
   planSchema,
   type ConstructionPlan,
@@ -17,6 +22,7 @@ export interface OfflineOptions {
   windows?: number;
   material?: MaterialId;
   roof?: "flat" | "none";
+  appearance?: import("../../shared/planSchema.mjs").BuildingTemplate["appearance"];
 }
 const aliases = {
   house: /\bhouse\b/,
@@ -31,7 +37,7 @@ export function offlinePlan(
   input: string,
   options: OfflineOptions = {},
 ): ConstructionPlan {
-  const prompt = cleanPrompt(input).toLowerCase(),
+  const prompt = normalizeDesignRequest(cleanPrompt(input)).toLowerCase(),
     kinds = Object.entries(aliases).filter(([, pattern]) =>
       pattern.test(prompt),
     );
@@ -103,10 +109,10 @@ export function offlinePlan(
           : 1,
       ),
     );
-  const windows =
+  let windows =
     options.windows ??
     number(
-      /\b(zero|one|two|three|four|\d+)\s+windows?\b/,
+      /\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+windows?\b/,
       number(
         /\bwindows?\s+(\d+)\b/,
         /\b(?:no|without)(?: any| a)? windows?\b/.test(prompt)
@@ -116,10 +122,31 @@ export function offlinePlan(
             : 0,
       ),
     );
-  const wallWords = prompt.replace(
-    /\b(?:wood(?:en)?|metal|glass|brick|concrete) roof\b/g,
-    "roof",
+  const perFloor = prompt.match(
+    /\b(one|two|three|four|\d+)\s+(?:windows?\s+)?(?:on |per )?(?:each |every )floor\b/,
   );
+  if (perFloor && options.windows === undefined) {
+    const n = numeric(perFloor[1]);
+    if (
+      windows !== 2 &&
+      /\b(?:six|five|seven|eight|nine|ten|\d+)\s+windows?/.test(prompt) &&
+      windows !== n * floors
+    )
+      throw Error(
+        "Window total conflicts with the per-floor count. Please clarify.",
+      );
+    windows = n;
+    warnings.push(
+      String(n * floors) + " windows total; " + n + " on each floor.",
+    );
+  }
+  const appearance = options.appearance ?? requestedAppearance(prompt);
+  const wallWords = prompt
+    .replace(
+      /\b(?:purple|yellow|pink|blue|red|green|white|black)?\s*wood(?:en)?\s+(?:front )?door\b/g,
+      "door",
+    )
+    .replace(/\b(?:wood(?:en)?|metal|glass|brick|concrete) roof\b/g, "roof");
   const material =
     options.material ??
     (/\bglass\b/.test(wallWords)
@@ -186,6 +213,17 @@ export function offlinePlan(
       " ",
     ),
   );
+  for (const word of [
+    ...Object.keys(DESIGN_COLORS),
+    "on",
+    "each",
+    "per",
+    "total",
+    "front",
+    "colored",
+    "coloured",
+  ])
+    known.add(word);
   const extra = [
     ...new Set(prompt.replace(/[\d.]+/g, " ").match(/[a-z]+/g) ?? []),
   ].filter((word) => !known.has(word));
@@ -238,8 +276,9 @@ export function offlinePlan(
       dimensions,
       position,
       rotation: [0, 0, 0],
-      material: mat,
-      color: mat === "glass" ? "#89dfe5" : "#ffffff",
+      material: appearance[role]?.material ?? mat,
+      color:
+        appearance[role]?.color ?? (mat === "glass" ? "#89dfe5" : "#ffffff"),
     });
   }
   if (kind === "bridge") {
@@ -424,6 +463,7 @@ export function offlinePlan(
     units: "meters",
     template: {
       kind,
+      ...(Object.keys(appearance).length ? { appearance } : {}),
       width: w,
       depth: d,
       height: h,

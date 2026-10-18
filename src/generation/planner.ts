@@ -82,7 +82,14 @@ export async function generatePlan(
   input: string,
   mode: PlannerMode,
   options: OfflineOptions = {},
-  settings: { model?: string; timeoutMs?: number } = {},
+  settings: {
+    model?: string;
+    timeoutMs?: number;
+    validationFeedback?: {
+      reason: "overlap" | "grounding" | "bounds";
+      attempt: 1;
+    };
+  } = {},
   signal?: AbortSignal,
 ): Promise<PlannerResult> {
   const prompt = cleanPrompt(input);
@@ -126,7 +133,21 @@ export async function generatePlan(
       if (mode === "llm") throw failure;
       plannerStage("Validating", "Offline fallback");
       usePlannerProgress.setState({ timings: null });
-      const plan = offlinePlan(prompt, options);
+      let plan: ConstructionPlan;
+      try {
+        plan = offlinePlan(prompt, options);
+      } catch (offlineError) {
+        throw new Error(
+          "AI request/validation failed: " +
+            (failure instanceof Error ? failure.message : "AI unavailable") +
+            ". Offline fallback also failed: " +
+            (offlineError instanceof Error
+              ? offlineError.message
+              : "unsupported request") +
+            ". Scene and request are unchanged.",
+          { cause: failure },
+        );
+      }
       return {
         plan,
         source: "offline",

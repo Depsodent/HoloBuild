@@ -1,0 +1,31 @@
+{
+  "testedAt": "2026-10-18T07:53:13.106Z",
+  "url": "https://holobuild.vercel.app",
+  "mode": "auto",
+  "elapsedMs": 6339.491000000001,
+  "status": 200,
+  "requestId": "8d94fcfe-b69f-4c95-bce4-557db5771d41",
+  "result": [],
+  "source": [
+    "Offline fallback: Generated plan failed client validation: Excessive component overlap: Two-Story Modern House / ground / Two-Story Modern House / north-wall. Reference: 8d94fcfe-b69f-4c95-bce4-557db5771d41. No LLM generated this plan."
+  ],
+  "preview": 1,
+  "promptPreserved": true,
+  "friendDeviceTested": false,
+  "actualProvider": "Gemini",
+  "actualModel": "gemini-3.5-flash-lite",
+  "backendResultEvent": true,
+  "backendPartCount": 20,
+  "failureStage": "Client collision validation after backend schema acceptance",
+  "correctedLocally": {
+    "floors": 2,
+    "windowCount": 6,
+    "windowsPerFloor": 3,
+    "wallColor": "yellow",
+    "doorColor": "purple",
+    "doorMaterial": "wood",
+    "roofColor": "pink",
+    "geometry": "Existing strict validator passed",
+    "physicalFriendDeviceVerified": false
+  }
+}
