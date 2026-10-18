@@ -1,0 +1,41 @@
+{
+  "testedAt": "2026-10-18T06:27:32.002Z",
+  "unit": {
+    "passed": 253,
+    "files": 28
+  },
+  "backend": {
+    "passed": 39
+  },
+  "browser": {
+    "total": 116,
+    "firstRun": {
+      "startTime": "2026-10-18T06:08:02.138Z",
+      "duration": 935196.061,
+      "expected": 113,
+      "skipped": 0,
+      "unexpected": 3,
+      "flaky": 0
+    },
+    "recovery": {
+      "startTime": "2026-10-18T06:25:41.733Z",
+      "duration": 62211.969000000005,
+      "expected": 3,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "unresolvedFailures": 0,
+    "environmentCorrection": "Started required local planner on5180; initial three failures were Vite /status proxy ECONNREFUSED500 console errors, no application or test assertions changed"
+  },
+  "typecheck": "passed",
+  "eslint": "passed",
+  "productionBuild": {
+    "passed": true,
+    "viteSeconds": 30.05,
+    "mainJsKB": 1488.13,
+    "mainGzipKB": 424.62
+  },
+  "secretAudit": "No unresolved matches in source/history/bundle",
+  "physicalFriendDeviceVerified": false
+}

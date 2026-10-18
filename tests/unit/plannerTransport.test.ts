@@ -10,7 +10,7 @@ afterEach(() => {
   plannerStage("Idle");
 });
 it("defaults to 120s with 2s transport grace and reports streamed source/metrics", async () => {
-  const timeout = vi.spyOn(AbortSignal, "timeout");
+  const timeout = vi.spyOn(globalThis, "setTimeout");
   const timings = {
     firstTokenMs: 28,
     providerMs: 99,
@@ -32,7 +32,7 @@ it("defaults to 120s with 2s transport grace and reports streamed source/metrics
   const result = await plannerRequest("/api/planner/plan", {
     prompt: "build a house",
   });
-  expect(timeout).toHaveBeenCalledWith(122000);
+  expect(timeout).toHaveBeenCalledWith(expect.any(Function), 122000);
   expect(JSON.parse(String(mock.mock.calls[0][1]?.body))).toMatchObject({
     timeoutMs: 120000,
   });
@@ -56,7 +56,7 @@ it("reports server timeout separately from network failure and rejects incomplet
     throw new TypeError("fetch failed");
   });
   await expect(plannerRequest("/api/planner/plan", {})).rejects.toThrow(
-    "connection failed",
+    "Cannot reach the planner",
   );
   vi.stubGlobal(
     "fetch",
@@ -110,4 +110,62 @@ it("a slow 31-second provider result survives the previous 30-second frontend ca
   } finally {
     vi.useRealTimers();
   }
+});
+
+it("keeps safe quota retry messages and diagnostic IDs for JSON and SSE", async () => {
+  for (const streamed of [false, true]) {
+    const failure = {
+      kind: "rate-limit",
+      error: "Too many requests; retry in 42 seconds.",
+      requestId: "diagnostic-123",
+      retryAfterSeconds: 42,
+    };
+    vi.stubGlobal("fetch", async () =>
+      streamed
+        ? new Response(
+            "event: error\ndata: " + JSON.stringify(failure) + "\n\n",
+            { headers: { "content-type": "text/event-stream" } },
+          )
+        : Response.json(failure, { status: 429 }),
+    );
+    await expect(plannerRequest("/api/planner/plan", {})).rejects.toThrow(
+      "retry in 42 seconds. Reference: diagnostic-123",
+    );
+  }
+});
+it("works without AbortSignal.any or AbortSignal.timeout and still cancels", async () => {
+  const any = vi.spyOn(AbortSignal, "any").mockImplementation(() => {
+    throw Error("unsupported");
+  });
+  const timeout = vi.spyOn(AbortSignal, "timeout").mockImplementation(() => {
+    throw Error("unsupported");
+  });
+  try {
+    const controller = new AbortController();
+    vi.stubGlobal("fetch", async (_url: unknown, init: RequestInit) => {
+      controller.abort();
+      expect(init.signal?.aborted).toBe(true);
+      return Response.json({ source: "llm", plan: {} });
+    });
+    await expect(
+      plannerRequest("/api/planner/plan", {}, controller.signal),
+    ).rejects.toThrow("Cancelled");
+  } finally {
+    any.mockRestore();
+    timeout.mockRestore();
+  }
+});
+
+it("non-JSON platform rate limits retain Retry-After without exposing HTML", async () => {
+  vi.stubGlobal(
+    "fetch",
+    async () =>
+      new Response("<html>private platform response</html>", {
+        status: 429,
+        headers: { "Retry-After": "8", "X-Request-ID": "edge-ref" },
+      }),
+  );
+  await expect(plannerRequest("/api/planner/plan", {})).rejects.toThrow(
+    "retry in 8 seconds or use Offline. Reference: edge-ref",
+  );
 });

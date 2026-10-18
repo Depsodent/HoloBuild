@@ -1,3 +1,4 @@
+import { plannerFailure, plannerDeadline } from "./plannerTransport";
 import { usePlannerProgress } from "./plannerTransport";
 import { recordClientValidation } from "./plannerTransport";
 import { plannerRequest, plannerStage } from "./plannerTransport";
@@ -41,12 +42,8 @@ export function routeInput(input: string): "quick" | "structure" | "clarify" {
 }
 async function jsonResponse(response: Response) {
   if (!response.ok) {
-    const body = await response.json().catch(() => ({}));
-    throw Error(
-      typeof body.error === "string"
-        ? body.error.slice(0, 240)
-        : "Planner backend unavailable. Start it or choose Offline.",
-    );
+    const body = await response.json().catch(() => null);
+    throw plannerFailure(body, response);
   }
   return response.json();
 }
@@ -54,27 +51,32 @@ export async function plannerStatus(
   check = false,
   signal?: AbortSignal,
 ): Promise<PlannerStatus> {
-  const r = await fetch(
-    check ? "/api/planner/connection" : "/api/planner/status",
-    {
-      method: check ? "POST" : "GET",
-      ...(check
-        ? { headers: { "Content-Type": "application/json" }, body: "{}" }
-        : {}),
-      signal,
-    },
-  );
-  const s = await jsonResponse(r);
-  if (
-    !s ||
-    typeof s.configured !== "boolean" ||
-    !Array.isArray(s.models) ||
-    s.models.some((m: unknown) => typeof m !== "string") ||
-    s.models.length > 8 ||
-    !Number.isFinite(s.timeoutMs)
-  )
-    throw Error("Invalid planner status.");
-  return s;
+  const deadline = plannerDeadline(signal, check ? 6000 : 3000);
+  try {
+    const r = await fetch(
+      check ? "/api/planner/connection" : "/api/planner/status",
+      {
+        method: check ? "POST" : "GET",
+        ...(check
+          ? { headers: { "Content-Type": "application/json" }, body: "{}" }
+          : {}),
+        signal: deadline.signal,
+      },
+    );
+    const s = await jsonResponse(r);
+    if (
+      !s ||
+      typeof s.configured !== "boolean" ||
+      !Array.isArray(s.models) ||
+      s.models.some((m: unknown) => typeof m !== "string") ||
+      s.models.length > 8 ||
+      !Number.isFinite(s.timeoutMs)
+    )
+      throw Error("Invalid planner status.");
+    return s;
+  } finally {
+    deadline.dispose();
+  }
 }
 export async function generatePlan(
   input: string,
@@ -93,12 +95,14 @@ export async function generatePlan(
   )
     throw Error("Planner timeout must be 1–120 seconds.");
   if (mode !== "offline") {
+    let requestId: string | undefined;
     try {
       const result = await plannerRequest(
         "/api/planner/plan",
         { prompt, ...settings },
         signal,
       );
+      requestId = result.requestId;
       if (result.source !== "llm") throw Error("Invalid planner source.");
       const validating = performance.now();
       const plan = planSchema.parse(result.plan);
@@ -111,14 +115,22 @@ export async function generatePlan(
       };
     } catch (error) {
       if (signal?.aborted) throw new DOMException("Cancelled", "AbortError");
-      if (mode === "llm") throw error;
+      const failure =
+        requestId && error instanceof Error
+          ? plannerFailure({
+              error:
+                "Generated plan failed client validation: " + error.message,
+              requestId,
+            })
+          : error;
+      if (mode === "llm") throw failure;
       plannerStage("Validating", "Offline fallback");
       usePlannerProgress.setState({ timings: null });
       const plan = offlinePlan(prompt, options);
       return {
         plan,
         source: "offline",
-        notice: `Offline fallback: ${error instanceof Error ? error.message : "LLM unavailable"}. No LLM generated this plan.`,
+        notice: `Offline fallback: ${failure instanceof Error ? failure.message : "LLM unavailable"}. No LLM generated this plan.`,
       };
     }
   }

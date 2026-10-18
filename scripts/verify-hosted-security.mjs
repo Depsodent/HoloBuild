@@ -1,10 +1,11 @@
-// Read-only checks against the initially disabled production deployment.
+// Read-only checks; default expects the initial AI-disabled deployment.
 import fs from "node:fs/promises";
 import path from "node:path";
 import { parseEnv } from "node:util";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
 const base = process.env.HOLO_PUBLIC_URL || "https://holobuild.vercel.app";
+const enabled = process.env.HOLO_EXPECT_AI_ENABLED === "true";
 const privateValues = [];
 for (const file of [".env.gemini.local", ".env.hosted.local"]) {
   for (const [key, value] of Object.entries(
@@ -50,19 +51,26 @@ const status = await check(base + "/api/planner/status");
 const health = JSON.parse(status.bytes);
 assert.equal(health.provider, "Gemini");
 assert.equal(health.model, "gemini-3.5-flash-lite");
-assert.equal(health.configured, false);
-checks.push({ check: "Public AI initially disabled", passed: true });
-const headers = { "Content-Type": "application/json", Origin: base };
-const blocked = await check(base + "/api/planner/plan", {
-  method: "POST",
-  headers,
-  body: JSON.stringify({ prompt: "Build a house" }),
-});
-assert.equal(blocked.response.status, 503);
+assert.equal(health.configured, enabled);
 checks.push({
-  check: "Disabled generation rejects without calling provider",
+  check: enabled
+    ? "Public AI explicitly enabled"
+    : "Public AI initially disabled",
   passed: true,
 });
+const headers = { "Content-Type": "application/json", Origin: base };
+if (!enabled) {
+  const blocked = await check(base + "/api/planner/plan", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ prompt: "Build a house" }),
+  });
+  assert.equal(blocked.response.status, 503);
+  checks.push({
+    check: "Disabled generation rejects without calling provider",
+    passed: true,
+  });
+}
 for (const method of ["GET", "POST", "OPTIONS"]) {
   const value = await check(base + "/api/planner/status", {
     method,
@@ -134,13 +142,14 @@ checks.push({
 const report = {
   checkedAt: new Date().toISOString(),
   url: base,
-  initialAIEnabled: false,
+  aiEnabled: enabled,
   checks,
   geminiCalled: false,
   credentialsPrinted: false,
 };
 await fs.writeFile(
-  "docs/HOSTED_SECURITY_VALIDATION.json",
+  process.env.HOLO_SECURITY_REPORT_PATH ||
+    "docs/HOSTED_SECURITY_VALIDATION.json",
   JSON.stringify(report, null, 2) + "\n",
 );
 console.log(JSON.stringify(report, null, 2));

@@ -84,3 +84,8 @@ If any launch gate fails, keep AI disabled and report it; local editing/Offline 
 - Receipts: HOSTED_RELEASE_VALIDATION.json, HOSTED_SECURITY_VALIDATION.json (initial AI-disabled stage), HOSTED_CONFIGURATION_VALIDATION.json, HOSTED_UI_VALIDATION.json, HOSTED_QUOTA_VALIDATION.json, HOSTED_REQUEST_VALIDATION.json, HOSTED_GEMINI_GENERATION_VALIDATION.json, HOSTED_GEMINI_EDIT_VALIDATION.json and REDIS_VALIDATION.json. Public screenshot: images/public-workspace.png. Earlier localhost receipts remain separate.
 - Free-tier quotas/cold starts/model variation may cause delays or rejected requests. CORS is not authentication; the endpoint is anonymous and bounded. Small live smokes do not establish arbitrary complex-plan quality. Public visibility does not grant a license to original UNLICENSED code.
 - Local development/configuration remains preserved. Physical webcam/microphone were not retested. Owner acceptance: open the HTTPS site; allow camera; point/pinch/move/release/Undo; select a generated structure and test two-hand scale/yaw; minimize camera and verify tracking/Stop; test microphone support; generate/edit then confirm/Undo/Redo/save/load. Do not begin Milestone11 before acceptance.
+
+
+## Cross-device diagnostic patch
+
+The Oct18 investigation adds safe request references, categorized quota/store failures and Retry-After while preserving all quotas, exact origins, server-only credentials and fail-closed behavior. See [production troubleshooting](PRODUCTION_TROUBLESHOOTING.md), CROSS_DEVICE_INCIDENT.json and CROSS_DEVICE_REDIS_VALIDATION.json. The historical friend-specific root cause is not confirmed; HTTP200 may contain a streamed error. Public post-patch checks are recorded separately from initial launch receipts.

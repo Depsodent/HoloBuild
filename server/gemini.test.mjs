@@ -288,7 +288,10 @@ test("distributed guard atomically reserves daily/IP/concurrency budgets and rel
   await release();
   assert.equal(requests[1][0], "ZREM");
   result = 0;
-  assert.equal(await guard(req, true), null);
+  await assert.rejects(
+    () => guard(req, true),
+    (error) => error.status === 429 && error.kind === "rate-limit",
+  );
 });
 test("quota-store failure blocks rather than silently enabling unmetered Gemini", async () => {
   const guard = createHostedGuard(
@@ -474,7 +477,10 @@ test("hosted quota denial prevents all Gemini calls and oversized store data is 
     },
     async () => new Response("x".repeat(5000)),
   );
-  await assert.rejects(() => guard({ headers: {} }, true), /limit/);
+  await assert.rejects(
+    () => guard({ headers: {} }, true),
+    (error) => error.status === 503 && error.kind === "quota-store",
+  );
 });
 
 test("Gemini decoder guidance omits large array maxima without weakening final validation", () => {
@@ -515,4 +521,113 @@ test("Gemini 3.8 uses supported low thinking and omits deprecated sampling witho
   const older = request("gemini-2.5-flash");
   assert.equal(older.thinkingConfig, undefined);
   assert.equal(older.temperature, 0.2);
+});
+
+test("hosted quota/store errors expose safe references and recovery without calling Gemini on rejection", async (t) => {
+  let result = [2, 21],
+    broken = false,
+    providerCalls = 0;
+  const logs = [];
+  t.mock.method(console, "warn", (line) => logs.push(JSON.parse(line)));
+  const url = await fixture(
+    t,
+    async (endpoint, init) => {
+      if (endpoint === "https://demo.upstash.io") {
+        if (broken) throw new TypeError("private-url-token");
+        return Response.json({
+          result: JSON.parse(init.body)[0] === "ZREM" ? 1 : result,
+        });
+      }
+      providerCalls++;
+      return Response.json(
+        init.method === "POST" ? completion(plan) : metadata,
+      );
+    },
+    {
+      PLANNER_MODE: "hosted",
+      APP_ORIGINS: "https://app.example",
+      PUBLIC_AI_ENABLED: "true",
+      UPSTASH_REDIS_REST_URL: "https://demo.upstash.io",
+      UPSTASH_REDIS_REST_TOKEN: "test-only",
+    },
+  );
+  const headers = { Host: "app.example", Origin: "https://app.example" };
+  for (const [code, kind] of [
+    [2, "rate-limit"],
+    [3, "daily-quota"],
+    [4, "concurrency"],
+  ]) {
+    result = [code, 21];
+    const r = await hostedPost(url, headers),
+      body = await r.json();
+    assert.equal(r.status, 429);
+    assert.equal(r.headers.get("retry-after"), "21");
+    assert.equal(body.kind, kind);
+    assert.equal(body.requestId, r.headers.get("x-request-id"));
+    assert.match(body.error, /retry in 21/);
+  }
+  broken = true;
+  let r = await hostedPost(url, headers);
+  assert.equal(r.status, 503);
+  assert.equal((await r.json()).kind, "quota-store");
+  assert.equal(providerCalls, 0);
+  broken = false;
+  result = [1, 0];
+  r = await hostedPost(url, headers);
+  assert.equal(r.status, 200);
+  assert.ok(logs.every((l) => l.requestId && l.timestamp));
+  assert.ok(!JSON.stringify(logs).includes("private-url-token"));
+});
+test("upstream quota in an opened SSE stream retains category, logical status and request reference", async (t) => {
+  const url = await fixture(t, async (_, init) =>
+    init.method === "POST"
+      ? new Response("private-provider-content", { status: 429 })
+      : Response.json(metadata),
+  );
+  const r = await post(url, undefined, { Accept: "text/event-stream" });
+  assert.equal(r.status, 200);
+  const body = await r.text();
+  assert.match(body, /"kind":"provider-quota"/);
+  assert.match(body, /"status":503/);
+  assert.match(body, new RegExp(r.headers.get("x-request-id")));
+  assert.ok(!body.includes("private-provider-content"));
+});
+
+function hostedPost(url, headers) {
+  return new Promise((resolve, reject) => {
+    const req = httpRequest(
+      url + "/api/planner/plan",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...headers },
+      },
+      (res) => {
+        const chunks = [];
+        res.on("data", (c) => chunks.push(c));
+        res.on("end", () =>
+          resolve(
+            new Response(Buffer.concat(chunks), {
+              status: res.statusCode,
+              headers: res.headers,
+            }),
+          ),
+        );
+      },
+    );
+    req.on("error", reject);
+    req.end(JSON.stringify({ prompt: "Build a slab" }));
+  });
+}
+
+test("metadata provider quota is actionable and makes no generation request", async (t) => {
+  let calls = 0;
+  const url = await fixture(t, async () => {
+    calls++;
+    return new Response("private", { status: 429 });
+  });
+  const r = await post(url);
+  assert.equal(r.status, 503);
+  assert.equal(r.headers.get("retry-after"), "60");
+  assert.equal((await r.json()).kind, "provider-quota");
+  assert.equal(calls, 1);
 });

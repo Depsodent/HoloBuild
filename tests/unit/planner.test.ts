@@ -140,3 +140,19 @@ it("confirm validates scene version, then a fresh preview commits one stable bat
       .map((o) => o.id),
   ).toEqual(ids);
 });
+
+it("client geometry rejection retains the backend diagnostic reference", async () => {
+  const invalid = offlinePlan("house");
+  invalid.objects[0].position[1] = -10;
+  vi.stubGlobal("fetch", async () =>
+    Response.json({
+      source: "llm",
+      model: "test",
+      plan: invalid,
+      requestId: "client-validation-123",
+    }),
+  );
+  await expect(generatePlan("Build a house", "llm")).rejects.toThrow(
+    "Reference: client-validation-123",
+  );
+});

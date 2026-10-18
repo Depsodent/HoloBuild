@@ -38,11 +38,59 @@ export function plannerStage(stage: string, provider?: string) {
       : { started: performance.now() }),
   });
 }
+// Fetch/SSE work in browsers that predate AbortSignal.any/timeout.
+export function plannerDeadline(
+  signal: AbortSignal | undefined,
+  milliseconds: number,
+) {
+  const combined = new AbortController();
+  const cancel = () => combined.abort(signal?.reason);
+  if (signal?.aborted) cancel();
+  else signal?.addEventListener("abort", cancel, { once: true });
+  const timer = setTimeout(
+    () => combined.abort(new DOMException("Planner deadline", "TimeoutError")),
+    milliseconds,
+  );
+  return {
+    signal: combined.signal,
+    dispose: () => {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", cancel);
+    },
+  };
+}
+export function plannerFailure(
+  data: { error?: unknown; requestId?: unknown } | null,
+  response?: Response,
+): Error {
+  const retry = Number(response?.headers.get("retry-after"));
+  const seconds =
+    Number.isFinite(retry) && retry > 0 && retry <= 172800
+      ? Math.ceil(retry)
+      : 60;
+  const message =
+    typeof data?.error === "string"
+      ? data.error.slice(0, 300)
+      : response?.status === 429
+        ? "Too many requests; retry in " + seconds + " seconds or use Offline."
+        : "Planner request failed" +
+          (response ? " (HTTP " + response.status + ")" : "") +
+          ". Retry or choose Offline.";
+  const id =
+    typeof data?.requestId === "string"
+      ? data.requestId
+      : response?.headers.get("x-request-id");
+  return Error(
+    message +
+      (id && /^[a-zA-Z0-9-]{1,80}$/.test(id) ? " Reference: " + id : ""),
+  );
+}
 export async function plannerRequest(
   path: string,
   body: { timeoutMs?: number; [key: string]: unknown },
   signal?: AbortSignal,
 ): Promise<{
+  requestId?: string;
   source: string;
   model: string;
   provider?: string;
@@ -58,6 +106,7 @@ export async function plannerRequest(
     timings: null,
   });
   const budget = body.timeoutMs ?? 120000;
+  const deadline = plannerDeadline(signal, budget + 2000);
   try {
     const response = await fetch(path, {
       method: "POST",
@@ -66,10 +115,7 @@ export async function plannerRequest(
         Accept: "text/event-stream",
       },
       body: JSON.stringify({ ...body, timeoutMs: budget }),
-      signal: AbortSignal.any([
-        ...(signal ? [signal] : []),
-        AbortSignal.timeout(budget + 2000),
-      ]),
+      signal: deadline.signal,
     });
     let result;
     if (response.headers.get("content-type")?.includes("text/event-stream")) {
@@ -101,8 +147,7 @@ export async function plannerRequest(
                 .join("\n");
             if (!text) continue;
             const data = JSON.parse(text);
-            if (type === "error")
-              throw Error(data.error || "Planner request failed.");
+            if (type === "error") throw plannerFailure(data, response);
             if (type === "progress" && !signal?.aborted)
               usePlannerProgress.setState({
                 stage: data.stage,
@@ -117,9 +162,8 @@ export async function plannerRequest(
         throw error;
       }
     } else {
-      result = await response.json();
-      if (!response.ok)
-        throw Error(result.error || "Planner connection failed.");
+      result = await response.json().catch(() => null);
+      if (!response.ok) throw plannerFailure(result, response);
     }
     if (signal?.aborted) throw new DOMException("Cancelled", "AbortError");
     if (!result) throw Error("Planner ended without a validated result.");
@@ -141,8 +185,12 @@ export async function plannerRequest(
         `Client planner time budget exceeded (${budget / 1000} s plus transport grace).`,
       );
     if (error instanceof TypeError)
-      throw Error("Planner connection failed. Check the local backend.");
+      throw Error(
+        "Cannot reach the planner. Check your connection, reload this page, or choose Offline.",
+      );
     throw error;
+  } finally {
+    deadline.dispose();
   }
 }
 

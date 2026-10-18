@@ -1,3 +1,4 @@
+import { PlannerError } from "./plannerError.mjs";
 import { providerSchema } from "./providerSchema.mjs";
 const base = "https://generativelanguage.googleapis.com/v1beta";
 const verified = new WeakMap();
@@ -26,6 +27,13 @@ export async function verifyGeminiModel(config, fetcher, signal) {
     signal,
     redirect: "error",
   });
+  if (response.status === 429)
+    throw new PlannerError(
+      503,
+      "provider-quota",
+      "AI provider quota is temporarily exhausted; retry in 60 seconds or use Offline.",
+      60,
+    );
   if (!response.ok) throw Error("Gemini model verification failed.");
   const reader = response.body?.getReader();
   if (!reader) throw Error("Missing model metadata.");

@@ -1,10 +1,16 @@
+import { randomUUID } from "node:crypto";
+import { PlannerError } from "./plannerError.mjs";
 import {
   geminiRequest,
   geminiText,
   verifyGeminiModel,
   isGeminiModelVerified,
 } from "./gemini.mjs";
-import { hostedSecurity, createHostedGuard } from "./hostedGuard.mjs";
+import {
+  hostedSecurity,
+  createHostedGuard,
+  clientIdentity,
+} from "./hostedGuard.mjs";
 import { providerSchema } from "./providerSchema.mjs";
 import { collectCompletion } from "./providerStream.mjs";
 import {
@@ -147,7 +153,10 @@ export function createPlannerHandler(
   let inFlight = 0;
   const recent = [];
   return async (req, res) => {
-    let eventMode = false;
+    const requestId = randomUUID();
+    res.setHeader("X-Request-ID", requestId);
+    let eventMode = false,
+      phase = "request";
     const wantsEvents = req.headers.accept?.includes("text/event-stream");
     const started = performance.now();
     const event = (type, data) => {
@@ -172,6 +181,36 @@ export function createPlannerHandler(
         });
     };
     const send = (code, data) => {
+      data = { ...data, requestId };
+      if (code >= 400) {
+        data = {
+          ...data,
+          kind: data.kind || "request",
+          status: code,
+          requestId,
+        };
+        if (data.retryAfterSeconds && !res.headersSent)
+          res.setHeader("Retry-After", String(data.retryAfterSeconds));
+        if (config.hosted)
+          console.warn(
+            JSON.stringify({
+              event: "planner-error",
+              timestamp: new Date().toISOString(),
+              requestId,
+              platformRequestId: /^[a-zA-Z0-9:;._-]{1,200}$/.test(
+                req.headers["x-vercel-id"] || "",
+              )
+                ? req.headers["x-vercel-id"]
+                : undefined,
+              status: code,
+              phase,
+              identitySource:
+                clientIdentity(req.headers) === "shared" ? "shared" : "vercel",
+              kind: data.kind,
+              retryAfterSeconds: data.retryAfterSeconds,
+            }),
+          );
+      }
       if (eventMode) {
         event(code < 400 ? "result" : "error", data);
         res.end();
@@ -250,7 +289,17 @@ export function createPlannerHandler(
     while (recent[0] < now - 60000) recent.shift();
     if (inFlight >= 2 || recent.length >= 10)
       return send(429, {
-        error: "Planner busy or rate limited. Try again shortly.",
+        kind: inFlight >= 2 ? "concurrency" : "rate-limit",
+        retryAfterSeconds:
+          inFlight >= 2
+            ? Math.ceil(config.timeoutMs / 1000)
+            : Math.max(1, Math.ceil((recent[0] + 60000 - now) / 1000)),
+        error:
+          "Too many requests or AI busy; retry in " +
+          (inFlight >= 2
+            ? Math.ceil(config.timeoutMs / 1000)
+            : Math.max(1, Math.ceil((recent[0] + 60000 - now) / 1000))) +
+          " seconds or use Offline.",
       });
     if (!req.headers["content-type"]?.startsWith("application/json"))
       return send(415, { error: "JSON request required." });
@@ -271,7 +320,12 @@ export function createPlannerHandler(
       if (req.body === undefined)
         for await (const chunk of req) {
           bytes += chunk.length;
-          if (bytes > 8192) throw Error("Request exceeds 8 KiB.");
+          if (bytes > 8192)
+            throw new PlannerError(
+              413,
+              "request-size",
+              "Request is too large. Shorten it or use a smaller scene context.",
+            );
           chunks.push(chunk);
         }
       // Vercel may already parse JSON into req.body; local Node supplies a raw stream.
@@ -284,7 +338,11 @@ export function createPlannerHandler(
               ? req.body.toString("utf8")
               : JSON.stringify(req.body);
       if (Buffer.byteLength(parsedBody) > 8192)
-        throw Error("Request exceeds 8 KiB.");
+        throw new PlannerError(
+          413,
+          "request-size",
+          "Request is too large. Shorten it or use a smaller scene context.",
+        );
       const body = JSON.parse(parsedBody);
       const headers = {
         "Content-Type": "application/json",
@@ -298,10 +356,6 @@ export function createPlannerHandler(
         );
         if (config.hosted) {
           release = await guard(req, false);
-          if (!release)
-            return send(429, {
-              error: "AI rate limit reached. Try later or use Offline.",
-            });
         }
         if (config.provider === "gemini") {
           await verifyGeminiModel(config, fetcher, abort.signal);
@@ -333,19 +387,19 @@ export function createPlannerHandler(
         prompt = cleanPrompt(args.prompt),
         model = args.model || config.models[0];
       if (!config.models.includes(model))
-        throw Error("Model is not in the backend allowlist.");
+        throw new PlannerError(
+          400,
+          "request-model",
+          "Selected model is not enabled. Reload the page or check AI Settings.",
+        );
       timer = setTimeout(
         () => abort.abort(),
         Math.min(args.timeoutMs ?? config.timeoutMs, config.timeoutMs),
       );
       if (config.hosted) {
         release = await guard(req, true);
-        if (!release)
-          return send(429, {
-            error:
-              "AI rate limit or daily request budget reached. Use Offline or try later.",
-          });
       }
+      phase = "provider";
       progress("Connecting");
       if (config.provider === "gemini")
         await verifyGeminiModel(config, fetcher, abort.signal);
@@ -448,7 +502,15 @@ export function createPlannerHandler(
           }),
         },
       );
-      if (!response.ok) throw Error("Provider rejected the request.");
+      if (!response.ok)
+        throw new PlannerError(
+          response.status === 429 ? 503 : 502,
+          response.status === 429 ? "provider-quota" : "provider-rejected",
+          response.status === 429
+            ? "AI provider quota is temporarily exhausted; retry in 60 seconds or use Offline."
+            : "AI provider could not process this request. Retry shortly or use Offline.",
+          response.status === 429 ? 60 : undefined,
+        );
       const headerMs = performance.now() - providerStarted;
       const streaming =
         wantsEvents &&
@@ -469,6 +531,7 @@ export function createPlannerHandler(
         : await boundedJson(response);
       const providerMs = performance.now() - providerStarted,
         validationStarted = performance.now();
+      phase = "response-validation";
       progress("Validating");
       const plan = (editing ? parseModelEdit : parseModelPlan)(
         config.provider === "gemini" && !streaming
@@ -493,6 +556,14 @@ export function createPlannerHandler(
       });
     } catch (error) {
       // Never echo provider response bodies, credentials, URLs or prompts.
+      if (error instanceof PlannerError) {
+        send(error.status, {
+          kind: error.kind,
+          error: error.message,
+          retryAfterSeconds: error.retryAfterSeconds,
+        });
+        return;
+      }
       const validation =
         error instanceof z.ZodError || error instanceof SyntaxError;
       send(abort.signal.aborted ? 504 : validation ? 422 : 502, {
@@ -508,13 +579,26 @@ export function createPlannerHandler(
           : validation
             ? "Provider/request JSON failed strict validation."
             : error instanceof TypeError
-              ? "Provider connection failed. Check Ollama or the configured backend connection."
+              ? config.hosted
+                ? "AI provider connection failed. Retry shortly or use Offline."
+                : "Provider connection failed. Check Ollama or the configured backend connection."
               : "Planner failed. Check backend configuration, model availability and response limits.",
       });
     } finally {
       clearTimeout(timer);
       req.off("aborted", disconnected);
-      if (release) await release().catch(() => {});
+      if (release)
+        await release().catch(() => {
+          if (config.hosted)
+            console.warn(
+              JSON.stringify({
+                event: "planner-cleanup",
+                timestamp: new Date().toISOString(),
+                requestId,
+                kind: "quota-store-release",
+              }),
+            );
+        });
       inFlight--;
     }
   };

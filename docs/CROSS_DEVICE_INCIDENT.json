@@ -1,0 +1,220 @@
+{
+  "investigatedAt": "2026-10-18T06:13:43.133Z",
+  "reportedWindow": {
+    "start": "2026-10-17T18:30:00Z",
+    "end": "2026-10-17T19:05:00Z",
+    "local": "Oct18 00:00–00:35 IST"
+  },
+  "logAvailability": {
+    "requestQuery": "135 records returned; planner subset sanitized below",
+    "runtime": "Historical function messages no longer retained on Hobby",
+    "recentRequests": "No records returned in initial last-hour query",
+    "paidObservabilityActivated": false
+  },
+  "requests": [
+    {
+      "timestamp": "2026-10-17T19:01:44.721Z",
+      "requestId": "rnqhm-1792263704721-064c1db5ead4",
+      "httpStatus": 200,
+      "requestPath": "/api/planner/plan",
+      "requestMethod": "POST",
+      "deploymentId": "dpl_HUcY2aq2fB7bAYVRV49rq4YwjN3r"
+    },
+    {
+      "timestamp": "2026-10-17T19:01:11.675Z",
+      "requestId": "rxl7v-1792263671675-9e202b6a719d",
+      "httpStatus": 200,
+      "requestPath": "/api/planner/plan",
+      "requestMethod": "POST",
+      "deploymentId": "dpl_HUcY2aq2fB7bAYVRV49rq4YwjN3r"
+    },
+    {
+      "timestamp": "2026-10-17T18:48:06.594Z",
+      "requestId": "7nbq5-1792262886594-ee562031c545",
+      "httpStatus": 502,
+      "requestPath": "/api/planner/plan",
+      "requestMethod": "POST",
+      "deploymentId": "dpl_HUcY2aq2fB7bAYVRV49rq4YwjN3r"
+    },
+    {
+      "timestamp": "2026-10-17T18:48:06.115Z",
+      "requestId": "b6g9n-1792262886115-a2d641d77185",
+      "httpStatus": 422,
+      "requestPath": "/api/planner/plan",
+      "requestMethod": "POST",
+      "deploymentId": "dpl_HUcY2aq2fB7bAYVRV49rq4YwjN3r"
+    },
+    {
+      "timestamp": "2026-10-17T18:48:05.651Z",
+      "requestId": "j4zj9-1792262885651-434aea082536",
+      "httpStatus": 415,
+      "requestPath": "/api/planner/plan",
+      "requestMethod": "POST",
+      "deploymentId": "dpl_HUcY2aq2fB7bAYVRV49rq4YwjN3r"
+    },
+    {
+      "timestamp": "2026-10-17T18:46:06.180Z",
+      "requestId": "bwhmv-1792262766180-11886c4031f6",
+      "httpStatus": 429,
+      "requestPath": "/api/planner/plan",
+      "requestMethod": "POST",
+      "deploymentId": "dpl_HUcY2aq2fB7bAYVRV49rq4YwjN3r"
+    },
+    {
+      "timestamp": "2026-10-17T18:44:18.602Z",
+      "requestId": "5xm4c-1792262658602-81161e8a9322",
+      "httpStatus": 403,
+      "requestPath": "/api/planner/status",
+      "requestMethod": "GET",
+      "deploymentId": "dpl_HUcY2aq2fB7bAYVRV49rq4YwjN3r"
+    },
+    {
+      "timestamp": "2026-10-17T18:44:06.773Z",
+      "requestId": "zbk2p-1792262646773-f7650d06835e",
+      "httpStatus": 403,
+      "requestPath": "/api/planner/status",
+      "requestMethod": "GET",
+      "deploymentId": "dpl_HUcY2aq2fB7bAYVRV49rq4YwjN3r"
+    },
+    {
+      "timestamp": "2026-10-17T18:44:06.652Z",
+      "requestId": "pcvf8-1792262646652-12daba703af6",
+      "httpStatus": 403,
+      "requestPath": "/api/planner/status",
+      "requestMethod": "GET",
+      "deploymentId": "dpl_HUcY2aq2fB7bAYVRV49rq4YwjN3r"
+    },
+    {
+      "timestamp": "2026-10-17T18:40:47.681Z",
+      "requestId": "gdbn2-1792262447681-34a11bfee8d7",
+      "httpStatus": 503,
+      "requestPath": "/api/planner/plan",
+      "requestMethod": "POST",
+      "deploymentId": "dpl_HcaqrTeQBhLG9qNbJVdKC2hukkpN"
+    },
+    {
+      "timestamp": "2026-10-17T18:38:27.425Z",
+      "requestId": "24jlk-1792262307425-ecb43e5efd13",
+      "httpStatus": 403,
+      "requestPath": "/api/planner/status",
+      "requestMethod": "OPTIONS",
+      "deploymentId": "dpl_HcaqrTeQBhLG9qNbJVdKC2hukkpN"
+    },
+    {
+      "timestamp": "2026-10-17T18:38:27.115Z",
+      "requestId": "24jlk-1792262307115-50ae1f38daca",
+      "httpStatus": 403,
+      "requestPath": "/api/planner/status",
+      "requestMethod": "POST",
+      "deploymentId": "dpl_HcaqrTeQBhLG9qNbJVdKC2hukkpN"
+    },
+    {
+      "timestamp": "2026-10-17T18:38:26.801Z",
+      "requestId": "mchk9-1792262306801-43e242dac430",
+      "httpStatus": 403,
+      "requestPath": "/api/planner/status",
+      "requestMethod": "GET",
+      "deploymentId": "dpl_HcaqrTeQBhLG9qNbJVdKC2hukkpN"
+    },
+    {
+      "timestamp": "2026-10-17T18:38:26.501Z",
+      "requestId": "mxlpz-1792262306501-cdf9b4e53ac9",
+      "httpStatus": 503,
+      "requestPath": "/api/planner/plan",
+      "requestMethod": "POST",
+      "deploymentId": "dpl_HcaqrTeQBhLG9qNbJVdKC2hukkpN"
+    },
+    {
+      "timestamp": "2026-10-17T18:36:43.842Z",
+      "requestId": "n4qh9-1792262203842-1f00955cf0df",
+      "httpStatus": 403,
+      "requestPath": "/api/planner/status",
+      "requestMethod": "GET",
+      "deploymentId": "dpl_HcaqrTeQBhLG9qNbJVdKC2hukkpN"
+    },
+    {
+      "timestamp": "2026-10-17T18:36:43.812Z",
+      "requestId": "pgmgg-1792262203812-86b909b73ed1",
+      "httpStatus": 403,
+      "requestPath": "/api/planner/status",
+      "requestMethod": "GET",
+      "deploymentId": "dpl_HcaqrTeQBhLG9qNbJVdKC2hukkpN"
+    }
+  ],
+  "attribution": {
+    "knownLaunchTests": "18:38–18:40 disabled503/CORS403; 18:46 quota429; 18:48 negative415/422/502",
+    "candidateRequests": [
+      {
+        "timestamp": "2026-10-17T19:01:11.675Z",
+        "requestId": "rxl7v-1792263671675-9e202b6a719d",
+        "httpStatus": 200
+      },
+      {
+        "timestamp": "2026-10-17T19:01:44.721Z",
+        "requestId": "rnqhm-1792263704721-064c1db5ead4",
+        "httpStatus": 200
+      }
+    ],
+    "friendIdentityConfirmed": false,
+    "warning": "HTTP200 may contain SSE error or be followed by client geometry rejection. No original streamed bodies or runtime categories are retained; root cause remains unconfirmed."
+  },
+  "initialRedisHealth": {
+    "ping": "PONG",
+    "pingMs": 601,
+    "dailyGenerationAttempts": null,
+    "activeLeases": 0,
+    "historicalAvailabilityNotEstablished": true
+  },
+  "confirmedCodeFindings": [
+    "Generic Redis/store failures misclassified as provider errors",
+    "Quota denial lacked Retry-After and exact category",
+    "No application request references or safe structured error logs",
+    "Frontend required AbortSignal.any/timeout, unsupported in older browsers",
+    "Commands intentionally supports deterministic commands, with misleading guidance for building requests"
+  ],
+  "unchangedSafeguards": {
+    "requestsPerIPPerMinute": 5,
+    "generationAttemptsPerUTCDate": 100,
+    "globalConcurrency": 2,
+    "timeoutMs": 30000
+  },
+  "ipAudit": {
+    "trustedHeader": "Vercel-overwritten x-vercel-forwarded-for only",
+    "unknown": "Conservative shared bucket; ignores arbitrary proxy/XFF values",
+    "nat": "Devices on the same public IP intentionally share the limit",
+    "ipv6": "Canonical full address, IPv4-mapped addresses unified. No broad subnet grouping; privacy-address rotation can obtain separate IP buckets, while global caps remain.",
+    "storage": "HMAC private keys; raw IPs and prompts are not logged"
+  },
+  "accounting": "Quota-denied calls do not increment daily usage. Admitted generation attempts count even if provider/model/validation subsequently fails. Metadata checks consume IP budget but no daily generation budget.",
+  "historicalRootCauseConfirmed": false,
+  "candidateBrowserMetadata": [
+    {
+      "timestamp": "2026-10-17T19:01:44.721Z",
+      "requestId": "rnqhm-1792263704721-064c1db5ead4",
+      "httpStatus": 200,
+      "browserVersion": [
+        "Chrome/155.0.0.0"
+      ],
+      "headless": false,
+      "platform": "Windows"
+    },
+    {
+      "timestamp": "2026-10-17T19:01:11.675Z",
+      "requestId": "rxl7v-1792263671675-9e202b6a719d",
+      "httpStatus": 200,
+      "browserVersion": [
+        "Chrome/155.0.0.0"
+      ],
+      "headless": false,
+      "platform": "Windows"
+    }
+  ],
+  "candidateBrowserMetadataAttribution": "Observed request metadata only, not proven to be the friend; user-agent is not authenticated.",
+  "incidentDateDailyBudget": {
+    "date": "2026-10-17",
+    "observedAdmittedAttempts": 7,
+    "limit": 100,
+    "observedAt": "2026-10-18T06:27:31.999Z",
+    "note": "Retained daily counter; below cap, does not establish transient store/IP/concurrency availability."
+  }
+}

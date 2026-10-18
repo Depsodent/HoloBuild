@@ -45,10 +45,7 @@ export function StructureGenerator({
   useEffect(() => () => check.current?.abort(), []);
   useEffect(() => {
     const abort = new AbortController();
-    void plannerStatus(
-      false,
-      AbortSignal.any([abort.signal, AbortSignal.timeout(3000)]),
-    )
+    void plannerStatus(false, abort.signal)
       .then((config) => {
         if (abort.signal.aborted) return;
         setConnection(config);
@@ -71,15 +68,9 @@ export function StructureGenerator({
     setChecking(true);
     setStatus("Checking backend…");
     try {
-      const config = await plannerStatus(
-        false,
-        AbortSignal.any([controller.signal, AbortSignal.timeout(5000)]),
-      );
+      const config = await plannerStatus(false, controller.signal);
       const next = config.configured
-        ? await plannerStatus(
-            true,
-            AbortSignal.any([controller.signal, AbortSignal.timeout(6000)]),
-          )
+        ? await plannerStatus(true, controller.signal)
         : config;
       if (controller.signal.aborted) return;
       setConnection(next);

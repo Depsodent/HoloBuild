@@ -89,6 +89,12 @@ export function VoiceCommands() {
       return { ok: useEditStore.getState().status !== "error", message: "" };
     }
     cancelEdit();
+    if (route === "structure" && commandsOnly)
+      return {
+        ok: false,
+        message:
+          "Building requests need Auto, LLM or Offline mode. Switch from Commands, then send the same text or transcript again.",
+      };
     if (route === "structure" && !commandsOnly) {
       if (interpreter.awaitingConfirmation)
         return {

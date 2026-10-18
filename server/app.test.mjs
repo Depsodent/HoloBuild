@@ -99,7 +99,7 @@ test("real HTTP adapter forwards allowlisted model, bounded data, secret only se
   assert.ok(!JSON.stringify(data).includes("test-backend-only"));
   assert.equal(
     (await post(url, { prompt: "house", model: "not-allowed" })).status,
-    502,
+    400,
   );
 });
 test("rejects malformed/oversized model output and request code/unknown fields", async (t) => {

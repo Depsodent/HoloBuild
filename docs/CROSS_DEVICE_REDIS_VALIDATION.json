@@ -1,0 +1,18 @@
+{
+  "testedAt": "2026-10-18T06:16:01.090Z",
+  "actualRedis": true,
+  "isolatedKeys": true,
+  "productionBudgetsUnchanged": true,
+  "fiveNetworkRequestsAccepted": true,
+  "sixthRejected": true,
+  "independentClientsAccepted": true,
+  "sharedNetworkBudget": true,
+  "concurrentCap": 2,
+  "rejectedRequestsDoNotConsumeDailyBudget": true,
+  "dailyCap": 3,
+  "dailyRecoveryBoundary": "UTC midnight retry measured",
+  "dailyRolloverRecovery": "Simulated next-day clock against actual Redis",
+  "networkExpiryRecovery": true,
+  "activeLeasesAfterRelease": 0,
+  "providerCalls": 0
+}

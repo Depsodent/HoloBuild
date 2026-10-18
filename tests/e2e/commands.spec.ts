@@ -1,3 +1,4 @@
+import { offlinePlan } from "../../src/generation/offline";
 import { showTools } from "../helpers/workspaceTools";
 import { test, expect, type Page } from "@playwright/test";
 import { target } from "../helpers/gestureInput";
@@ -303,4 +304,110 @@ test("final capture can wait for manual submission; cancel discards late audio",
   await expect(
     page.getByLabel("Auto-submit final transcript"),
   ).not.toBeChecked();
+});
+
+test("Commands explains natural-language builds without sending an AI request", async ({
+  page,
+}) => {
+  let calls = 0;
+  await page.route("**/api/planner/plan", (route) => {
+    calls++;
+    return route.fulfill({ status: 503, json: { error: "unexpected" } });
+  });
+  await ready(page);
+  await page
+    .getByLabel("Planner mode", { exact: true })
+    .selectOption("commands");
+  await command(page, "Build a small house with four walls and a roof");
+  await expect(page.getByLabel("Command result")).toContainText(
+    "Switch from Commands",
+  );
+  expect(calls).toBe(0);
+  await command(page, "Create a sphere");
+  await expect(page.getByLabel("Command result")).toHaveText("Created sphere.");
+});
+test("typed and final speech share LLM quota diagnostics and recover in browsers without new AbortSignal APIs", async ({
+  page,
+}) => {
+  await mock(page);
+  await page.addInitScript(() => {
+    Object.defineProperty(AbortSignal, "any", {
+      value: undefined,
+      configurable: true,
+    });
+    Object.defineProperty(AbortSignal, "timeout", {
+      value: undefined,
+      configurable: true,
+    });
+  });
+  const prompts: string[] = [];
+  let reject = true;
+  await page.route("**/api/planner/status", (route) =>
+    route.fulfill({
+      json: {
+        configured: true,
+        models: ["mock"],
+        model: "mock",
+        provider: "Gemini",
+        timeoutMs: 30000,
+        connection: "connected",
+      },
+    }),
+  );
+  await page.route("**/api/planner/plan", (route) => {
+    prompts.push(route.request().postDataJSON().prompt);
+    return route.fulfill(
+      reject
+        ? {
+            status: 429,
+            headers: { "Retry-After": "12" },
+            json: {
+              kind: "rate-limit",
+              error: "Too many requests; retry in 12 seconds.",
+              requestId: "regression-123",
+            },
+          }
+        : {
+            json: {
+              source: "llm",
+              model: "mock",
+              plan: offlinePlan("Build a house"),
+            },
+          },
+    );
+  });
+  await ready(page);
+  await page.getByLabel("Planner mode", { exact: true }).selectOption("llm");
+  const prompt = "Build a small house with four walls and a roof";
+  await command(page, prompt);
+  await expect(page.getByLabel("Generation result")).toContainText(
+    "retry in 12 seconds. Reference: regression-123",
+  );
+  await page
+    .getByRole("button", { name: "Start listening", exact: true })
+    .click();
+  await speak(page, prompt);
+  await expect.poll(() => prompts.length).toBe(2);
+  await expect(page.getByLabel("Generation result")).toContainText(
+    "Reference: regression-123",
+  );
+  expect(prompts).toEqual([prompt, prompt]);
+  expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
+    1,
+  );
+  reject = false;
+  await command(page, prompt);
+  await expect(
+    page.getByLabel("Construction plan preview", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Confirm construction", exact: true })
+    .click();
+  expect(
+    await page.evaluate(() => window.__HOLO_TEST__!.scene().length),
+  ).toBeGreaterThan(1);
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  expect(await page.evaluate(() => window.__HOLO_TEST__!.scene().length)).toBe(
+    1,
+  );
 });
