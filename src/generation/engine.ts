@@ -102,6 +102,7 @@ export function materializePlan(input: unknown) {
         partId: part.id,
         role: part.role,
         level: part.level,
+        assembly: part.assembly,
         structure: {
           name: plan.name.slice(0, 60),
           type: plan.template?.kind ?? "generated",

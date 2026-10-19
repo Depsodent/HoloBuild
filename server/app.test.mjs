@@ -630,3 +630,64 @@ test("assistant transport envelope preserves strict runtime validation", async (
     parseModelAssistant(JSON.stringify({ response: "not json" })),
   );
 });
+
+test("assistant transports bounded staircase parameters as data and rejects executable fields", async (t) => {
+  const stair = {
+    id: "stairs-1",
+    from: 0,
+    to: 1,
+    steps: 16,
+    rise: 0.2,
+    run: 0.2,
+    width: 1,
+    x: -1,
+    z: 0,
+    yaw: 0,
+    material: "wood",
+    color: "#91603e",
+  };
+  let invalid = false;
+  const url = await fixture(t, async () =>
+    Response.json({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              kind: "create",
+              message: "Review the staircase geometry.",
+              design: {
+                kind: "house",
+                width: 6,
+                depth: 6,
+                height: 3,
+                floors: 2,
+                thickness: 0.2,
+                doors: 1,
+                windows: 0,
+                material: "concrete",
+                roof: "flat",
+                stairs: [invalid ? { ...stair, code: "execute" } : stair],
+              },
+            }),
+          },
+        },
+      ],
+    }),
+  );
+  const request = () =>
+    fetch(url + "/api/planner/assistant", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: "A house with parametric stairs",
+        context: editContext,
+      }),
+    });
+  const accepted = await request();
+  assert.equal(accepted.status, 200);
+  assert.deepEqual((await accepted.json()).plan.design.stairs, [stair]);
+  invalid = true;
+  const rejected = await request();
+  assert.equal(rejected.status, 422);
+  assert.ok((await rejected.json()).requestId);
+});

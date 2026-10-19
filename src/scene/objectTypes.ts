@@ -55,6 +55,10 @@ export const objectSchema = z
         structureId: z.string().uuid(),
         structure: structureMetadataSchema.optional(),
         level: z.number().int().min(0).max(5).optional(),
+        assembly: z
+          .string()
+          .regex(/^[a-zA-Z0-9_-]{1,24}$/)
+          .optional(),
         partId: z.string().regex(/^[a-zA-Z0-9_-]{1,48}$/),
         role: z.enum([
           "floor",
@@ -64,6 +68,7 @@ export const objectSchema = z
           "door",
           "window",
           "beam",
+          "stair",
         ]),
       })
       .strict()

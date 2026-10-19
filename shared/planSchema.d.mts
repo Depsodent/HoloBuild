@@ -4,8 +4,10 @@ import type { MaterialId } from "../src/scene/materialPresets";
 export interface PlanPart {
   id: string;
   name: string;
-  role: "floor" | "wall" | "roof" | "pillar" | "door" | "window" | "beam";
+  role:
+    "floor" | "wall" | "roof" | "pillar" | "door" | "window" | "beam" | "stair";
   level?: number;
+  assembly?: string;
   type: ObjectType;
   position: Vec3;
   rotation: Vec3;
@@ -13,7 +15,23 @@ export interface PlanPart {
   material: MaterialId;
   color: string;
 }
+export interface Staircase {
+  id: string;
+  from: number;
+  to: number;
+  steps: number;
+  rise: number;
+  run: number;
+  width: number;
+  x: number;
+  z: number;
+  yaw: 0 | 90 | 180 | 270;
+  material: MaterialId;
+  color: string;
+}
+export const staircaseSchema: z.ZodType<Staircase>;
 export interface BuildingTemplate {
+  stairs?: Staircase[];
   appearance?: Partial<
     Record<PlanPart["role"], { color?: string; material?: MaterialId }>
   >;

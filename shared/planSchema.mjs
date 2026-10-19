@@ -20,11 +20,29 @@ export const roles = [
   "door",
   "window",
   "beam",
+  "stair",
 ];
 const id = z.string().regex(/^[a-zA-Z0-9_-]{1,48}$/);
 export const contactsSchema = z.array(z.tuple([id, id])).max(240);
+export const staircaseSchema = z
+  .object({
+    id: z.string().regex(/^[a-zA-Z0-9_-]{1,24}$/),
+    from: z.number().int().min(0).max(4),
+    to: z.number().int().min(1).max(5),
+    steps: z.number().int().min(4).max(32),
+    rise: z.number().finite().min(0.08).max(0.4),
+    run: z.number().finite().min(0.15).max(0.5),
+    width: z.number().finite().min(0.6).max(3),
+    x: z.number().finite().min(-15).max(15),
+    z: z.number().finite().min(-15).max(15),
+    yaw: z.union([z.literal(0), z.literal(90), z.literal(180), z.literal(270)]),
+    material: z.enum(materials),
+    color: z.string().regex(/^#[a-fA-F0-9]{6}$/),
+  })
+  .strict();
 export const templateSchema = z
   .object({
+    stairs: z.array(staircaseSchema).max(5).optional(),
     appearance: z
       .object(
         Object.fromEntries(
@@ -82,6 +100,10 @@ export const planSchema = z
             id,
             name: z.string().trim().min(1).max(60),
             role: z.enum(roles),
+            assembly: z
+              .string()
+              .regex(/^[a-zA-Z0-9_-]{1,24}$/)
+              .optional(),
             level: z.number().int().min(0).max(5).optional(),
             type: z.enum(shapes),
             position: z.tuple([

@@ -1,3 +1,4 @@
+import { architecturalPlan } from "./architecture";
 import {
   normalizeDesignRequest,
   requestedAppearance,
@@ -13,6 +14,7 @@ import { numeric } from "../commands/parser";
 import { MATERIAL_IDS, type MaterialId } from "../scene/materialPresets";
 import type { Vec3 } from "../scene/objectTypes";
 export interface OfflineOptions {
+  stairs?: import("../../shared/planSchema.mjs").Staircase[];
   width?: number;
   depth?: number;
   height?: number;
@@ -466,37 +468,40 @@ export function offlinePlan(
       "Openings are segmented wall geometry; no interior stairs, hinges or engineering simulation.",
     );
   }
-  return planSchema.parse({
-    version: 1,
-    name: `${kind[0].toUpperCase() + kind.slice(1)} · ${floors} level${floors === 1 ? "" : "s"}`,
-    units: "meters",
-    template: {
-      kind,
-      ...(Object.keys(appearance).length ? { appearance } : {}),
-      width: w,
-      depth: d,
-      height: h,
-      floors,
-      thickness: t,
-      doors,
-      windows,
-      ...(options.windowWidth === undefined
-        ? {}
-        : { windowWidth: options.windowWidth }),
-      ...(options.windowHeight === undefined
-        ? {}
-        : { windowHeight: options.windowHeight }),
-      ...(options.windowCounts === undefined
-        ? {}
-        : { windowCounts: options.windowCounts.slice(0, floors) }),
-      ...(options.doorOffset === undefined
-        ? {}
-        : { doorOffset: options.doorOffset }),
-      material,
-      roof,
-    },
-    objects,
-    contacts: [],
-    warnings,
-  });
+  return planSchema.parse(
+    architecturalPlan({
+      version: 1,
+      name: `${kind[0].toUpperCase() + kind.slice(1)} · ${floors} level${floors === 1 ? "" : "s"}`,
+      units: "meters",
+      template: {
+        kind: kind as NonNullable<ConstructionPlan["template"]>["kind"],
+        ...(options.stairs ? { stairs: options.stairs } : {}),
+        ...(Object.keys(appearance).length ? { appearance } : {}),
+        width: w,
+        depth: d,
+        height: h,
+        floors,
+        thickness: t,
+        doors,
+        windows,
+        ...(options.windowWidth === undefined
+          ? {}
+          : { windowWidth: options.windowWidth }),
+        ...(options.windowHeight === undefined
+          ? {}
+          : { windowHeight: options.windowHeight }),
+        ...(options.windowCounts === undefined
+          ? {}
+          : { windowCounts: options.windowCounts.slice(0, floors) }),
+        ...(options.doorOffset === undefined
+          ? {}
+          : { doorOffset: options.doorOffset }),
+        material,
+        roof,
+      },
+      objects,
+      contacts: [],
+      warnings,
+    }),
+  );
 }
