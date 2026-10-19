@@ -1,0 +1,330 @@
+{
+  "recordedAt": "2026-10-19T18:46:10.023Z",
+  "physicalWebcamTested": false,
+  "physicalMicrophoneTested": false,
+  "friendLaptopTested": false,
+  "deployment": {
+    "checkedAt": "2026-10-19T18:45:40.282Z",
+    "deploymentId": "dpl_2BqHrrBYnkxBX75FiBU4zQwmrzCA",
+    "sourceCheckpoint": "1baa4fa0c0035d3113c32f9abb0cd89c8ea4c2b7",
+    "url": "https://holobuild.vercel.app",
+    "state": "READY",
+    "accountPlan": "hobby",
+    "protectedVariableMetadataUnchanged": true,
+    "rollbackDeployment": "dpl_7yvDqSdmQAt6m91SC8gXTdCitRmF",
+    "rollbackUrl": "https://holobuild-yhoqppf76-aaryand616-6524.vercel.app",
+    "quotas": {
+      "requestsPerIPPerMinute": 5,
+      "admittedGenerationAttemptsPerUTCDay": 100,
+      "globalConcurrentGenerations": 2
+    },
+    "noPaidServiceActivated": true
+  },
+  "workflow": {
+    "testedAt": "2026-10-19T18:42:40.033Z",
+    "url": "https://holobuild.vercel.app",
+    "baseCheckpoint": "29a7717961374efa3bc7db1da257bdea1e6e3f9f",
+    "source": "Milestone 10.5 release validation",
+    "physicalDeviceTested": false,
+    "ok": true,
+    "checks": {
+      "creation": {
+        "inertPreview": true,
+        "parts": 44,
+        "stairSteps": 16,
+        "upperFloorVoid": true,
+        "balconyParts": 8,
+        "alignedRealAccess": true,
+        "unrelatedCubePreserved": true,
+        "exactUndoRedo": true
+      },
+      "genuineConversationalEdit": {
+        "sameStructure": true,
+        "inertPreview": true,
+        "unrelatedComponentsPreserved": true,
+        "exactUndoRedo": true
+      },
+      "staircaseConversation": {
+        "material": "concrete",
+        "cancel": true,
+        "inertPreview": true,
+        "exactUndoRedo": true
+      },
+      "editableOpening": {
+        "partInspector": true,
+        "panelIdPreserved": true,
+        "realAccessRetained": true,
+        "stairAndBalconyRecipesPreserved": true,
+        "exactUndoRedo": true
+      },
+      "saveLoad": {
+        "allArchitecturalMetadata": true,
+        "exactObjects": true,
+        "undoRedoLoad": true
+      },
+      "pageErrors": 0
+    },
+    "provider": [
+      {
+        "event": "result",
+        "requestId": "4740c2fd-3b7a-4101-ac05-2969d42c61ad",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "create",
+        "timings": {
+          "firstTokenMs": 614.7278450000013,
+          "headerMs": 613.884137999994,
+          "providerMs": 1378.7564999999886,
+          "validationMs": 9.952837999997428,
+          "totalMs": 2108.8500719999865,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      },
+      {
+        "event": "result",
+        "requestId": "7d107c6c-2318-4019-a9ea-23b3b542a479",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "edit",
+        "timings": {
+          "firstTokenMs": 597.3975820000051,
+          "headerMs": 597.195366999993,
+          "providerMs": 762.846458999993,
+          "validationMs": 2.19237200000498,
+          "totalMs": 1339.570053000003,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      }
+    ]
+  },
+  "security": {
+    "checkedAt": "2026-10-19T18:42:23.395Z",
+    "url": "https://holobuild.vercel.app",
+    "aiEnabled": true,
+    "checks": [
+      {
+        "check": "HTTP redirects to HTTPS",
+        "passed": true
+      },
+      {
+        "check": "Anonymous HTTPS and security headers",
+        "passed": true
+      },
+      {
+        "check": "Public AI explicitly enabled",
+        "passed": true
+      },
+      {
+        "check": "Untrusted Origin and CORS preflight denied",
+        "passed": true
+      },
+      {
+        "check": "Private local/config/server paths not served",
+        "passed": true
+      },
+      {
+        "check": "Deployed JS matches audited local build and has no private values",
+        "passed": true,
+        "scripts": 5
+      },
+      {
+        "check": "MediaPipe assets, WASM MIME and license evidence",
+        "passed": true
+      }
+    ],
+    "geminiCalled": false,
+    "credentialsPrinted": false
+  },
+  "logs": {
+    "checkedAt": "2026-10-19T18:45:04.891Z",
+    "deployment": "dpl_2BqHrrBYnkxBX75FiBU4zQwmrzCA",
+    "since": "2026-10-19T18:41:00Z",
+    "requestRecords": 9,
+    "httpStatusCounts": {
+      "200": 4,
+      "403": 5
+    },
+    "requests": [
+      {
+        "timestamp": "2026-10-19T18:42:55.624Z",
+        "path": "/api/planner/assistant",
+        "status": 200,
+        "requestId": "52cdn-1792435375624-e8d26426b648"
+      },
+      {
+        "timestamp": "2026-10-19T18:42:46.904Z",
+        "path": "/api/planner/assistant",
+        "status": 200,
+        "requestId": "22x97-1792435366904-9ab5a9751fa8"
+      },
+      {
+        "timestamp": "2026-10-19T18:42:42.472Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "4x8pj-1792435362472-36332ca6348d"
+      },
+      {
+        "timestamp": "2026-10-19T18:42:10.596Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "b9d42-1792435330596-c43e9b921a63"
+      },
+      {
+        "timestamp": "2026-10-19T18:42:09.971Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "b9d42-1792435329971-fb6db37e36ff"
+      },
+      {
+        "timestamp": "2026-10-19T18:42:09.346Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "hnl7b-1792435329346-dcb8d80a9436"
+      },
+      {
+        "timestamp": "2026-10-19T18:42:08.706Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "6p4mk-1792435328706-b91d136646ff"
+      },
+      {
+        "timestamp": "2026-10-19T18:41:30.269Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "hcnrb-1792435290269-cc1b787b60c6"
+      },
+      {
+        "timestamp": "2026-10-19T18:41:30.077Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "bz74s-1792435290077-fa822bd7862d"
+      }
+    ],
+    "runtime": [
+      {
+        "timestamp": "2026-10-19T18:42:10.596Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "cb5e83e4-0e6e-47ce-8c6c-2cddf19757be",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-19T18:42:09.971Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "af2f5c4a-39ac-4a1d-9ba5-acf1c61a8375",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-19T18:42:09.346Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "d4fe0861-ca74-4fe3-8982-c35188e8d5f9",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-19T18:41:30.269Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "0ab52051-41b4-43b5-b094-c62cbda63941",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-19T18:41:30.077Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "935ebcb1-1142-4065-a0ef-e3efc8a6eae4",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      }
+    ],
+    "unexpected": [],
+    "server5xx": 0,
+    "rawBodiesOrPromptsIncluded": false,
+    "notes": [
+      "403 origin denials are deliberate deployment/security probes.",
+      "HTTP200 SSE success was separately verified from terminal result events, actual geometry and UI history.",
+      "This is the observed smoke-test window, not a guarantee about future requests."
+    ],
+    "ok": true
+  },
+  "leaseCleanup": {
+    "checkedAt": "2026-10-19T18:45:09.770Z",
+    "productionReadOnly": true,
+    "activeLeases": 0,
+    "credentialsPrinted": false,
+    "quotaMutations": false
+  },
+  "isolatedRedis": {
+    "testedAt": "2026-10-19T15:56:52.948Z",
+    "actualRedis": true,
+    "isolatedKeys": true,
+    "productionBudgetsUnchanged": true,
+    "fiveNetworkRequestsAccepted": true,
+    "sixthRejected": true,
+    "independentClientsAccepted": true,
+    "sharedNetworkBudget": true,
+    "concurrentCap": 2,
+    "rejectedRequestsDoNotConsumeDailyBudget": true,
+    "dailyCap": 3,
+    "dailyRecoveryBoundary": "UTC midnight retry measured",
+    "dailyRolloverRecovery": "Simulated next-day clock against actual Redis",
+    "networkExpiryRecovery": true,
+    "activeLeasesAfterRelease": 0,
+    "providerCalls": 0
+  },
+  "upload": {
+    "checkedAt": "2026-10-19T18:41:37.033Z",
+    "deploymentId": "dpl_2BqHrrBYnkxBX75FiBU4zQwmrzCA",
+    "sourceCheckpoint": "1baa4fa0c0035d3113c32f9abb0cd89c8ea4c2b7",
+    "state": "READY",
+    "url": "https://holobuild-cuion75fs-aaryand616-6524.vercel.app",
+    "publicAliasDeployment": "dpl_7yvDqSdmQAt6m91SC8gXTdCitRmF",
+    "previousDeployment": "dpl_7yvDqSdmQAt6m91SC8gXTdCitRmF",
+    "previousUrl": "holobuild-yhoqppf76-aaryand616-6524.vercel.app",
+    "protectedVariableMetadataUnchanged": true,
+    "filesChecked": 263,
+    "unsafeUploadPaths": [],
+    "emptyDirectoryMarkers": [
+      "src/dist",
+      "src/docs",
+      "src/playwright-report",
+      "src/public/assets",
+      "src/public/models",
+      "src/public/textures",
+      "src/public/third-party-notices",
+      "src/public/vision/wasm",
+      "src/src/ai",
+      "src/src/hooks",
+      "src/src/utils",
+      "src/test-results"
+    ],
+    "knownZeroByteContainerMarkers": [],
+    "privateValuesLogged": false,
+    "note": "Candidate file audit before promotion; the public alias then still pointed at the retained previous deployment."
+  },
+  "notes": [
+    "Live real Gemini browser smoke ran against the deployed source, not a mocked response.",
+    "Source/history/bundle publication audit passed before source publication; protected variable metadata and public asset hashes also passed.",
+    "Production source commit remains 1baa4fa; this post-deployment documentation record does not change runtime source or require another build.",
+    "Rate limits remain 5/IP/minute, 100 admitted generations/UTC day and 2 concurrent generations; isolated Redis regression cap 3 is test-only."
+  ]
+}

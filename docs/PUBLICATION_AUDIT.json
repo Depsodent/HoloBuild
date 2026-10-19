@@ -1,11 +1,16 @@
 {
-  "auditedAt": "2026-10-19T18:38:35.397Z",
-  "baseline": "29a7717961374efa3bc7db1da257bdea1e6e3f9f",
-  "workingFiles": 350,
-  "historicalBlobsScanned": 959,
+  "auditedAt": "2026-10-19T18:46:11.935Z",
+  "baseline": "1baa4fa0c0035d3113c32f9abb0cd89c8ea4c2b7",
+  "workingFiles": 351,
+  "historicalBlobsScanned": 972,
   "bundleFilesScanned": 85,
   "findings": [],
   "reviewedFixtures": [
+    {
+      "file": "history:41305e06a86b:server/app.test.mjs",
+      "rule": "Credential URL",
+      "reason": "Intentional URL rejection fixture on reserved .example domain"
+    },
     {
       "file": "history:474e7d5bad36:server/app.test.mjs",
       "rule": "Credential URL",

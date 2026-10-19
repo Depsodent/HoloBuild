@@ -57,3 +57,10 @@ Final-source metadata-only diagnostic also passed: normal stop, exact assembly, 
 ## Current release update — 2026-10-20
 
 The owner approved routine test/commit/push/deploy/verify without separate publication prompts. Historical approval restrictions above no longer block this routine release. Production-compatible Gemini creation/editing and architectural UI history/persistence now pass after a bounded transport correction; see DEVELOPMENT.md and MILESTONE_105_RELEASE_VALIDATION.json. The public deployment and smoke results remain a separate gate; retain the previous working deployment until verified. No quota, credential, paid-service or gesture changes.
+
+
+## Published result
+
+Milestone10.5 source 1baa4fa is live at https://holobuild.vercel.app, deployment dpl_2BqHrrBYnkxBX75FiBU4zQwmrzCA. Real hosted architectural generation, same-structure conversational editing, Part opening editing, cancellation, save/load and exact history pass. Security, source/asset matching, logs and lease cleanup pass; see MILESTONE_105_PRODUCTION_VALIDATION.json. Prior working deployment dpl_7yvDqSdmQAt6m91SC8gXTdCitRmF is retained. Runtime source is unchanged by this documentation receipt.
+
+Next: physical acceptance only; no Milestone11. In LLM mode submit the exact two-story house/stairs/balcony prompt; inspect both floors, stair opening and balcony doorway, confirm, change a stair material, resize a selected opening, Undo/Redo and save/load. Then test one-hand grab/move/release, two-hand scale/rotation, camera minimization/Stop, microphone and friend-laptop typed workflow. Report safe request reference, category, HTTP/SSE result and timings on failure. Keep credentials and raw private content out of reports. Standing routine-release authorization is recorded in DEPLOYMENT.md.
