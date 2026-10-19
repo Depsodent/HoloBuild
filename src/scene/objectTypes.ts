@@ -75,6 +75,7 @@ export const objectSchema = z
           "window",
           "beam",
           "stair",
+          "balcony",
         ]),
       })
       .strict()

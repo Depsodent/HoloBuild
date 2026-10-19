@@ -1,3 +1,4 @@
+import { balconyOperation } from "./balconyTransform";
 import { openingTarget, openingOperation } from "./openingTransform";
 import {
   applyStructure,
@@ -136,6 +137,7 @@ export function execute(command: Command): boolean {
       const parameterEdit =
         (command.operation.type === "design" &&
           (command.operation.stairs !== undefined ||
+            command.operation.balconies !== undefined ||
             command.operation.openings !== undefined)) ||
         ((command.operation.type === "color" ||
           command.operation.type === "material") &&
@@ -246,7 +248,86 @@ export function execute(command: Command): boolean {
           });
         }
       }
-      const assembly = objects[index].construction?.assembly;
+      const balconyPart = objects[index];
+      if (
+        balconyPart.construction?.role === "balcony" &&
+        balconyPart.construction.assembly
+      ) {
+        if (command.type === "duplicate")
+          throw Error(
+            "Add another balcony with a validated access opening, or duplicate the whole building.",
+          );
+        if (command.type === "delete")
+          return execute({
+            type: "structure",
+            structureId: balconyPart.construction.structureId,
+            operation: balconyOperation(s.objects, command.id, {
+              type: "delete",
+            }),
+          });
+        if (command.type === "update") {
+          if (command.patch.construction)
+            throw Error("Balcony hierarchy is managed by its assembly.");
+          const recipe =
+            balconyPart.construction.structure?.template ??
+            balconyPart.construction.structure?.architectureTemplate;
+          const current = recipe?.balconies?.find(
+            (b) => b.id === balconyPart.construction!.assembly,
+          );
+          if (!current) throw Error("Balcony recipe is unavailable.");
+          if (
+            command.patch.position ||
+            command.patch.scale ||
+            command.patch.rotation
+          ) {
+            if (
+              command.patch.rotation &&
+              [0, 2].some(
+                (i) =>
+                  Math.abs(
+                    command.patch.rotation![i] - balconyPart.rotation[i],
+                  ) > 1e-6,
+              )
+            )
+              throw Error("Balcony orientation follows its facade.");
+            return execute({
+              type: "structure",
+              structureId: balconyPart.construction.structureId,
+              operation: balconyOperation(s.objects, command.id, {
+                type: "setTransform",
+                position: command.patch.position ?? balconyPart.position,
+                scale: command.patch.scale ?? balconyPart.scale,
+                yaw: command.patch.rotation?.[1] ?? balconyPart.rotation[1],
+              }),
+            });
+          }
+          if (command.patch.color || command.patch.material)
+            return execute({
+              type: "structure",
+              structureId: balconyPart.construction.structureId,
+              operation: {
+                type: "design",
+                balconies: recipe!.balconies!.map((b) =>
+                  b.id === current.id
+                    ? {
+                        ...b,
+                        ...(command.patch.color
+                          ? { color: command.patch.color }
+                          : {}),
+                        ...(command.patch.material
+                          ? { material: command.patch.material }
+                          : {}),
+                      }
+                    : b,
+                ),
+              },
+            });
+        }
+      }
+      const assembly =
+        objects[index].construction?.role === "balcony"
+          ? undefined
+          : objects[index].construction?.assembly;
       const stairRecipe =
         objects[index].construction?.structure?.template ??
         objects[index].construction?.structure?.architectureTemplate;
@@ -256,7 +337,7 @@ export function execute(command: Command): boolean {
           (o) =>
             o.construction?.structureId ===
               objects[index].construction?.structureId &&
-            o.construction?.role === "stair",
+            ["stair", "balcony"].includes(o.construction?.role ?? ""),
         );
       if (
         protectsFloor &&
@@ -267,7 +348,7 @@ export function execute(command: Command): boolean {
               command.patch.scale)))
       )
         throw Error(
-          "This floor connects a staircase. Edit the building/floor parameters or remove the staircase first.",
+          "This floor connects an architectural assembly. Edit the building/floor parameters or remove the staircase first.",
         );
       if (
         assembly &&

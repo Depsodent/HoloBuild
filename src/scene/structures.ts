@@ -370,7 +370,7 @@ export function applyStructure(
       !info.template &&
       operation.type === "design" &&
       Object.keys(operation).every((key) =>
-        ["type", "stairs", "openings"].includes(key),
+        ["type", "stairs", "openings", "balconies"].includes(key),
       );
     const recipe =
       info.template ??
@@ -402,6 +402,12 @@ export function applyStructure(
         operation.type === "design" &&
         operation.stairs !== undefined &&
         ["floor", "stair"].includes(c.role)
+      )
+        return true;
+      if (
+        operation.type === "design" &&
+        operation.balconies !== undefined &&
+        c.role === "balcony"
       )
         return true;
       const point = local ? o : transformPart(o, frameMatrix(info).invert());
@@ -464,6 +470,9 @@ export function applyStructure(
             ...(openingDesign(recipe, operation) === undefined
               ? {}
               : { openings: openingDesign(recipe, operation) }),
+            ...(operation.balconies === undefined
+              ? {}
+              : { balconies: operation.balconies }),
             ...(operation.stairs === undefined
               ? {}
               : { stairs: operation.stairs }),
@@ -638,8 +647,14 @@ export function applyStructure(
                 p.construction?.role === c.role &&
                 p.construction.level === c.level,
             ));
-      const previousAssembly = recipe.stairs?.find((s) => s.id === c.assembly);
-      const nextAssembly = template.stairs?.find((s) => s.id === c.assembly);
+      const previousAssembly = [
+        ...(recipe.stairs ?? []),
+        ...(recipe.balconies ?? []),
+      ].find((s) => s.id === c.assembly);
+      const nextAssembly = [
+        ...(template.stairs ?? []),
+        ...(template.balconies ?? []),
+      ].find((s) => s.id === c.assembly);
       const materialChanged =
         nextAssembly && nextAssembly.material !== previousAssembly?.material;
       const colorChanged =

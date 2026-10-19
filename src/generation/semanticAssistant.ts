@@ -1,3 +1,4 @@
+import { balconyOperation } from "../scene/balconyTransform";
 import { openingTarget, openingOperation } from "../scene/openingTransform";
 import { staircaseOperation } from "../scene/staircaseTransform";
 import { assistantPlanSchema } from "../../shared/assistantSchema.mjs";
@@ -78,9 +79,9 @@ export async function interpretConversation(
     const plan = assistantPlanSchema.parse(data.plan);
     plannerStage("Validating");
     if (plan.kind === "create" || plan.kind === "compose") {
-      if (/\b(?:balcon\w*|hinged|functional door)\b/i.test(prompt))
+      if (/\b(?:hinged|functional door)\b/i.test(prompt))
         throw Error(
-          "This design needs unsupported balconies or functional doors. I can prepare a supported fixed-panel design if you choose that alternative.",
+          "This design needs unsupported animated or functional doors. I can prepare a supported fixed-panel design if you choose that alternative.",
         );
       const built =
         plan.kind === "compose"
@@ -95,6 +96,16 @@ export async function interpretConversation(
       )
         throw Error(
           "No staircase was generated. Choose its destination floor and left/right location; scene unchanged.",
+        );
+      if (
+        /\bbalcon(?:y|ies)\b/i.test(prompt) &&
+        !(
+          built.template?.balconies?.length &&
+          built.objects.some((o) => o.role === "balcony")
+        )
+      )
+        throw Error(
+          "No balcony was generated. Specify its floor and facade; scene unchanged.",
         );
       validateDesignAttributes(prompt, built);
       const prepared = preparePlan(built, base);
@@ -151,6 +162,19 @@ export async function interpretConversation(
           "That request targets a group; choose Structure or clarify the intended component.",
         );
       const op = plan.operation;
+      if (object.construction?.role === "balcony") {
+        const operation = balconyOperation(base, object.id, op);
+        await requestEdit(prompt, settings, operation);
+        const result = useEditStore.getState();
+        return {
+          ok: result.status === "preview",
+          message:
+            result.status === "preview"
+              ? plan.message +
+                " Review the balcony and its access before confirming."
+              : result.message,
+        };
+      }
       if (openingTarget(base, object.id)) {
         const operation = openingOperation(base, object.id, op);
         await requestEdit(prompt, settings, operation);

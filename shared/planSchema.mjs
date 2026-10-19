@@ -21,6 +21,7 @@ export const roles = [
   "window",
   "beam",
   "stair",
+  "balcony",
 ];
 const id = z.string().regex(/^[a-zA-Z0-9_-]{1,48}$/);
 export const contactsSchema = z.array(z.tuple([id, id])).max(240);
@@ -41,6 +42,21 @@ export const openingSchema = z
     (o) => o.kind !== "door" || o.bottom === 0,
     "Door openings must start at the floor.",
   );
+export const balconySchema = z
+  .object({
+    id: z.string().regex(/^[a-zA-Z0-9_-]{1,24}$/),
+    level: z.number().int().min(1).max(5),
+    facade: z.enum(["front", "back", "left", "right"]),
+    offset: z.number().finite().min(-15).max(15),
+    width: z.number().finite().min(1.5).max(5),
+    depth: z.number().finite().min(0.8).max(3),
+    railHeight: z.number().finite().min(0.8).max(1.5),
+    material: z.enum(materials),
+    color: z.string().regex(/^#[a-fA-F0-9]{6}$/),
+    access: z.string().regex(/^[a-zA-Z0-9_-]{1,24}$/),
+    ownsAccess: z.boolean(),
+  })
+  .strict();
 export const staircaseSchema = z
   .object({
     id: z.string().regex(/^[a-zA-Z0-9_-]{1,24}$/),
@@ -59,6 +75,7 @@ export const staircaseSchema = z
   .strict();
 export const templateSchema = z
   .object({
+    balconies: z.array(balconySchema).max(6).optional(),
     openings: z.array(openingSchema).max(32).optional(),
     stairs: z.array(staircaseSchema).max(5).optional(),
     appearance: z

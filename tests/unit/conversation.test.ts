@@ -159,7 +159,7 @@ it("unsupported refinements explain limitations without mutation or new structur
   await chat("Build a house");
   await chat("Yes");
   const base = scene().objects;
-  const result = await chat("Add a balcony");
+  const result = await chat("Add an animated hinged door");
   expect(result.ok).toBe(false);
   expect(scene().objects).toBe(base);
   expect(useConversationStore.getState().messages.at(-1)?.text).toMatch(
@@ -540,4 +540,54 @@ it("draft and confirmed opening refinements preserve context and commit only the
   expect(scene().objects).toEqual(wider);
   await chat("Undo");
   expect(scene().objects).toEqual(before);
+});
+
+it("balconies refine the unconfirmed building through remembered floor/facade clarification and atomic edits", async () => {
+  await chat("Build a two-story house with no windows");
+  await chat("Add a balcony on the second floor");
+  expect(useConversationStore.getState().messages.at(-1)?.text).toMatch(
+    /facade/,
+  );
+  await chat("front");
+  const draft = useGenerationStore.getState().prepared!;
+  expect(draft.plan.template?.balconies).toHaveLength(1);
+  expect(
+    draft.objects.filter((o) => o.construction?.role === "balcony"),
+  ).toHaveLength(8);
+  expect(scene().past).toHaveLength(0);
+  await chat("Yes");
+  const built = scene().objects;
+  const slab = built.find((o) => o.construction?.role === "balcony")!;
+  scene().setSelectionMode("component");
+  scene().select(slab.id);
+  await chat("Make the balcony wooden");
+  expect(useEditStore.getState().status, useEditStore.getState().message).toBe(
+    "preview",
+  );
+  expect(scene().objects).toBe(built);
+  await chat("Yes");
+  expect(
+    scene()
+      .objects.filter((o) => o.construction?.role === "balcony")
+      .every((o) => o.material === "wood"),
+  ).toBe(true);
+  expect(scene().selectionMode).toBe("component");
+  await chat("Move it to the right");
+  expect(useEditStore.getState().status, useEditStore.getState().message).toBe(
+    "preview",
+  );
+  await chat("Yes");
+  expect(
+    scene().objects.find((o) => o.id === slab.id)!.construction!.structure!
+      .template!.balconies![0].offset,
+  ).toBeCloseTo(0.25);
+  await chat("Remove the balcony");
+  await chat("Yes");
+  expect(scene().objects.some((o) => o.construction?.role === "balcony")).toBe(
+    false,
+  );
+  await chat("Undo");
+  expect(scene().objects.some((o) => o.construction?.role === "balcony")).toBe(
+    true,
+  );
 });

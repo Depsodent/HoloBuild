@@ -98,7 +98,9 @@ export function materializePlan(input: unknown) {
     );
   if (
     plan.template &&
-    (plan.template.stairs?.length || plan.template.openings)
+    (plan.template.stairs?.length ||
+      plan.template.openings ||
+      plan.template.balconies?.length)
   ) {
     const expected = offlinePlan(plan.template.kind, plan.template).objects;
     const physical = (p: (typeof plan.objects)[number]) =>

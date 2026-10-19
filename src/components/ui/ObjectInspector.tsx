@@ -1,3 +1,4 @@
+import { BalconyInspector } from "./BalconyInspector";
 import { OpeningInspector } from "./OpeningInspector";
 import { StaircaseInspector } from "./StaircaseInspector";
 import { ColorEditor } from "./ColorEditor";
@@ -22,6 +23,19 @@ export function ObjectInspector() {
   const group = useSceneStore((s) => s.selectedStructureId);
   if (group && objects.some((o) => o.construction?.structureId === group))
     return <StructureInspector key={group} id={group} />;
+  if (object?.construction?.role === "balcony")
+    return (
+      <BalconyInspector
+        key={
+          object.id +
+          JSON.stringify(
+            object.construction.structure?.template ??
+              object.construction.structure?.architectureTemplate,
+          )
+        }
+        object={object}
+      />
+    );
   if (object?.construction?.assembly && object.construction.role === "stair")
     return (
       <StaircaseInspector

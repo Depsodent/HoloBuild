@@ -326,3 +326,83 @@ test("selected opening inspector rebuilds rendered wall geometry with inert prev
   });
   expect(errors).toEqual([]);
 });
+
+test("balcony draft refinement, grouped Inspector edits and rendered access preserve exact history", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/?testInput");
+  await page.getByRole("tab", { name: "AI", exact: true }).click();
+  const ask = async (text: string) => {
+    await page.getByLabel("Ask HoloBuild", { exact: true }).fill(text);
+    await page
+      .getByRole("button", { name: "Send request", exact: true })
+      .click();
+  };
+  const scene = () => page.evaluate(() => window.__HOLO_TEST__!.scene());
+  const base = await scene();
+  await ask("Build a two-story house with no windows");
+  await ask("Add stairs");
+  await ask("left");
+  await ask("Add a balcony on the second floor");
+  await expect(
+    page.getByRole("log", { name: "Design conversation" }),
+  ).toContainText("facade");
+  await ask("front");
+  await expect(
+    page.getByRole("log", { name: "Design conversation" }),
+  ).toContainText("draft geometry is updated");
+  expect(await scene()).toEqual(base);
+  await ask("Yes");
+  const built = await scene();
+  expect(built.filter((o) => o.construction?.role === "balcony")).toHaveLength(
+    8,
+  );
+  expect(built.some((o) => o.construction?.role === "stair")).toBe(true);
+  const balcony = built.find((o) => o.construction?.role === "balcony")!;
+  const recipe = balcony.construction!.structure!.template!;
+  expect(
+    built.some((o) => o.construction?.opening === recipe.balconies![0].access),
+  ).toBe(true);
+  await page.getByLabel("Selection mode").selectOption("component");
+  await page.getByRole("tab", { name: "Collection", exact: true }).click();
+  await page.getByLabel("Search scene objects").fill("Balcony balcony-1 slab");
+  await page
+    .locator(".scene-list button")
+    .filter({ hasText: "Balcony balcony-1 slab" })
+    .first()
+    .click();
+  await page.getByRole("tab", { name: "Inspector", exact: true }).click();
+  await expect(
+    page.getByLabel("Balcony Inspector", { exact: true }),
+  ).toBeVisible();
+  await page.getByLabel("Balcony width", { exact: true }).fill("2.8");
+  await page
+    .getByRole("button", { name: "Preview balcony change", exact: true })
+    .click();
+  await expect(
+    page.getByLabel("Structure modification preview", { exact: true }),
+  ).toBeVisible();
+  expect(await scene()).toEqual(built);
+  await page
+    .getByRole("button", { name: "Confirm structure edit", exact: true })
+    .click();
+  const wider = await scene();
+  expect(
+    wider.find((o) => o.id === balcony.id)!.construction!.structure!.template!
+      .balconies![0].width,
+  ).toBeCloseTo(2.8);
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  expect(await scene()).toEqual(built);
+  await page.getByRole("button", { name: "Redo", exact: true }).click();
+  expect(await scene()).toEqual(wider);
+  const canvas = page.locator("canvas[data-engine]");
+  await canvas.hover();
+  await page.mouse.wheel(0, 350);
+  await expect(canvas).toBeVisible();
+  await page.screenshot({
+    path: "test-results/architectural-balcony-phase4.png",
+  });
+  expect(errors).toEqual([]);
+});

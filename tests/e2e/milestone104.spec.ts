@@ -114,7 +114,7 @@ test("default assistant refines a confirmed structure through a real multi-turn 
   expect(await scene()).toEqual(refined);
   await ask("Redo");
   expect(await scene()).toEqual(two);
-  await ask("Add a balcony");
+  await ask("Add an animated hinged door");
   await expect(
     page.getByRole("log", { name: "Design conversation" }),
   ).toContainText("not supported");

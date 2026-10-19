@@ -1,5 +1,6 @@
 import type { SceneObject } from "./objectTypes";
 import type { StructureOperation } from "../../shared/editSchema.mjs";
+import { balconyOperation } from "./balconyTransform";
 import { staircaseOperation } from "./staircaseTransform";
 import { openingOperation } from "./openingTransform";
 export function isOpeningPart(object: SceneObject | undefined) {
@@ -22,5 +23,7 @@ export function architecturalOperation(
 ) {
   return isOpeningPart(objects.find((o) => o.id === id))
     ? openingOperation(objects, id, operation)
-    : staircaseOperation(objects, id, operation);
+    : objects.find((o) => o.id === id)?.construction?.role === "balcony"
+      ? balconyOperation(objects, id, operation)
+      : staircaseOperation(objects, id, operation);
 }

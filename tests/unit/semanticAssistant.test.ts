@@ -232,7 +232,7 @@ it("a model cannot redirect an all-parts request into a single component", async
   expect(useEditStore.getState().prepared).toBeNull();
   expect(scene().past).toHaveLength(0);
 });
-it("unsupported architecture cannot be silently omitted from a model design", async () => {
+it("supported architectural features cannot be silently omitted from a model design", async () => {
   vi.stubGlobal("fetch", async () =>
     Response.json({
       source: "llm",

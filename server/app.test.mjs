@@ -778,3 +778,50 @@ test("edit adapter accepts bounded opening recipes and rejects executable or ani
   assert.equal(rejected.status, 422);
   assert.ok((await rejected.json()).requestId);
 });
+
+test("balcony edit recipes stay bounded and reject invalid dimensions", async (t) => {
+  let invalid = false;
+  const balcony = {
+    id: "balcony-1",
+    level: 1,
+    facade: "front",
+    offset: 0,
+    width: 2.4,
+    depth: 1.5,
+    railHeight: 1.1,
+    material: "wood",
+    color: "#aab5c2",
+    access: "entry",
+    ownsAccess: true,
+  };
+  const url = await fixture(t, async () =>
+    Response.json({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              version: 1,
+              operation: {
+                type: "design",
+                balconies: [{ ...balcony, width: invalid ? 99 : 2.4 }],
+              },
+            }),
+          },
+        },
+      ],
+    }),
+  );
+  const response = await editPost(url, {
+    prompt: "Make the balcony wider",
+    context: editContext,
+  });
+  assert.equal(response.status, 200);
+  assert.deepEqual((await response.json()).plan.operation.balconies, [balcony]);
+  invalid = true;
+  const rejected = await editPost(url, {
+    prompt: "Make the balcony wider",
+    context: editContext,
+  });
+  assert.equal(rejected.status, 422);
+  assert.ok((await rejected.json()).requestId);
+});

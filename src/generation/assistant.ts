@@ -65,7 +65,11 @@ function activeStructure(input: string) {
     )
       ? part?.construction?.structureId
       : null) ??
-    (part?.construction?.assembly && /\bstair/i.test(input)
+    (part?.construction?.assembly &&
+    (/\bstair|\bbalcon/i.test(input) ||
+      /^(?:make|change|move|resize|scale|rotate|remove|delete|paint)\b/i.test(
+        input,
+      ))
       ? part.construction.structureId
       : null) ??
     (/\b(?:all|every|whole|entire|structure|house|building)\b/i.test(input)
@@ -358,11 +362,11 @@ export async function dispatchAssistant(
       const whole =
         /\b(?:all|every|whole|entire)\b|\b(?:each|per) floor\b/i.test(raw) ||
         (/\b(?:house|building|structure)\b/i.test(raw) &&
-          !/\b(?:window|door|entrance|stair)/i.test(raw));
+          !/\b(?:window|door|entrance|stair|balcon)/i.test(raw));
       if (
         scene.selectedStructureId !== group &&
         !(selectedOpening && !whole) &&
-        !(selectedAssembly && !whole && /stair/i.test(raw))
+        !(selectedAssembly && !whole)
       ) {
         scene.setSelectionMode("structure");
         scene.select(members(scene.objects, group)[0].id);

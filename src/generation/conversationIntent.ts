@@ -1,3 +1,4 @@
+import { balconyIntent } from "./balconyIntent";
 import { openingIntent } from "./openingIntent";
 import { architecturalIntent } from "./architecturalIntent";
 import { normalizeDesignRequest, requestedAppearance } from "./designLanguage";
@@ -81,8 +82,26 @@ export function refinementOperation(
     layouts?: readonly ("ground" | "upper")[];
   },
 ): { operation?: StructureOperation; message?: string } {
+  if (
+    selectedAssembly &&
+    !/\b(?:all|every|whole|entire|wall|roof|window|door|stair|balcon)/i.test(
+      input,
+    )
+  ) {
+    if (recipe?.stairs?.some((s) => s.id === selectedAssembly))
+      input = "staircase " + input;
+    else if (recipe?.balconies?.some((b) => b.id === selectedAssembly))
+      input = "balcony " + input;
+  }
   const t = input.toLowerCase(),
     ops: AtomicStructureOperation[] = [];
+  if (/\b(?:hinged|animated door|functional door|opening the door)\b/.test(t))
+    return {
+      message:
+        "Animated hinged doors are not supported. Static panels in editable wall openings are available.",
+    };
+  const balcony = balconyIntent(input, recipe, selectedAssembly);
+  if (balcony) return balcony;
   const architecture = architecturalIntent(input, recipe, selectedAssembly);
   if (architecture) return architecture;
   const opening = openingIntent(
@@ -92,10 +111,10 @@ export function refinementOperation(
     openingContext?.layouts,
   );
   if (opening) return opening;
-  if (/\b(?:balcon|hinged|opening the door|more modern)/.test(t))
+  if (/\b(?:hinged|opening the door|more modern)/.test(t))
     return {
       message:
-        "Balconies and animated hinged doors are not supported in this phase. I can change window layout, floors, proportions, colors or materials. Which would you like?",
+        "Animated hinged doors are not supported in this phase. I can change window layout, floors, proportions, colors or materials. Which would you like?",
     };
   const appearance = requestedAppearance(t);
   for (const [role, value] of Object.entries(appearance)) {

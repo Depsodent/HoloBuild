@@ -14,6 +14,7 @@ import { numeric } from "../commands/parser";
 import { MATERIAL_IDS, type MaterialId } from "../scene/materialPresets";
 import type { Vec3 } from "../scene/objectTypes";
 export interface OfflineOptions {
+  balconies?: import("../../shared/planSchema.mjs").Balcony[];
   openings?: import("../../shared/planSchema.mjs").Opening[];
   stairs?: import("../../shared/planSchema.mjs").Staircase[];
   width?: number;
@@ -482,6 +483,7 @@ export function offlinePlan(
           ? { openings: options.openings }
           : {}),
         ...(options.stairs ? { stairs: options.stairs } : {}),
+        ...(options.balconies ? { balconies: options.balconies } : {}),
         ...(Object.keys(appearance).length ? { appearance } : {}),
         width: w,
         depth: d,

@@ -6,10 +6,12 @@ import type {
   BuildingTemplate,
   Staircase,
   Opening,
+  Balcony,
 } from "./planSchema.mjs";
 export type AtomicStructureOperation =
   | {
       type: "design";
+      balconies?: Balcony[];
       openings?: Opening[];
       stairs?: Staircase[];
       floors?: number;

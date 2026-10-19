@@ -5,6 +5,7 @@ import {
   templateSchema,
   staircaseSchema,
   openingSchema,
+  balconySchema,
 } from "./planSchema.mjs";
 const delta = z.tuple([
   z.number().finite().min(-50).max(50),
@@ -20,6 +21,7 @@ const atomicOperationSchema = z.discriminatedUnion("type", [
   z
     .object({
       type: z.literal("design"),
+      balconies: z.array(balconySchema).max(6).optional(),
       openings: z.array(openingSchema).max(32).optional(),
       stairs: z.array(staircaseSchema).max(5).optional(),
       floors: z.number().int().min(1).max(6).optional(),

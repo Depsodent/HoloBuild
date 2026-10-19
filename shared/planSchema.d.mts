@@ -5,7 +5,15 @@ export interface PlanPart {
   id: string;
   name: string;
   role:
-    "floor" | "wall" | "roof" | "pillar" | "door" | "window" | "beam" | "stair";
+    | "floor"
+    | "wall"
+    | "roof"
+    | "pillar"
+    | "door"
+    | "window"
+    | "beam"
+    | "stair"
+    | "balcony";
   level?: number;
   assembly?: string;
   opening?: string;
@@ -44,7 +52,22 @@ export interface Staircase {
   color: string;
 }
 export const staircaseSchema: z.ZodType<Staircase>;
+export interface Balcony {
+  id: string;
+  level: number;
+  facade: Opening["facade"];
+  offset: number;
+  width: number;
+  depth: number;
+  railHeight: number;
+  material: MaterialId;
+  color: string;
+  access: string;
+  ownsAccess: boolean;
+}
+export const balconySchema: z.ZodType<Balcony>;
 export interface BuildingTemplate {
+  balconies?: Balcony[];
   openings?: Opening[];
   stairs?: Staircase[];
   appearance?: Partial<

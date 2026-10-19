@@ -116,13 +116,35 @@ export function StructureInspector({ id }: { id: string }) {
           ))}
         </details>
       )}
+      {!!architectureRecipe?.balconies?.length && (
+        <details>
+          <summary>Balconies</summary>
+          {architectureRecipe.balconies.map((b) => (
+            <button
+              key={b.id}
+              onClick={() => {
+                const part = parts.find(
+                  (p) => p.construction?.assembly === b.id,
+                );
+                if (part) {
+                  useSceneStore.getState().setSelectionMode("component");
+                  useSceneStore.getState().select(part.id);
+                }
+              }}
+            >
+              Edit balcony {b.id} · floor {b.level + 1} · {b.facade}
+            </button>
+          ))}
+        </details>
+      )}
       {architectureRecipe && (
         <details>
           <summary>Doors and windows</summary>
           {openingDefinitions(architectureRecipe, info.floorLayouts).map(
             (d) => (
               <button key={d.id} onClick={() => setEditingOpening(d.id)}>
-                Edit {d.kind} · floor {d.level + 1} · {d.facade}
+                Edit {d.kind} · floor {d.level + 1} · {d.facade} · offset{" "}
+                {d.offset.toFixed(2)}
               </button>
             ),
           )}
