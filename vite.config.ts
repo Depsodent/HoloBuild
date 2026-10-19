@@ -1,5 +1,7 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
+import { randomUUID } from "node:crypto";
+import type { ProxyOptions } from "vite";
 import type { Plugin } from "vite";
 // The optional Drei StatsGl component is unused. Do not distribute its code
 // until its missing upstream full notice has been resolved.
@@ -42,17 +44,47 @@ function distributionNotices(): Plugin {
   };
 }
 
+const plannerProxy: ProxyOptions = {
+  target: "http://127.0.0.1:5180",
+  changeOrigin: true,
+  configure(proxy) {
+    proxy.on("error", (_error, _request, response) => {
+      if (
+        "writeHead" in response &&
+        !response.headersSent &&
+        !response.writableEnded
+      ) {
+        const requestId = randomUUID();
+        response.writeHead(503, {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+          "X-Content-Type-Options": "nosniff",
+          "X-Request-ID": requestId,
+        });
+        response.end(
+          JSON.stringify({
+            kind: "local-planner-unavailable",
+            status: 503,
+            requestId,
+            error:
+              "The local planner is unavailable on port 5180. Start both services with npm run dev:local, then check Connection in AI Settings. Offline supports basic templates and explicit edits, not this same complex request.",
+          }),
+        );
+      }
+    });
+  },
+};
 export default defineConfig({
   plugins: [react(), distributionNotices()],
   worker: { format: "es" },
   server: {
     proxy: {
-      "/api/planner": { target: "http://127.0.0.1:5180", changeOrigin: true },
+      "/api/planner": plannerProxy,
     },
   },
   preview: {
     proxy: {
-      "/api/planner": { target: "http://127.0.0.1:5180", changeOrigin: true },
+      "/api/planner": plannerProxy,
     },
   },
   test: { include: ["tests/unit/**/*.test.ts"] },

@@ -90,6 +90,13 @@ export function materializePlan(input: unknown) {
   const plan = planSchema.parse(input),
     structureId = crypto.randomUUID();
   if (
+    plan.objects.some((p) => p.role === "balcony") &&
+    !plan.template?.balconies?.length
+  )
+    throw Error(
+      "Balcony geometry requires a certified recipe and real access opening.",
+    );
+  if (
     plan.objects.some((p) => p.role === "stair") &&
     !plan.template?.stairs?.length
   )

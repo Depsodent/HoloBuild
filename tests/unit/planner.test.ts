@@ -202,3 +202,16 @@ it("geometry retry is explicit, preserves input and is capped to one additional 
   expect(mock).toHaveBeenCalledTimes(2);
   expect(useSceneStore.getState().objects).toHaveLength(0);
 });
+
+it("Offline and Auto fallback never drop staircase/balcony requirements from the exact complex prompt", async () => {
+  const prompt = "generate a 2 story house including a balcony and stairs";
+  const request = vi.fn().mockRejectedValue(Error("Backend unavailable"));
+  vi.stubGlobal("fetch", request);
+  await expect(generatePlan(prompt, "offline")).rejects.toThrow(
+    /placement details/,
+  );
+  expect(request).not.toHaveBeenCalled();
+  await expect(generatePlan(prompt, "auto")).rejects.toThrow(
+    /build a two-story house Offline/,
+  );
+});

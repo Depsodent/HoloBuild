@@ -166,6 +166,6 @@ it("non-JSON platform rate limits retain Retry-After without exposing HTML", asy
       }),
   );
   await expect(plannerRequest("/api/planner/plan", {})).rejects.toThrow(
-    "retry in 8 seconds or use Offline. Reference: edge-ref",
+    "retry in 8 seconds. Offline supports basic templates only. Reference: edge-ref",
   );
 });

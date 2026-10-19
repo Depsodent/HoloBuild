@@ -332,3 +332,89 @@ it("flexible interpretation retains custom primitive-plan generation beyond temp
   expect(scene().objects).toHaveLength(1);
   expect(scene().past).toHaveLength(1);
 });
+
+it("native selected-opening recipe edits preserve unrelated parts and preview exact aperture geometry", async () => {
+  const { openingDefinitions } = await import("../../src/generation/openings");
+  const { confirmEdit } = await import("../../src/generation/editStore");
+  await chat("Build a house with two windows");
+  await chat("Yes");
+  const before = scene().objects;
+  const selected = before.find((o) => o.construction?.role === "window")!;
+  scene().setSelectionMode("component");
+  scene().select(selected.id);
+  const definitions = openingDefinitions(
+    selected.construction!.structure!.template!,
+  );
+  const target = definitions.find(
+    (o) =>
+      o.kind === "window" && Math.abs(o.offset - selected.position[0]) < 1e-6,
+  )!;
+  const operation = {
+    type: "design",
+    openings: definitions.map((o) =>
+      o.id === target.id ? { ...o, width: o.width * 1.2 } : o,
+    ),
+  };
+  vi.stubGlobal("fetch", async () =>
+    Response.json({
+      source: "llm",
+      plan: {
+        kind: "edit",
+        scope: "structure",
+        target: selected.construction!.structureId,
+        operation,
+        message: "Widen only your selected window.",
+      },
+    }),
+  );
+  const result = await interpretConversation(
+    "Give the selected window a wider aperture",
+    settings,
+  );
+  expect(result.ok, result.message).toBe(true);
+  expect(scene().objects).toBe(before);
+  expect(confirmEdit()).toBe(true);
+  expect(
+    scene().objects.find((o) => o.id === selected.id)!.scale[0],
+  ).toBeCloseTo(selected.scale[0] * 1.2);
+  expect(scene().selectedStructureId).toBeNull();
+});
+it("model Part-scope design payloads cannot edit other openings, floors or staircase recipes", async () => {
+  const { openingDefinitions } = await import("../../src/generation/openings");
+  await chat("Build a house with two windows");
+  await chat("Yes");
+  const before = scene().objects;
+  const selected = before.find((o) => o.construction?.role === "window")!;
+  scene().setSelectionMode("component");
+  scene().select(selected.id);
+  const openings = openingDefinitions(
+    selected.construction!.structure!.template!,
+  );
+  for (const operation of [
+    { type: "design", floors: 2 },
+    {
+      type: "design",
+      openings: openings.map((o) => ({ ...o, width: o.width * 1.1 })),
+    },
+  ]) {
+    vi.stubGlobal("fetch", async () =>
+      Response.json({
+        source: "llm",
+        plan: {
+          kind: "edit",
+          scope: "component",
+          target: selected.id,
+          operation,
+          message: "An unrelated edit disguised as a Part.",
+        },
+      }),
+    );
+    const result = await interpretConversation(
+      "Adjust the selected aperture",
+      settings,
+    );
+    expect(result.ok).toBe(false);
+    expect(scene().objects).toBe(before);
+    expect(useEditStore.getState().prepared).toBeNull();
+  }
+});

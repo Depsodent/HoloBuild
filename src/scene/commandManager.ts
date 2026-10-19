@@ -134,14 +134,16 @@ export function execute(command: Command): boolean {
         ? openingTarget(s.objects, s.selectedId)?.current.id
         : undefined;
       const selectedParameter = selectedAssembly || selectedOpening;
-      const parameterEdit =
-        (command.operation.type === "design" &&
-          (command.operation.stairs !== undefined ||
-            command.operation.balconies !== undefined ||
-            command.operation.openings !== undefined)) ||
-        ((command.operation.type === "color" ||
-          command.operation.type === "material") &&
-          command.operation.opening !== undefined);
+      const parameterOperation = (op: StructureOperation): boolean =>
+        op.type === "batch"
+          ? op.operations.every(parameterOperation)
+          : (op.type === "design" &&
+              (op.stairs !== undefined ||
+                op.openings !== undefined ||
+                op.balconies !== undefined)) ||
+            ((op.type === "color" || op.type === "material") &&
+              op.opening !== undefined);
+      const parameterEdit = parameterOperation(command.operation);
       if (
         s.selectionMode === "component" &&
         selectedParameter &&

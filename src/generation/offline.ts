@@ -13,6 +13,11 @@ import {
 import { numeric } from "../commands/parser";
 import { MATERIAL_IDS, type MaterialId } from "../scene/materialPresets";
 import type { Vec3 } from "../scene/objectTypes";
+export function offlinePlanningHint(input: string) {
+  return /\bstairs?\b|\bstaircases?\b|\bbalcon(?:y|ies)\b/i.test(input)
+    ? "This combined request needs staircase/balcony placement details. Use Auto or LLM with a running planner, or build a two-story house Offline, then ask Add stairs on the left and Add a balcony on the second floor on the front. Nothing has been omitted or changed."
+    : "Offline supports basic templates and explicit edits. Flexible interpretation requires Auto/LLM and a running planner.";
+}
 export interface OfflineOptions {
   balconies?: import("../../shared/planSchema.mjs").Balcony[];
   openings?: import("../../shared/planSchema.mjs").Opening[];
@@ -57,6 +62,11 @@ export function offlinePlan(
     throw Error(
       "Choose one supported structure: house, room, tower, warehouse, bridge, garden shed or office.",
     );
+  if (
+    (/\bstairs?\b|\bstaircases?\b/.test(prompt) && !options.stairs?.length) ||
+    (/\bbalcon(?:y|ies)\b/.test(prompt) && !options.balconies?.length)
+  )
+    throw Error(offlinePlanningHint(input));
   const kind = kinds[0][0],
     warnings: string[] = [];
   const number = (pattern: RegExp, fallback: number) => {

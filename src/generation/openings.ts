@@ -320,22 +320,65 @@ export function openingDesign(
     for (const level of floors) {
       const old = list.filter((d) => d.level === level && d.kind === "window");
       if (old.length === change.windows) continue;
-      const defaults = openingDefinitions({
-        ...recipe,
-        openings: undefined,
-        windows: change.windows,
-        windowCounts: Array(recipe.floors).fill(change.windows),
-      }).filter((d) => d.level === level && d.kind === "window");
-      list = list.filter((d) => d.level !== level || d.kind !== "window");
-      const used = new Set(list.map((d) => d.id));
-      for (const [i, d] of defaults.entries()) {
-        let id = old[i]?.id ?? `window-${level}-set-${i}`;
-        let serial = 0;
-        while (used.has(id) && serial < 64)
-          id = `window-${level}-set-${i}-${++serial}`;
-        if (used.has(id)) throw Error("Opening identity budget exceeded.");
-        used.add(id);
-        list.push({ ...d, id });
+      const retained = old.slice(0, change.windows);
+      list = list
+        .filter((d) => d.level !== level || d.kind !== "window")
+        .concat(retained);
+      while (retained.length < change.windows) {
+        let candidate: Opening | undefined;
+        for (const facade of ["front", "back", "left", "right"] as const) {
+          const span =
+            facade === "front" || facade === "back"
+              ? recipe.width
+              : recipe.depth - 2 * recipe.thickness;
+          for (const offset of [
+            0,
+            -span * 0.3,
+            span * 0.3,
+            -span * 0.15,
+            span * 0.15,
+          ]) {
+            const d: Opening = {
+              id: "pending",
+              kind: "window",
+              level,
+              facade,
+              offset,
+              bottom: 1.1,
+              width: recipe.windowWidth ?? 1,
+              height: recipe.windowHeight ?? 1,
+              panel: true,
+            };
+            if (
+              Math.abs(offset) + d.width / 2 <= span / 2 - 0.1 + 1e-6 &&
+              d.bottom + d.height <= recipe.height - 0.1 + 1e-6 &&
+              list.every(
+                (o) =>
+                  o.level !== level ||
+                  o.facade !== facade ||
+                  Math.abs(o.offset - offset) >=
+                    (o.width + d.width) / 2 + 0.1 - 1e-6,
+              )
+            ) {
+              candidate = d;
+              break;
+            }
+          }
+          if (candidate) break;
+        }
+        if (!candidate)
+          throw Error(
+            "No free facade opening fits that count without replacing an existing doorway. Choose another count or resize the building.",
+          );
+        let serial = 0,
+          id = `window-${level}-count-${serial}`;
+        while (list.some((o) => o.id === id) && serial < 64)
+          id = `window-${level}-count-${++serial}`;
+        if (list.some((o) => o.id === id))
+          throw Error("Opening identity budget exceeded.");
+        candidate.id = id;
+        list.push(candidate);
+        retained.push(candidate);
       }
     }
   }

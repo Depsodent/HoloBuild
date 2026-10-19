@@ -15,7 +15,9 @@
     "preview": "vite preview --host 127.0.0.1",
     "setup:vision": "node scripts/prepare-vision.mjs",
     "check:gemini": "node --env-file-if-exists=.env.gemini.local scripts/check-gemini.mjs",
-    "prepare:licenses": "node scripts/prepare-licenses.mjs"
+    "prepare:licenses": "node scripts/prepare-licenses.mjs",
+    "dev:local": "node scripts/dev-local.mjs",
+    "dev:gemini": "node scripts/dev-local.mjs --gemini"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.1.0",

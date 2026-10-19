@@ -202,3 +202,33 @@ it("removing a balcony preserves a pre-existing doorway it does not own", async 
     true,
   );
 });
+
+it("per-floor window count edits choose free facade apertures while preserving balcony access", async () => {
+  const { applyStructure } = await import("../../src/scene/structures");
+  const objects = materializePlan(build()).objects;
+  const result = applyStructure(objects, objects[0].construction!.structureId, {
+    type: "design",
+    windows: 1,
+  });
+  expect(
+    result.parts.filter((o) => o.construction?.role === "window"),
+  ).toHaveLength(2);
+  expect(
+    result.parts.find((o) => o.construction?.opening === "entry")!.position,
+  ).toEqual(objects.find((o) => o.construction?.opening === "entry")!.position);
+  expect(
+    result.parts
+      .filter((o) => o.construction?.role === "balcony")
+      .map((o) => [o.id, o.position, o.scale]),
+  ).toEqual(
+    objects
+      .filter((o) => o.construction?.role === "balcony")
+      .map((o) => [o.id, o.position, o.scale]),
+  );
+});
+it("untrusted balcony-tagged geometry cannot omit its certified access recipe", () => {
+  const plan = build();
+  expect(() => materializePlan({ ...plan, template: undefined })).toThrow(
+    /recipe/,
+  );
+});

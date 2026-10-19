@@ -386,7 +386,7 @@ test("SSE sends stages and validated result with genuine timing, matching 120s b
 });
 test("stream errors never expose an invalid plan; connection and timeout are distinct", async (t) => {
   for (const [kind, fetcher] of [
-    ["validation", async () => providerEvents({ version: 99 })],
+    ["response-schema", async () => providerEvents({ version: 99 })],
     [
       "connection",
       async () => {
@@ -824,4 +824,95 @@ test("balcony edit recipes stay bounded and reject invalid dimensions", async (t
   });
   assert.equal(rejected.status, 422);
   assert.ok((await rejected.json()).requestId);
+});
+
+test("local assistant prompt stays compact while runtime architectural fields remain strict", async (t) => {
+  let sent;
+  const url = await fixture(t, async (_url, options) => {
+    sent = JSON.parse(options.body);
+    return Response.json({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              response: JSON.stringify({
+                kind: "clarify",
+                message:
+                  "Should stairs be left or right, and which facade should receive the balcony?",
+              }),
+            }),
+          },
+        },
+      ],
+    });
+  });
+  const response = await fetch(url + "/api/planner/assistant", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      prompt: "generate a 2 story house including a balcony and stairs",
+      context: { selected: null, structures: [] },
+    }),
+  });
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).plan.kind, "clarify");
+  assert.ok(sent.messages[0].content.length < 10000);
+  assert.ok(sent.messages[0].content.includes("balconies"));
+  assert.ok(!sent.messages[0].content.includes('"$schema"'));
+});
+test("local context rejections expose safe actionable categories instead of generic failure/offline advice", async (t) => {
+  const url = await fixture(
+    t,
+    async () =>
+      Response.json(
+        {
+          error:
+            "request (9787 tokens) exceeds the available context size (4096 tokens), try increasing it",
+        },
+        { status: 400 },
+      ),
+    { LLM_BASE_URL: "http://127.0.0.1:11434/v1" },
+  );
+  const response = await fetch(url + "/api/planner/assistant", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      prompt: "Build a house",
+      context: { selected: null, structures: [] },
+    }),
+  });
+  const data = await response.json();
+  assert.equal(response.status, 502);
+  assert.equal(data.kind, "provider-context");
+  assert.match(data.error, /Shorten the conversation/);
+  assert.ok(data.requestId);
+  assert.ok(!data.error.includes("9787"));
+});
+test("missing proposal prose gets a presentation default without making design or clarification data optional", async () => {
+  const { parseModelAssistant } = await import("../shared/assistantSchema.mjs");
+  const design = {
+    kind: "house",
+    width: 6,
+    depth: 6,
+    height: 3,
+    floors: 2,
+    thickness: 0.2,
+    doors: 0,
+    windows: 0,
+    material: "concrete",
+    roof: "flat",
+  };
+  assert.match(
+    parseModelAssistant(JSON.stringify({ kind: "create", design })).message,
+    /preview/,
+  );
+  assert.throws(() =>
+    parseModelAssistant(
+      JSON.stringify({
+        kind: "create",
+        design: { ...design, height: undefined },
+      }),
+    ),
+  );
+  assert.throws(() => parseModelAssistant(JSON.stringify({ kind: "clarify" })));
 });

@@ -6,14 +6,26 @@ export const assistantPlanSchema = z.discriminatedUnion("kind", [
     .object({
       kind: z.literal("compose"),
       plan: planSchema,
-      message: z.string().min(1).max(240),
+      message: z
+        .string()
+        .min(1)
+        .max(240)
+        .default(
+          "Review the proposed changes and placement in the preview; nothing has been applied.",
+        ),
     })
     .strict(),
   z
     .object({
       kind: z.literal("create"),
       design: templateSchema,
-      message: z.string().min(1).max(240),
+      message: z
+        .string()
+        .min(1)
+        .max(240)
+        .default(
+          "Review the proposed changes and placement in the preview; nothing has been applied.",
+        ),
     })
     .strict(),
   z
@@ -22,7 +34,13 @@ export const assistantPlanSchema = z.discriminatedUnion("kind", [
       scope: z.enum(["component", "structure"]),
       target: z.string().uuid(),
       operation: operationSchema,
-      message: z.string().min(1).max(240),
+      message: z
+        .string()
+        .min(1)
+        .max(240)
+        .default(
+          "Review the proposed changes and placement in the preview; nothing has been applied.",
+        ),
     })
     .strict(),
   z

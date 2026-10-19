@@ -1,11 +1,36 @@
 {
-  "auditedAt": "2026-10-18T14:34:47.930Z",
-  "baseline": "4e5ae51482ff4286ab6b034eef7e4c97350257cd",
-  "workingFiles": 312,
-  "historicalBlobsScanned": 777,
+  "auditedAt": "2026-10-19T13:43:38.899Z",
+  "baseline": "d55428b5bb2b6b0cbede47ca77d163c99dd47212",
+  "workingFiles": 343,
+  "historicalBlobsScanned": 917,
   "bundleFilesScanned": 85,
   "findings": [],
   "reviewedFixtures": [
+    {
+      "file": "history:4de09dab3b56:server/app.test.mjs",
+      "rule": "Credential URL",
+      "reason": "Intentional URL rejection fixture on reserved .example domain"
+    },
+    {
+      "file": "history:20e9c137db30:server/app.test.mjs",
+      "rule": "Credential URL",
+      "reason": "Intentional URL rejection fixture on reserved .example domain"
+    },
+    {
+      "file": "history:eb8e4b001895:server/app.test.mjs",
+      "rule": "Credential URL",
+      "reason": "Intentional URL rejection fixture on reserved .example domain"
+    },
+    {
+      "file": "history:1bdad89ab2f4:server/app.test.mjs",
+      "rule": "Credential URL",
+      "reason": "Intentional URL rejection fixture on reserved .example domain"
+    },
+    {
+      "file": "history:50df8907a8b8:server/app.test.mjs",
+      "rule": "Credential URL",
+      "reason": "Intentional URL rejection fixture on reserved .example domain"
+    },
     {
       "file": "history:b072a7eda638:server/app.test.mjs",
       "rule": "Credential URL",

@@ -72,10 +72,12 @@ export function plannerFailure(
     typeof data?.error === "string"
       ? data.error.slice(0, 300)
       : response?.status === 429
-        ? "Too many requests; retry in " + seconds + " seconds or use Offline."
+        ? "Too many requests; retry in " +
+          seconds +
+          " seconds. Offline supports basic templates only."
         : "Planner request failed" +
           (response ? " (HTTP " + response.status + ")" : "") +
-          ". Retry or choose Offline.";
+          ". Check Connection in AI Settings and retry. Offline supports basic templates only.";
   const id =
     typeof data?.requestId === "string"
       ? data.requestId
@@ -186,7 +188,7 @@ export async function plannerRequest(
       );
     if (error instanceof TypeError)
       throw Error(
-        "Cannot reach the planner. Check your connection, reload this page, or choose Offline.",
+        "Cannot reach the planner. Check Connection in AI Settings and ensure the local backend is running. Offline supports basic templates only.",
       );
     throw error;
   } finally {

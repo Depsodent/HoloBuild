@@ -184,7 +184,7 @@ export const editContextSchema = z
               })
               .strict(),
           )
-          .max(7),
+          .max(roles.length),
       })
       .strict()
       .optional(),

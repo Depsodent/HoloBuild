@@ -1,3 +1,4 @@
+import { selectedParameterScope } from "./parameterScope";
 import { balconyOperation } from "../scene/balconyTransform";
 import { openingTarget, openingOperation } from "../scene/openingTransform";
 import { staircaseOperation } from "../scene/staircaseTransform";
@@ -18,7 +19,7 @@ import {
   prepareComponentCommand,
 } from "./editStore";
 import { useSceneStore } from "../scene/sceneStore";
-import { offlinePlan } from "./offline";
+import { offlinePlan, offlinePlanningHint } from "./offline";
 import { preparePlan } from "./engine";
 import { validateDesignAttributes } from "./designValidation";
 import { useConversationStore } from "./conversationStore";
@@ -34,8 +35,7 @@ export async function interpretConversation(
   if (settings.mode === "offline")
     return {
       ok: false,
-      message:
-        "Offline supports existing templates and explicit edits. Choose Auto or LLM in AI Settings for flexible interpretation.",
+      message: offlinePlanningHint(prompt),
     };
   cancelGeneration("");
   cancelEdit();
@@ -136,7 +136,8 @@ export async function interpretConversation(
         if (
           scene.selectionMode === "component" &&
           scene.selectedId &&
-          !/\b(?:all|every|whole|entire|structure)\b/i.test(prompt)
+          !/\b(?:all|every|whole|entire|structure)\b/i.test(prompt) &&
+          !selectedParameterScope(base, scene.selectedId, plan.operation)
         )
           throw Error(
             "A Part is selected. Choose Structure for a group edit, or describe the selected part change.",
@@ -162,6 +163,22 @@ export async function interpretConversation(
           "That request targets a group; choose Structure or clarify the intended component.",
         );
       const op = plan.operation;
+      if (op.type === "design" || op.type === "batch") {
+        if (!selectedParameterScope(base, object.id, op))
+          throw Error(
+            "The interpreted Part edit changes unrelated architectural recipes. Select Structure or clarify the selected part change.",
+          );
+        await requestEdit(prompt, settings, op);
+        const result = useEditStore.getState();
+        return {
+          ok: result.status === "preview",
+          message:
+            result.status === "preview"
+              ? plan.message +
+                " Review the selected architectural change before confirming."
+              : result.message,
+        };
+      }
       if (object.construction?.role === "balcony") {
         const operation = balconyOperation(base, object.id, op);
         await requestEdit(prompt, settings, operation);
