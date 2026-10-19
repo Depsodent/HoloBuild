@@ -39,6 +39,8 @@ export function refineGenerationPreview(operation: StructureOperation) {
       role: c.role,
       level: c.level,
       assembly: c.assembly,
+      opening: c.opening,
+      facade: c.facade,
       type: o.type,
       position: local.position,
       rotation: local.rotation,
@@ -55,8 +57,10 @@ export function refineGenerationPreview(operation: StructureOperation) {
     objects,
     contacts: info.contacts,
     warnings: [
-      ...draft.plan.warnings.filter((w) => !w.includes("no interior stairs")),
-      "Architectural preview geometry is not certified for building regulations or structural safety.",
+      ...new Set([
+        ...draft.plan.warnings.filter((w) => !w.includes("no interior stairs")),
+        "Architectural preview geometry is not certified for building regulations or structural safety.",
+      ]),
     ],
   });
   materializePlan(plan);
@@ -73,9 +77,10 @@ export function refineGenerationPreview(operation: StructureOperation) {
       ...summary,
     },
     status: "preview",
-    notice:
-      state.notice +
-      " · Validated draft refinement; no additional provider call.",
+    notice: state.notice.includes("Validated draft refinement")
+      ? state.notice
+      : state.notice +
+        " · Validated draft refinement; no additional provider call.",
     message:
       "Draft refined. Confirm to construct it as one action; scene unchanged.",
   });

@@ -1,3 +1,4 @@
+import { openingIntent } from "./openingIntent";
 import { architecturalIntent } from "./architecturalIntent";
 import { normalizeDesignRequest, requestedAppearance } from "./designLanguage";
 import { numeric } from "../commands/parser";
@@ -75,11 +76,22 @@ export function refinementOperation(
   input: string,
   recipe?: BuildingTemplate,
   selectedAssembly?: string,
+  openingContext?: {
+    selected?: string;
+    layouts?: readonly ("ground" | "upper")[];
+  },
 ): { operation?: StructureOperation; message?: string } {
   const t = input.toLowerCase(),
     ops: AtomicStructureOperation[] = [];
   const architecture = architecturalIntent(input, recipe, selectedAssembly);
   if (architecture) return architecture;
+  const opening = openingIntent(
+    input,
+    recipe,
+    openingContext?.selected,
+    openingContext?.layouts,
+  );
+  if (opening) return opening;
   if (/\b(?:balcon|hinged|opening the door|more modern)/.test(t))
     return {
       message:

@@ -1,4 +1,7 @@
-import { staircaseOperation } from "../scene/staircaseTransform";
+import {
+  architecturalOperation,
+  isArchitecturalPart,
+} from "../scene/architecturalTransform";
 import { useSceneStore, type Preview } from "../scene/sceneStore";
 import { applyStructure } from "../scene/structures";
 import { execute } from "../scene/commandManager";
@@ -10,13 +13,13 @@ export function groupPreview(
 ): Preview | null {
   const s = useSceneStore.getState(),
     object = s.objects.find((o) => o.id === id);
-  const assembly = !s.selectedStructureId && object?.construction?.assembly;
+  const assembly = !s.selectedStructureId && isArchitecturalPart(object);
   const group =
     s.selectedStructureId ??
-    (assembly ? object.construction?.structureId : null);
+    (assembly ? object?.construction?.structureId : null);
   if (!group || object?.construction?.structureId !== group) return null;
   try {
-    if (assembly) operation = staircaseOperation(s.objects, id, operation);
+    if (assembly) operation = architecturalOperation(s.objects, id, operation);
     const result = applyStructure(s.objects, group, operation, s.snap),
       anchor = result.parts.find((o) => o.id === id)!;
     return {

@@ -1,3 +1,4 @@
+import { offlinePlan } from "./offline";
 import { Box3, Vector3 } from "three";
 import {
   contactsSchema,
@@ -88,6 +89,38 @@ export function geometry(
 export function materializePlan(input: unknown) {
   const plan = planSchema.parse(input),
     structureId = crypto.randomUUID();
+  if (
+    plan.objects.some((p) => p.role === "stair") &&
+    !plan.template?.stairs?.length
+  )
+    throw Error(
+      "Stair geometry requires a certified staircase recipe and floor connection.",
+    );
+  if (
+    plan.template &&
+    (plan.template.stairs?.length || plan.template.openings)
+  ) {
+    const expected = offlinePlan(plan.template.kind, plan.template).objects;
+    const physical = (p: (typeof plan.objects)[number]) =>
+      JSON.stringify([
+        p.type,
+        p.role,
+        p.level,
+        p.assembly,
+        p.opening,
+        p.facade,
+        ...[p.position, p.rotation, p.dimensions].map((v) =>
+          v.map((n) => Number(n.toFixed(6))),
+        ),
+      ]);
+    const actual = plan.objects.map(physical).sort();
+    if (
+      JSON.stringify(expected.map(physical).sort()) !== JSON.stringify(actual)
+    )
+      throw Error(
+        "Architectural recipe does not match actual stair/opening geometry. Scene unchanged.",
+      );
+  }
   const objects = plan.objects.map((part) =>
     objectSchema.parse({
       ...createObject(part.type),
@@ -103,6 +136,8 @@ export function materializePlan(input: unknown) {
         role: part.role,
         level: part.level,
         assembly: part.assembly,
+        opening: part.opening,
+        facade: part.facade,
         structure: {
           name: plan.name.slice(0, 60),
           type: plan.template?.kind ?? "generated",

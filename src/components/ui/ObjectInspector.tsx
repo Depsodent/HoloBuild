@@ -1,3 +1,4 @@
+import { OpeningInspector } from "./OpeningInspector";
 import { StaircaseInspector } from "./StaircaseInspector";
 import { ColorEditor } from "./ColorEditor";
 import { colorPatch } from "../../scene/colors";
@@ -27,6 +28,24 @@ export function ObjectInspector() {
         key={
           object.id +
           JSON.stringify(object.construction.structure?.template?.stairs)
+        }
+        object={object}
+      />
+    );
+  if (
+    object?.construction &&
+    ["window", "door"].includes(object.construction.role) &&
+    (object.construction.structure?.template ??
+      object.construction.structure?.architectureTemplate)
+  )
+    return (
+      <OpeningInspector
+        key={
+          object.id +
+          JSON.stringify(
+            object.construction.structure?.template ??
+              object.construction.structure?.architectureTemplate,
+          )
         }
         object={object}
       />

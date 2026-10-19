@@ -4,6 +4,7 @@ import {
   roles,
   templateSchema,
   staircaseSchema,
+  openingSchema,
 } from "./planSchema.mjs";
 const delta = z.tuple([
   z.number().finite().min(-50).max(50),
@@ -19,6 +20,7 @@ const atomicOperationSchema = z.discriminatedUnion("type", [
   z
     .object({
       type: z.literal("design"),
+      openings: z.array(openingSchema).max(32).optional(),
       stairs: z.array(staircaseSchema).max(5).optional(),
       floors: z.number().int().min(1).max(6).optional(),
       windows: z.number().int().min(0).max(6).optional(),
@@ -55,6 +57,10 @@ const atomicOperationSchema = z.discriminatedUnion("type", [
     .object({
       type: z.literal("material"),
       material: z.enum(materials),
+      opening: z
+        .string()
+        .regex(/^[a-zA-Z0-9_-]{1,24}$/)
+        .optional(),
       role: z.enum(roles).optional(),
       level: z.number().int().min(0).max(5).optional(),
     })
@@ -62,6 +68,10 @@ const atomicOperationSchema = z.discriminatedUnion("type", [
   z
     .object({
       type: z.literal("color"),
+      opening: z
+        .string()
+        .regex(/^[a-zA-Z0-9_-]{1,24}$/)
+        .optional(),
       color: z
         .string()
         .regex(/^#[a-fA-F0-9]{6}$/)

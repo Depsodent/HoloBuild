@@ -1,3 +1,4 @@
+import { openingTarget, openingOperation } from "./openingTransform";
 import {
   applyStructure,
   invalidateTemplate,
@@ -128,16 +129,28 @@ export function execute(command: Command): boolean {
           : result.structureId;
       const selectedAssembly = s.objects.find((o) => o.id === s.selectedId)
         ?.construction?.assembly;
+      const selectedOpening = s.selectedId
+        ? openingTarget(s.objects, s.selectedId)?.current.id
+        : undefined;
+      const selectedParameter = selectedAssembly || selectedOpening;
+      const parameterEdit =
+        (command.operation.type === "design" &&
+          (command.operation.stairs !== undefined ||
+            command.operation.openings !== undefined)) ||
+        ((command.operation.type === "color" ||
+          command.operation.type === "material") &&
+          command.operation.opening !== undefined);
       if (
         s.selectionMode === "component" &&
-        selectedAssembly &&
-        command.operation.type === "design" &&
-        command.operation.stairs !== undefined
+        selectedParameter &&
+        parameterEdit
       ) {
         selectedId =
           result.parts.find((o) => o.id === s.selectedId)?.id ??
-          result.parts.find(
-            (o) => o.construction?.assembly === selectedAssembly,
+          result.parts.find((o) =>
+            selectedAssembly
+              ? o.construction?.assembly === selectedAssembly
+              : o.construction?.opening === selectedOpening,
           )?.id ??
           null;
         selectedStructureId = null;
@@ -192,6 +205,47 @@ export function execute(command: Command): boolean {
     } else {
       const index = objects.findIndex((o) => o.id === command.id);
       if (index < 0) throw new Error("Select an existing object first.");
+      const editableOpening = openingTarget(s.objects, command.id);
+      if (editableOpening) {
+        if (command.type === "duplicate")
+          throw Error(
+            "Add another window/door on a facade instead of duplicating a loose panel.",
+          );
+        if (command.type === "delete")
+          return execute({
+            type: "structure",
+            structureId: objects[index].construction!.structureId,
+            operation: openingOperation(s.objects, command.id, {
+              type: "delete",
+            }),
+          });
+        if (
+          command.type === "update" &&
+          (command.patch.position ||
+            command.patch.rotation ||
+            command.patch.scale)
+        ) {
+          const old = objects[index];
+          if (
+            command.patch.rotation &&
+            [0, 2].some(
+              (i) =>
+                Math.abs(command.patch.rotation![i] - old.rotation[i]) > 1e-6,
+            )
+          )
+            throw Error("Opening orientation follows its wall.");
+          return execute({
+            type: "structure",
+            structureId: old.construction!.structureId,
+            operation: openingOperation(s.objects, old.id, {
+              type: "setTransform",
+              position: command.patch.position ?? old.position,
+              yaw: command.patch.rotation?.[1] ?? old.rotation[1],
+              scale: command.patch.scale ?? old.scale,
+            }),
+          });
+        }
+      }
       const assembly = objects[index].construction?.assembly;
       const stairRecipe =
         objects[index].construction?.structure?.template ??

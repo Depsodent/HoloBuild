@@ -1,3 +1,5 @@
+import { OpeningInspector } from "./OpeningInspector";
+import { openingDefinitions } from "../../generation/openings";
 import { useLeftStore } from "../../workspace/leftStore";
 import { ColorEditor } from "./ColorEditor";
 import { useState } from "react";
@@ -40,6 +42,7 @@ export function StructureInspector({ id }: { id: string }) {
     parts = members(objects, id),
     info = structureInfo(parts);
   const architectureRecipe = info.template ?? info.architectureTemplate;
+  const [editingOpening, setEditingOpening] = useState<string | null>(null);
   const [role, setRole] = useState("all"),
     [level, setLevel] = useState(0);
   const activeLevel = Math.min(
@@ -59,6 +62,15 @@ export function StructureInspector({ id }: { id: string }) {
       scale: info.scale,
       ...patch,
     });
+  if (editingOpening && architectureRecipe)
+    return (
+      <OpeningInspector
+        key={editingOpening + JSON.stringify(architectureRecipe.openings)}
+        structureId={id}
+        openingId={editingOpening}
+        onBack={() => setEditingOpening(null)}
+      />
+    );
   return (
     <aside className="panel inspector" aria-label="Structure Inspector">
       <div className="eyebrow">STRUCTURE INSPECTOR</div>
@@ -102,6 +114,18 @@ export function StructureInspector({ id }: { id: string }) {
               Edit staircase {stair.id} · floors {stair.from + 1}–{stair.to + 1}
             </button>
           ))}
+        </details>
+      )}
+      {architectureRecipe && (
+        <details>
+          <summary>Doors and windows</summary>
+          {openingDefinitions(architectureRecipe, info.floorLayouts).map(
+            (d) => (
+              <button key={d.id} onClick={() => setEditingOpening(d.id)}>
+                Edit {d.kind} · floor {d.level + 1} · {d.facade}
+              </button>
+            ),
+          )}
         </details>
       )}
       <Accordion id="structure.transform" title="Structure Transform">

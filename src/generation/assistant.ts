@@ -1,3 +1,4 @@
+import { openingTarget } from "../scene/openingTransform";
 import { refineGenerationPreview } from "./refinePreview";
 import { interpretConversation } from "./semanticAssistant";
 import { yawRotation } from "../interaction/twoHandMath";
@@ -55,8 +56,15 @@ export function cancelAssistantPreview() {
 function activeStructure(input: string) {
   const s = useSceneStore.getState(),
     part = s.objects.find((o) => o.id === s.selectedId);
+  const opening = part ? openingTarget(s.objects, part.id) : null;
   const selected =
     s.selectedStructureId ??
+    (opening &&
+    /^(?:make|move|resize|scale|rotate|remove|delete|change|paint|color|duplicate|put)|\b(?:windows?|doors?|entrance)\b/i.test(
+      input,
+    )
+      ? part?.construction?.structureId
+      : null) ??
     (part?.construction?.assembly && /\bstair/i.test(input)
       ? part.construction.structureId
       : null) ??
@@ -98,11 +106,16 @@ export async function dispatchAssistant(
     if (
       pendingArchitecture &&
       pendingArchitecture.target === (draftId ?? activeStructure(raw)) &&
-      /^(?:on |to |the |floor )*(?:left|right|first|second|third|fourth|fifth|sixth|[1-6])(?:\b|$)/i.test(
+      /^(?:on |to |the |floor )*(?:left|right|front|back|first|second|third|fourth|fifth|sixth|[1-6])(?:\b|$)/i.test(
         raw,
       )
     )
-      raw = pendingArchitecture.text + " " + raw;
+      raw =
+        pendingArchitecture.text +
+        " " +
+        (/^(first|second|third|fourth|fifth|sixth|[1-6])$/i.test(raw)
+          ? raw + " floor"
+          : raw);
     else useConversationStore.setState({ pendingArchitecture: null });
     const scene = useSceneStore.getState(),
       group = activeStructure(raw),
@@ -255,12 +268,17 @@ export async function dispatchAssistant(
     }
     const draft = useGenerationStore.getState().prepared;
     if (draft) {
-      const proposal = refinementOperation(intent.text, draft.plan.template);
+      const proposal = refinementOperation(
+        intent.text,
+        draft.plan.template,
+        undefined,
+        { layouts: draft.objects[0].construction?.structure?.floorLayouts },
+      );
       if (!proposal.operation) {
         if (
           proposal.message &&
           proposal.message.includes("?") &&
-          /stair/i.test(raw)
+          /stair|window|door|entrance|balcony/i.test(raw)
         )
           useConversationStore.setState({
             pendingArchitecture: {
@@ -306,7 +324,7 @@ export async function dispatchAssistant(
       );
     }
     if (
-      group &&
+      scene.selectedStructureId &&
       /\b(?:this|that|(?:the )?selected) (?:wall|door|window|roof|floor|component)\b/i.test(
         intent.text,
       ) &&
@@ -331,12 +349,20 @@ export async function dispatchAssistant(
       (intent.kind === "refine" ||
         /\broof|walls?|windows?|floors?|entrance\b/i.test(raw))
     ) {
+      const selectedOpening = scene.selectedId
+        ? openingTarget(scene.objects, scene.selectedId)
+        : null;
+      const selectedAssembly = scene.objects.find(
+        (o) => o.id === scene.selectedId,
+      )?.construction?.assembly;
+      const whole =
+        /\b(?:all|every|whole|entire)\b|\b(?:each|per) floor\b/i.test(raw) ||
+        (/\b(?:house|building|structure)\b/i.test(raw) &&
+          !/\b(?:window|door|entrance|stair)/i.test(raw));
       if (
         scene.selectedStructureId !== group &&
-        !(
-          scene.objects.find((o) => o.id === scene.selectedId)?.construction
-            ?.assembly && /\bstair/i.test(raw)
-        )
+        !(selectedOpening && !whole) &&
+        !(selectedAssembly && !whole && /stair/i.test(raw))
       ) {
         scene.setSelectionMode("structure");
         scene.select(members(scene.objects, group)[0].id);
@@ -347,9 +373,16 @@ export async function dispatchAssistant(
           info.template ?? info.architectureTemplate,
           scene.objects.find((o) => o.id === scene.selectedId)?.construction
             ?.assembly,
+          {
+            selected: whole ? undefined : selectedOpening?.current.id,
+            layouts: info.floorLayouts,
+          },
         );
       if (proposal.message && !proposal.operation) {
-        if (proposal.message.includes("?") && /stair/i.test(raw))
+        if (
+          proposal.message.includes("?") &&
+          /stair|window|door|entrance|balcony/i.test(raw)
+        )
           useConversationStore.setState({
             pendingArchitecture: { text: raw, target: group },
           });

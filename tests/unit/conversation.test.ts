@@ -335,7 +335,9 @@ it("selected window width and door movement never silently move the entire struc
   expect(scene().objects).toBe(base);
   expect(scene().selectionMode).toBe("component");
   if (useEditStore.getState().prepared)
-    expect(useEditStore.getState().prepared!.target).toBe("");
+    expect(useEditStore.getState().prepared!.target).toBe(
+      window.construction!.structureId,
+    );
   else
     expect(useConversationStore.getState().messages.at(-1)?.text).toMatch(
       /collide|opening/,
@@ -346,7 +348,9 @@ it("selected window width and door movement never silently move the entire struc
   expect(scene().objects).toBe(base);
   expect(scene().selectionMode).toBe("component");
   if (useEditStore.getState().prepared)
-    expect(useEditStore.getState().prepared!.target).toBe("");
+    expect(useEditStore.getState().prepared!.target).toBe(
+      window.construction!.structureId,
+    );
   else
     expect(useConversationStore.getState().messages.at(-1)?.text).toMatch(
       /collide|opening/,
@@ -492,4 +496,48 @@ it("confirmed staircase removal restores the floor in one reversible operation a
   expect(scene().objects.some((o) => o.construction?.role === "stair")).toBe(
     true,
   );
+});
+
+it("draft and confirmed opening refinements preserve context and commit only the requested geometry", async () => {
+  await chat("Build a two-story house with no windows");
+  await chat("Put one window on each floor");
+  expect(
+    useGenerationStore
+      .getState()
+      .prepared!.objects.filter((o) => o.construction?.role === "window")
+      .map((o) => o.construction!.level)
+      .sort(),
+  ).toEqual([0, 1]);
+  expect(scene().objects).toHaveLength(0);
+  await chat("Yes");
+  const before = scene().objects;
+  const w = before.find(
+    (o) => o.construction?.role === "window" && o.construction.level === 1,
+  )!;
+  scene().setSelectionMode("component");
+  scene().select(w.id);
+  await chat("Make the selected window wider");
+  expect(useEditStore.getState().status, useEditStore.getState().message).toBe(
+    "preview",
+  );
+  expect(scene().objects).toBe(before);
+  await chat("Yes");
+  const wider = scene().objects;
+  expect(wider.find((o) => o.id === w.id)!.scale[0]).toBeCloseTo(
+    w.scale[0] * 1.2,
+  );
+  expect(scene().selectedId).toBe(w.id);
+  expect(scene().past).toHaveLength(2);
+  await chat("Make this window blue");
+  await chat("Yes");
+  expect(scene().objects.find((o) => o.id === w.id)!.color).toBe("#508ee8");
+  expect(
+    scene()
+      .objects.filter((o) => o.id !== w.id)
+      .map((o) => o.color),
+  ).toEqual(wider.filter((o) => o.id !== w.id).map((o) => o.color));
+  await chat("Undo");
+  expect(scene().objects).toEqual(wider);
+  await chat("Undo");
+  expect(scene().objects).toEqual(before);
 });

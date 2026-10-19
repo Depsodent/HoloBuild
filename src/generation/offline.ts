@@ -14,6 +14,7 @@ import { numeric } from "../commands/parser";
 import { MATERIAL_IDS, type MaterialId } from "../scene/materialPresets";
 import type { Vec3 } from "../scene/objectTypes";
 export interface OfflineOptions {
+  openings?: import("../../shared/planSchema.mjs").Opening[];
   stairs?: import("../../shared/planSchema.mjs").Staircase[];
   width?: number;
   depth?: number;
@@ -330,7 +331,9 @@ export function offlinePlan(
         [0, y + floorT / 2, 0],
         "concrete",
       );
-      const levelWindows = options.windowCounts?.[level] ?? windows;
+      const levelWindows = options.openings
+        ? 0
+        : (options.windowCounts?.[level] ?? windows);
       const bottom = y + floorT,
         frontZ = d / 2 - t / 2,
         wallMaterial = material;
@@ -352,7 +355,7 @@ export function offlinePlan(
           height: number;
           role: "door" | "window";
         }[] = [];
-        if (side === 1 && level === 0)
+        if (side === 1 && level === 0 && !options.openings)
           for (let i = 0; i < doors; i++)
             holes.push({
               x:
@@ -475,6 +478,9 @@ export function offlinePlan(
       units: "meters",
       template: {
         kind: kind as NonNullable<ConstructionPlan["template"]>["kind"],
+        ...(options.openings !== undefined
+          ? { openings: options.openings }
+          : {}),
         ...(options.stairs ? { stairs: options.stairs } : {}),
         ...(Object.keys(appearance).length ? { appearance } : {}),
         width: w,

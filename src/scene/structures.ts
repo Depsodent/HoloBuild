@@ -1,3 +1,10 @@
+import {
+  openingDesign,
+  floorOpeningDesign,
+  openingForGeometry,
+  openingDefinitions,
+  facadeAt,
+} from "../generation/openings";
 import { colorPatch } from "./colors";
 import { Box3, Euler, Matrix4, Quaternion, Vector3 } from "three";
 import {
@@ -84,7 +91,7 @@ function templateGeometry(
   layouts?: StructureMetadata["floorLayouts"],
 ) {
   const built = materializePlan(offlinePlan(recipe.kind, recipe)).objects;
-  if (!layouts) return built;
+  if (!layouts || recipe.openings) return built;
   if (layouts.length !== recipe.floors || layouts[0] !== "ground")
     throw Error("Invalid floor relationships.");
   const ground = built.filter((o) => o.construction!.level === 0);
@@ -110,6 +117,10 @@ function templateGeometry(
               construction: {
                 ...o.construction!,
                 level,
+                opening: o.construction!.opening?.replace(
+                  /^(door|window)-0-/,
+                  `$1-${level}-`,
+                ),
                 partId: o.construction!.partId.replace(
                   "level-1-",
                   `level-${level + 1}-`,
@@ -261,11 +272,30 @@ export function applyStructure(
       summary: `Ungroup ${info.name}; keep all components`,
     };
   }
+  const matchesOpening = (o: SceneObject, id: string | undefined) => {
+    if (!id) return true;
+    const recipe = info.template ?? info.architectureTemplate;
+    if (!recipe) return o.construction?.opening === id;
+    const local = transformPart(o, frameMatrix(info).invert());
+    return (
+      openingForGeometry(
+        recipe,
+        {
+          position: local.position,
+          role: o.construction!.role,
+          level: o.construction!.level,
+          facade: o.construction!.facade,
+        },
+        info.floorLayouts,
+      )?.id === id
+    );
+  };
   if (operation.type === "rename") info.name = operation.name;
   else if (operation.type === "material") {
     const affected = parts.filter(
       (o) =>
         (!operation.role || o.construction!.role === operation.role) &&
+        matchesOpening(o, operation.opening) &&
         (operation.level === undefined ||
           o.construction!.level === operation.level),
     );
@@ -287,6 +317,7 @@ export function applyStructure(
     const affected = parts.filter(
       (o) =>
         (!operation.role || o.construction!.role === operation.role) &&
+        matchesOpening(o, operation.opening) &&
         (operation.level === undefined ||
           o.construction!.level === operation.level),
     );
@@ -338,43 +369,75 @@ export function applyStructure(
     const partialArchitecture =
       !info.template &&
       operation.type === "design" &&
-      Object.keys(operation).every((key) => key === "type" || key === "stairs");
+      Object.keys(operation).every((key) =>
+        ["type", "stairs", "openings"].includes(key),
+      );
     const recipe =
       info.template ??
       (partialArchitecture ? info.architectureTemplate : undefined);
-    if (!recipe || !["house", "tower", "office"].includes(recipe.kind))
+    if (
+      !recipe ||
+      recipe.kind === "bridge" ||
+      (operation.type === "floors" &&
+        !["house", "tower", "office"].includes(recipe.kind))
+    )
       throw Error(
         "Floor editing requires an intact generated house/tower/office template; arbitrary or manually modified geometry is unsupported.",
       );
-    const architecturePart = (o: SceneObject) =>
-      ["floor", "stair"].includes(o.construction!.role);
+    const affectedFaces = new Set<string>();
+    if (operation.type === "design" && operation.openings !== undefined) {
+      const before = openingDefinitions(recipe, info.floorLayouts),
+        after = operation.openings;
+      for (const d of [...before, ...after]) {
+        const other = (before.includes(d) ? after : before).find(
+          (p) => p.id === d.id,
+        );
+        if (JSON.stringify(d) !== JSON.stringify(other))
+          affectedFaces.add(d.level + ":" + d.facade);
+      }
+    }
+    const architecturePart = (o: SceneObject, local = false) => {
+      const c = o.construction!;
+      if (
+        operation.type === "design" &&
+        operation.stairs !== undefined &&
+        ["floor", "stair"].includes(c.role)
+      )
+        return true;
+      const point = local ? o : transformPart(o, frameMatrix(info).invert());
+      const face =
+        c.facade ??
+        facadeAt({ position: point.position, role: c.role }, recipe);
+      return face !== undefined && affectedFaces.has(c.level + ":" + face);
+    };
     const checkedOriginal = partialArchitecture
-      ? original.filter(architecturePart)
+      ? original.filter((o) => architecturePart(o))
       : original;
     const certified = templateGeometry(recipe, info.floorLayouts)
-      .filter((o) => !partialArchitecture || architecturePart(o))
+      .filter((o) => !partialArchitecture || architecturePart(o, true))
       .map((o) => transformPart(o, frameMatrix(info)));
+    const matched = new Set<string>();
     if (
       certified.length !== checkedOriginal.length ||
       certified.some((o) => {
-        const old = original.find(
-          (p) => p.construction!.partId === o.construction!.partId,
-        );
-        return (
-          !old ||
-          old.type !== o.type ||
-          old.construction!.role !== o.construction!.role ||
-          old.construction!.level !== o.construction!.level ||
-          !["position", "rotation", "scale"].every((k) =>
-            (o[k as "position"] as Vec3).every(
-              (v, i) => Math.abs(v - old[k as "position"][i]) < 1e-6,
+        const old = checkedOriginal.find(
+          (p) =>
+            !matched.has(p.id) &&
+            p.type === o.type &&
+            p.construction!.role === o.construction!.role &&
+            p.construction!.level === o.construction!.level &&
+            ["position", "rotation", "scale"].every((k) =>
+              (o[k as "position"] as Vec3).every(
+                (v, i) => Math.abs(v - p[k as "position"][i]) < 1e-6,
+              ),
             ),
-          )
         );
+        if (old) matched.add(old.id);
+        return !old;
       })
     )
       throw Error(
-        "Template no longer matches the components. Floor redesign cancelled.",
+        "Template no longer matches the affected components. Undo manual edits on that floor/facade and retry.",
       );
     if (
       (operation.type === "floors" ? action : "design") === "duplicate" &&
@@ -392,12 +455,15 @@ export function applyStructure(
         ? (operation.floors ?? recipe.floors)
         : recipe.floors +
           (action === "remove" ? -1 : action === "height" ? 0 : 1);
-    const template = {
+    let template = {
       ...recipe,
       floors,
       ...(operation.type !== "design"
         ? {}
         : {
+            ...(openingDesign(recipe, operation) === undefined
+              ? {}
+              : { openings: openingDesign(recipe, operation) }),
             ...(operation.stairs === undefined
               ? {}
               : { stairs: operation.stairs }),
@@ -432,6 +498,37 @@ export function applyStructure(
         ? { height: (operation as { height: number }).height }
         : {}),
     };
+    if (template.openings) {
+      template.openings = floorOpeningDesign(
+        recipe,
+        template.openings,
+        floors,
+        action,
+        operation.level,
+      );
+      const counts = Array.from(
+        { length: floors },
+        (_, level) =>
+          template.openings!.filter(
+            (d) => d.kind === "window" && d.level === level,
+          ).length,
+      );
+      template = {
+        ...template,
+        windowCounts: counts,
+        windows: counts[0],
+        doorOffset: (() => {
+          const d = template.openings!.filter(
+            (o) => o.kind === "door" && o.level === 0 && o.facade === "front",
+          );
+          const offset = d.reduce((n, o) => n + o.offset, 0) / (d.length || 1);
+          return Math.abs(offset) <= 2 ? offset : undefined;
+        })(),
+        doors: template.openings.filter(
+          (d) => d.kind === "door" && d.level === 0 && d.facade === "front",
+        ).length,
+      };
+    }
     const layouts = info.floorLayouts
       ? [...info.floorLayouts]
       : Array.from({ length: recipe.floors }, (_, i) =>
@@ -449,7 +546,7 @@ export function applyStructure(
     const built = {
       objects: partialArchitecture
         ? templateGeometry(template, layouts)
-            .filter(architecturePart)
+            .filter((o) => architecturePart(o, true))
             .concat(
               original
                 .filter((o) => !architecturePart(o))
@@ -459,13 +556,30 @@ export function applyStructure(
     };
     info.floorLayouts = layouts;
     const lookup = new Map(original.map((o) => [o.construction!.partId, o]));
+    const legacyOpenings = new Map(
+      original.flatMap((o) => {
+        const local = transformPart(o, frameMatrix(info).invert());
+        const d = openingForGeometry(
+          recipe,
+          {
+            position: local.position,
+            role: o.construction!.role,
+            level: o.construction!.level,
+            facade: o.construction!.facade,
+          },
+          info.floorLayouts,
+        );
+        return d ? [[d.id, o] as const] : [];
+      }),
+    );
+
     const equalShape = (a: SceneObject, b: SceneObject) =>
       a.type === b.type &&
       a.construction?.role === b.construction?.role &&
       a.construction?.level === b.construction?.level &&
       ["position", "rotation", "scale"].every((k) =>
         (a[k as "position"] as Vec3).every(
-          (v, i) => Math.abs(v - b[k as "position"][i]) < 1e-6,
+          (v, i) => Math.abs(v - b[k as "position"][i]) < 1e-9,
         ),
       );
     const stable = new Map(
@@ -497,7 +611,16 @@ export function applyStructure(
                 (operation.level ?? recipe.floors - 1) &&
               p.construction!.role === c.role,
           );
-      const candidate = lookup.get(c.partId);
+      const candidate =
+        (c.opening
+          ? (legacyOpenings.get(c.opening) ??
+            original.find(
+              (p) =>
+                p.construction?.opening === c.opening &&
+                p.construction?.role === c.role &&
+                p.construction?.level === c.level,
+            ))
+          : undefined) ?? lookup.get(c.partId);
       const exact =
         stable.get(c.partId) ??
         (candidate?.construction?.role === c.role &&
@@ -521,10 +644,11 @@ export function applyStructure(
         nextAssembly && nextAssembly.material !== previousAssembly?.material;
       const colorChanged =
         nextAssembly && nextAssembly.color !== previousAssembly?.color;
-      return transformPart(
+      const transformed = transformPart(
         {
           ...o,
           id: exact?.id ?? crypto.randomUUID(),
+          name: exact?.name ?? o.name,
           material: materialChanged
             ? o.material
             : (matching?.material ?? o.material),
@@ -534,6 +658,16 @@ export function applyStructure(
         },
         frameMatrix(info),
       );
+      const preserved = stable.get(c.partId);
+      return preserved
+        ? {
+            ...transformed,
+            position: preserved.position,
+            rotation: preserved.rotation,
+            scale: preserved.scale,
+            name: preserved.name,
+          }
+        : transformed;
     });
     if (partialArchitecture) info.architectureTemplate = template;
     else info.template = template;
@@ -629,16 +763,11 @@ export function invalidateTemplate(objects: SceneObject[], id?: string) {
             ...o.construction,
             structure: {
               ...o.construction.structure,
-              architectureTemplate: o.construction.structure.template?.stairs
-                ?.length
-                ? o.construction.structure.template
-                : o.construction.structure.architectureTemplate,
+              architectureTemplate:
+                o.construction.structure.template ??
+                o.construction.structure.architectureTemplate,
               template: undefined,
-              floorLayouts:
-                o.construction.structure.template?.stairs?.length ||
-                o.construction.structure.architectureTemplate
-                  ? o.construction.structure.floorLayouts
-                  : undefined,
+              floorLayouts: o.construction.structure.floorLayouts,
             },
           },
         }

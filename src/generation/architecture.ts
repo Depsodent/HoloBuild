@@ -1,3 +1,4 @@
+import { openingPlan } from "./openings";
 import type { ConstructionPlan, Staircase } from "../../shared/planSchema.mjs";
 
 type Rect = { minX: number; maxX: number; minZ: number; maxZ: number };
@@ -18,6 +19,7 @@ const overlaps = (a: Rect, b: Rect) =>
   Math.min(a.maxZ, b.maxZ) - Math.max(a.minZ, b.minZ) > epsilon;
 /** Build boxes and an actual rectangular void; never waive collision validation. */
 export function architecturalPlan(input: ConstructionPlan): ConstructionPlan {
+  input = openingPlan(input);
   const recipe = input.template;
   if (!recipe?.stairs?.length) return input;
   if (!["house", "tower", "office"].includes(recipe.kind))

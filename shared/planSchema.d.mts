@@ -8,6 +8,8 @@ export interface PlanPart {
     "floor" | "wall" | "roof" | "pillar" | "door" | "window" | "beam" | "stair";
   level?: number;
   assembly?: string;
+  opening?: string;
+  facade?: Opening["facade"];
   type: ObjectType;
   position: Vec3;
   rotation: Vec3;
@@ -15,6 +17,18 @@ export interface PlanPart {
   material: MaterialId;
   color: string;
 }
+export interface Opening {
+  id: string;
+  kind: "door" | "window";
+  level: number;
+  facade: "front" | "back" | "left" | "right";
+  offset: number;
+  bottom: number;
+  width: number;
+  height: number;
+  panel: boolean;
+}
+export const openingSchema: z.ZodType<Opening>;
 export interface Staircase {
   id: string;
   from: number;
@@ -31,6 +45,7 @@ export interface Staircase {
 }
 export const staircaseSchema: z.ZodType<Staircase>;
 export interface BuildingTemplate {
+  openings?: Opening[];
   stairs?: Staircase[];
   appearance?: Partial<
     Record<PlanPart["role"], { color?: string; material?: MaterialId }>

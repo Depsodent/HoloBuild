@@ -313,7 +313,11 @@ it("editing a duplicated-floor component invalidates only the template recipe an
     }),
   ).toBe(true);
   expect(structureInfo(scene().objects).template).toBeUndefined();
-  expect(structureInfo(scene().objects).floorLayouts).toBeUndefined();
+  expect(structureInfo(scene().objects).floorLayouts).toEqual([
+    "ground",
+    "ground",
+  ]);
+  expect(structureInfo(scene().objects).architectureTemplate?.floors).toBe(2);
   undo();
   expect(scene().objects).toEqual(parts);
 });

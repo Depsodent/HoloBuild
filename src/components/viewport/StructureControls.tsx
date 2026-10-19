@@ -1,4 +1,8 @@
-import { staircaseOperation } from "../../scene/staircaseTransform";
+import {
+  architecturalOperation,
+  isArchitecturalPart,
+  isOpeningPart,
+} from "../../scene/architecturalTransform";
 import { useRef } from "react";
 import { TransformControls } from "@react-three/drei";
 import { Group } from "three";
@@ -16,7 +20,7 @@ export function StructureControls() {
   const ref = useRef<Group>(null),
     dragging = useRef(false);
   const assembly = !groupId
-    ? objects.find((o) => o.id === selectedId && o.construction?.assembly)
+    ? objects.find((o) => o.id === selectedId && isArchitecturalPart(o))
     : undefined;
   const id = groupId ?? assembly?.construction?.structureId;
   const parts = id ? members(objects, id) : [];
@@ -36,7 +40,7 @@ export function StructureControls() {
   });
   const operation = () =>
     assembly
-      ? staircaseOperation(objects, assembly.id, rawOperation())
+      ? architecturalOperation(objects, assembly.id, rawOperation())
       : rawOperation();
   function restore() {
     const mesh = ref.current;
@@ -59,7 +63,9 @@ export function StructureControls() {
         mode={tool}
         space={tool === "scale" ? "local" : "world"}
         showX={tool !== "rotate"}
-        showZ={tool !== "rotate"}
+        showZ={
+          tool !== "rotate" && !(isOpeningPart(assembly) && tool === "scale")
+        }
         translationSnap={snap ? 0.5 : null}
         rotationSnap={snap ? Math.PI / 12 : null}
         scaleSnap={snap ? 0.1 : null}

@@ -733,3 +733,48 @@ test("edit adapter accepts strict parametric staircase changes without introduci
     stairs,
   });
 });
+
+test("edit adapter accepts bounded opening recipes and rejects executable or animated extras", async (t) => {
+  let invalid = false;
+  const opening = {
+    id: "entry",
+    kind: "door",
+    level: 0,
+    facade: "front",
+    offset: 0,
+    bottom: 0,
+    width: 1,
+    height: 2.1,
+    panel: true,
+  };
+  const url = await fixture(t, async () =>
+    Response.json({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              version: 1,
+              operation: {
+                type: "design",
+                openings: [invalid ? { ...opening, hinged: true } : opening],
+              },
+            }),
+          },
+        },
+      ],
+    }),
+  );
+  const response = await editPost(url, {
+    prompt: "Move the entrance",
+    context: editContext,
+  });
+  assert.equal(response.status, 200);
+  assert.deepEqual((await response.json()).plan.operation.openings, [opening]);
+  invalid = true;
+  const rejected = await editPost(url, {
+    prompt: "Move the entrance",
+    context: editContext,
+  });
+  assert.equal(rejected.status, 422);
+  assert.ok((await rejected.json()).requestId);
+});

@@ -1,10 +1,16 @@
 import type { z } from "zod";
 import type { Vec3 } from "../src/scene/objectTypes";
 import type { MaterialId } from "../src/scene/materialPresets";
-import type { PlanPart, BuildingTemplate, Staircase } from "./planSchema.mjs";
+import type {
+  PlanPart,
+  BuildingTemplate,
+  Staircase,
+  Opening,
+} from "./planSchema.mjs";
 export type AtomicStructureOperation =
   | {
       type: "design";
+      openings?: Opening[];
       stairs?: Staircase[];
       floors?: number;
       windows?: number;
@@ -22,11 +28,13 @@ export type AtomicStructureOperation =
   | {
       type: "material";
       material: MaterialId;
+      opening?: string;
       role?: PlanPart["role"];
       level?: number;
     }
   | {
       type: "color";
+      opening?: string;
       color?: string;
       reset?: true;
       role?: PlanPart["role"];

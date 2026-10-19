@@ -1,3 +1,4 @@
+import { openingTarget, openingOperation } from "../scene/openingTransform";
 import { staircaseOperation } from "../scene/staircaseTransform";
 import { assistantPlanSchema } from "../../shared/assistantSchema.mjs";
 import {
@@ -150,6 +151,19 @@ export async function interpretConversation(
           "That request targets a group; choose Structure or clarify the intended component.",
         );
       const op = plan.operation;
+      if (openingTarget(base, object.id)) {
+        const operation = openingOperation(base, object.id, op);
+        await requestEdit(prompt, settings, operation);
+        const result = useEditStore.getState();
+        return {
+          ok: result.status === "preview",
+          message:
+            result.status === "preview"
+              ? plan.message +
+                " Review the opening and surrounding wall before confirming."
+              : result.message,
+        };
+      }
       const architecturalTemplate =
         object.construction?.structure?.template ??
         object.construction?.structure?.architectureTemplate;

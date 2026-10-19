@@ -1,3 +1,4 @@
+import { isArchitecturalPart } from "../../scene/architecturalTransform";
 import { useLeftStore } from "../../workspace/leftStore";
 import { ObjectGeometry } from "./ObjectGeometry";
 import { SurfaceMaterial } from "./SurfaceMaterial";
@@ -115,7 +116,7 @@ export const BuildingObject = memo(function BuildingObject({
       </mesh>
       {selected &&
         !group &&
-        !object.construction?.assembly &&
+        !isArchitecturalPart(object) &&
         tool !== "select" && (
           <TransformControls
             object={ref as React.RefObject<Mesh>}

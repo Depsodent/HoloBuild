@@ -56,6 +56,11 @@ export const objectSchema = z
         structureId: z.string().uuid(),
         structure: structureMetadataSchema.optional(),
         level: z.number().int().min(0).max(5).optional(),
+        opening: z
+          .string()
+          .regex(/^[a-zA-Z0-9_-]{1,24}$/)
+          .optional(),
+        facade: z.enum(["front", "back", "left", "right"]).optional(),
         assembly: z
           .string()
           .regex(/^[a-zA-Z0-9_-]{1,24}$/)

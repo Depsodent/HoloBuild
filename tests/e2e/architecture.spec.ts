@@ -249,3 +249,80 @@ test("model-interpreted staircase recipes create real geometry rather than ackno
     base,
   );
 });
+
+test("selected opening inspector rebuilds rendered wall geometry with inert preview, exact history and project persistence", async ({
+  page,
+}) => {
+  const built = materializePlan(
+    offlinePlan("house", {
+      width: 6,
+      depth: 6,
+      height: 3,
+      floors: 2,
+      doors: 0,
+      windows: 0,
+      openings: [
+        {
+          id: "upper-window",
+          kind: "window",
+          level: 1,
+          facade: "front",
+          offset: 0,
+          bottom: 1,
+          width: 1,
+          height: 1,
+          panel: true,
+        },
+      ],
+    }),
+  );
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/?testInput");
+  await page.locator("input[type=file][accept='.json']").setInputFiles({
+    name: "openings.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(serialize(built.objects)),
+  });
+  await expect(page.locator(".status")).toContainText("Replace complete.");
+  const scene = () => page.evaluate(() => window.__HOLO_TEST__!.scene());
+  const before = await scene();
+  await page.getByLabel("Selection mode").selectOption("component");
+  await page.getByRole("tab", { name: "Collection", exact: true }).click();
+  await page.getByLabel("Search scene objects").fill("window");
+  await page
+    .locator(".scene-list button")
+    .filter({ hasText: "front window panel" })
+    .first()
+    .click();
+  await page.getByRole("tab", { name: "Inspector", exact: true }).click();
+  await expect(
+    page.getByLabel("Opening Inspector", { exact: true }),
+  ).toBeVisible();
+  await page.getByLabel("Opening width", { exact: true }).fill("1.2");
+  await page
+    .getByRole("button", { name: "Preview opening change", exact: true })
+    .click();
+  await expect(
+    page.getByLabel("Structure modification preview", { exact: true }),
+  ).toBeVisible();
+  expect(await scene()).toEqual(before);
+  await page
+    .getByRole("button", { name: "Confirm structure edit", exact: true })
+    .click();
+  const wider = await scene();
+  const panel = wider.find((o) => o.construction?.opening === "upper-window")!;
+  expect(panel.scale[0]).toBeCloseTo(0.4); // wall base width 3m
+  expect(panel.id).toBe(
+    before.find((o) => o.construction?.opening === "upper-window")!.id,
+  );
+  await expect(page.locator("canvas[data-engine]")).toBeVisible();
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  expect(await scene()).toEqual(before);
+  await page.getByRole("button", { name: "Redo", exact: true }).click();
+  expect(await scene()).toEqual(wider);
+  await page.screenshot({
+    path: "test-results/architectural-openings-phase3.png",
+  });
+  expect(errors).toEqual([]);
+});

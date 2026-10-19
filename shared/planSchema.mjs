@@ -24,6 +24,23 @@ export const roles = [
 ];
 const id = z.string().regex(/^[a-zA-Z0-9_-]{1,48}$/);
 export const contactsSchema = z.array(z.tuple([id, id])).max(240);
+export const openingSchema = z
+  .object({
+    id: z.string().regex(/^[a-zA-Z0-9_-]{1,24}$/),
+    kind: z.enum(["door", "window"]),
+    level: z.number().int().min(0).max(5),
+    facade: z.enum(["front", "back", "left", "right"]),
+    offset: z.number().finite().min(-15).max(15),
+    bottom: z.number().finite().min(0).max(4.5),
+    width: z.number().finite().min(0.5).max(2.4),
+    height: z.number().finite().min(0.5).max(3.5),
+    panel: z.boolean(),
+  })
+  .strict()
+  .refine(
+    (o) => o.kind !== "door" || o.bottom === 0,
+    "Door openings must start at the floor.",
+  );
 export const staircaseSchema = z
   .object({
     id: z.string().regex(/^[a-zA-Z0-9_-]{1,24}$/),
@@ -42,6 +59,7 @@ export const staircaseSchema = z
   .strict();
 export const templateSchema = z
   .object({
+    openings: z.array(openingSchema).max(32).optional(),
     stairs: z.array(staircaseSchema).max(5).optional(),
     appearance: z
       .object(
@@ -100,6 +118,11 @@ export const planSchema = z
             id,
             name: z.string().trim().min(1).max(60),
             role: z.enum(roles),
+            opening: z
+              .string()
+              .regex(/^[a-zA-Z0-9_-]{1,24}$/)
+              .optional(),
+            facade: z.enum(["front", "back", "left", "right"]).optional(),
             assembly: z
               .string()
               .regex(/^[a-zA-Z0-9_-]{1,24}$/)
