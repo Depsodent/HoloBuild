@@ -719,3 +719,71 @@ test("Gemini assistant interpretation uses constrained native schema and bounded
   );
   assert.ok(!JSON.stringify(data).includes(env.GEMINI_API_KEY));
 });
+
+test("Gemini plan and edit decoder envelopes retain complete strict runtime validation", async (t) => {
+  const edit = {
+    version: 1,
+    target: "11111111-1111-4111-8111-111111111111",
+    operation: { type: "color", color: "#008080", role: "roof" },
+  };
+  const context = {
+    selected: edit.target,
+    structures: [{ id: edit.target, name: "House", type: "house", count: 44 }],
+  };
+  for (const [action, value] of [
+    ["plan", plan],
+    ["edit", edit],
+  ]) {
+    let sent;
+    const url = await fixture(t, async (_url, init) => {
+      if (init.method !== "POST") return Response.json(metadata);
+      sent = JSON.parse(init.body);
+      return Response.json(completion({ response: JSON.stringify(value) }));
+    });
+    const r = await fetch(url + "/api/planner/" + action, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: "Prepare changes",
+        ...(action === "edit" ? { context } : {}),
+      }),
+    });
+    assert.equal(r.status, 200);
+    assert.deepEqual((await r.json()).plan, value);
+    const schema = sent.generationConfig.responseJsonSchema;
+    assert.deepEqual(Object.keys(schema.properties), ["response"]);
+    assert.ok(JSON.stringify(schema).length < 1000);
+    assert.match(sent.systemInstruction.parts[0].text, /transport only/);
+  }
+});
+test("Gemini encoded plan/edit data cannot hide unknown fields, invalid geometry fields or unbounded operations", async (t) => {
+  for (const [action, value] of [
+    ["plan", { ...plan, execute: "bad" }],
+    [
+      "plan",
+      {
+        ...plan,
+        objects: plan.objects.map((o) => ({ ...o, dimensions: [-1, 0, 0] })),
+      },
+    ],
+    ["edit", { version: 1, operation: { type: "execute", code: "bad" } }],
+  ]) {
+    const url = await fixture(t, async (_url, init) =>
+      init.method !== "POST"
+        ? Response.json(metadata)
+        : Response.json(completion({ response: JSON.stringify(value) })),
+    );
+    const r = await fetch(url + "/api/planner/" + action, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: "Prepare changes",
+        ...(action === "edit"
+          ? { context: { selected: null, structures: [] } }
+          : {}),
+      }),
+    });
+    assert.equal(r.status, 422);
+    assert.equal((await r.json()).kind, "response-schema");
+  }
+});

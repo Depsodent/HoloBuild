@@ -219,6 +219,18 @@ export async function dispatchAssistant(
           : "Select an object or structure to describe.",
       );
     }
+    if (
+      intent.kind === "create" &&
+      group &&
+      settings.mode !== "offline" &&
+      /\b(?:same|this|selected|existing) (?:house|building|structure)\b/i.test(
+        raw,
+      ) &&
+      !/^(?:please\s+)?(?:build|create|generate)\b/i.test(raw.trim())
+    ) {
+      const result = await interpretConversation(raw, settings);
+      return respond(result.message, result.ok);
+    }
     if (intent.kind === "create") {
       if (/\bbridge support\b/i.test(raw))
         return respond(
@@ -246,7 +258,12 @@ export async function dispatchAssistant(
           /* Flexible requests use the configured planner, never a guessed template. */
         }
       }
-      if (settings.mode === "auto" && !procedural) {
+      if (
+        (settings.mode === "auto" ||
+          (settings.mode === "llm" &&
+            /\bstairs?\b|\bstaircases?\b|\bbalcon(?:y|ies)\b/i.test(raw))) &&
+        !procedural
+      ) {
         const result = await interpretConversation(raw, settings);
         return respond(result.message, result.ok);
       }

@@ -52,3 +52,8 @@ The small local model can still produce invalid output, redundant clarifications
 Owner acceptance next: submit the exact request in Auto/LLM; inspect both floors, staircase void and balcony access; confirm, Undo and Redo; then use mouse/Inspector and one-/two-hand controls on a selected assembly and the whole structure. Physical webcam/microphone/friend-device results must be reported by actual testing. If generation fails, retain the safe request ID/category/timings and run the local diagnostic. Do not expose raw credentials/provider content, start Milestone11, push or deploy without approval.
 
 Final-source metadata-only diagnostic also passed: normal stop, exact assembly, 1,507 prompt + 299 completion = 1,806 tokens; native creation with two floors, one staircase and one balcony; 31.862 seconds total after a cold model (first content at 9.010 seconds). Request b2b2d79a-c0f8-4d22-ab45-563c51e7575b. This is a second real backend response/schema check, not a second rendered-browser or physical-webcam test.
+
+
+## Current release update — 2026-10-20
+
+The owner approved routine test/commit/push/deploy/verify without separate publication prompts. Historical approval restrictions above no longer block this routine release. Production-compatible Gemini creation/editing and architectural UI history/persistence now pass after a bounded transport correction; see DEVELOPMENT.md and MILESTONE_105_RELEASE_VALIDATION.json. The public deployment and smoke results remain a separate gate; retain the previous working deployment until verified. No quota, credential, paid-service or gesture changes.

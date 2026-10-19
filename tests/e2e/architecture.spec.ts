@@ -1,3 +1,4 @@
+import { setPlannerMode } from "../helpers/workspaceTools";
 import fs from "node:fs";
 import { test, expect } from "@playwright/test";
 import { offlinePlan } from "../../src/generation/offline";
@@ -408,99 +409,149 @@ test("balcony draft refinement, grouped Inspector edits and rendered access pres
   expect(errors).toEqual([]);
 });
 
-test("recorded live Ollama house keeps stairs, balcony access and exact atomic history", async ({
-  page,
-}) => {
-  const plan = JSON.parse(
-    fs.readFileSync(
-      new URL("../fixtures/ollama-architecture.json", import.meta.url),
-      "utf8",
-    ),
-  );
-  let calls = 0;
-  await page.route("**/api/planner/assistant", (r) =>
-    r.fulfill({
-      contentType: "text/event-stream",
-      body:
-        "event: result\ndata: " +
-        JSON.stringify({
-          source: "llm",
-          model: "recorded-local-response",
-          plan:
-            ++calls === 1
-              ? {
-                  kind: "clarify",
-                  message:
-                    "Which side for the stairs and which facade for the balcony?",
-                }
-              : plan,
-        }) +
-        "\n\n",
-    }),
-  );
-  const errors: string[] = [];
-  page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/?testInput");
-  await page.getByRole("tab", { name: "AI", exact: true }).click();
-  const scene = () => page.evaluate(() => window.__HOLO_TEST__!.scene());
-  const base = await scene();
-  await page
-    .getByLabel("Ask HoloBuild", { exact: true })
-    .fill("generate a 2 story house including a balcony and stairs");
-  await page.getByRole("button", { name: "Send request", exact: true }).click();
-  await expect(
-    page.getByRole("log", { name: "Design conversation" }),
-  ).toContainText("Which side for the stairs");
-  expect(await scene()).toEqual(base);
-  await page
-    .getByLabel("Ask HoloBuild", { exact: true })
-    .fill("Use left interior stairs and a front balcony on the second floor");
-  await page.getByRole("button", { name: "Send request", exact: true }).click();
-  await expect(
-    page.getByLabel("Construction plan preview", { exact: true }),
-  ).toBeVisible();
-  expect(await scene()).toEqual(base);
-  await page
-    .getByRole("button", { name: "Confirm construction", exact: true })
-    .click();
-  const built = await scene(),
-    parts = built.filter((o) => o.construction);
-  expect(calls).toBe(2);
-  expect(parts).toHaveLength(44);
-  expect(parts.filter((o) => o.construction!.role === "stair")).toHaveLength(
-    16,
-  );
-  expect(parts.filter((o) => o.construction!.role === "balcony")).toHaveLength(
-    8,
-  );
-  expect(
-    parts.filter(
-      (o) => o.construction!.role === "floor" && o.construction!.level === 1,
-    ),
-  ).toHaveLength(4);
-  await expect
-    .poll(() => page.evaluate(() => window.__HOLO_TEST__!.rendered?.().length))
-    .toBe(built.length);
-  await page.getByRole("button", { name: "Undo", exact: true }).click();
-  expect(await scene()).toEqual(base);
-  await page.getByRole("button", { name: "Redo", exact: true }).click();
-  expect(await scene()).toEqual(built);
-  // Inspection-only cutaway of the actual accepted model geometry; no regeneration.
-  const cutaway = parts.filter((o) =>
-    ["floor", "stair", "balcony", "door"].includes(o.construction!.role),
-  );
-  await page.locator("input[type=file][accept='.json']").setInputFiles({
-    name: "live-house-cutaway.json",
-    mimeType: "application/json",
-    buffer: Buffer.from(serialize(cutaway)),
+for (const mode of ["auto", "llm"] as const) {
+  test(`recorded architectural plan in ${mode} keeps stairs, balcony access and exact atomic history`, async ({
+    page,
+  }) => {
+    const plan = JSON.parse(
+      fs.readFileSync(
+        new URL("../fixtures/ollama-architecture.json", import.meta.url),
+        "utf8",
+      ),
+    );
+    let calls = 0;
+    await page.route("**/api/planner/assistant", (r) =>
+      r.fulfill({
+        contentType: "text/event-stream",
+        body:
+          "event: result\ndata: " +
+          JSON.stringify({
+            source: "llm",
+            model: "recorded-local-response",
+            plan:
+              ++calls === 1
+                ? {
+                    kind: "clarify",
+                    message:
+                      "Which side for the stairs and which facade for the balcony?",
+                  }
+                : calls === 2
+                  ? plan
+                  : {
+                      kind: "edit",
+                      scope: "structure",
+                      target: r.request().postDataJSON().context.structures[0]
+                        .id,
+                      operation: {
+                        type: "color",
+                        role: "roof",
+                        color: "#008080",
+                      },
+                      message: "Review the roof on this same house.",
+                    },
+          }) +
+          "\n\n",
+      }),
+    );
+    const errors: string[] = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    await page.goto("/?testInput");
+    await page.getByRole("tab", { name: "AI", exact: true }).click();
+    await setPlannerMode(page, mode);
+    const scene = () => page.evaluate(() => window.__HOLO_TEST__!.scene());
+    const base = await scene();
+    await page
+      .getByLabel("Ask HoloBuild", { exact: true })
+      .fill("generate a 2 story house including a balcony and stairs");
+    await page
+      .getByRole("button", { name: "Send request", exact: true })
+      .click();
+    await expect(
+      page.getByRole("log", { name: "Design conversation" }),
+    ).toContainText("Which side for the stairs");
+    expect(await scene()).toEqual(base);
+    await page
+      .getByLabel("Ask HoloBuild", { exact: true })
+      .fill("Use left interior stairs and a front balcony on the second floor");
+    await page
+      .getByRole("button", { name: "Send request", exact: true })
+      .click();
+    await expect(
+      page.getByLabel("Construction plan preview", { exact: true }),
+    ).toBeVisible();
+    expect(await scene()).toEqual(base);
+    await page
+      .getByRole("button", { name: "Confirm construction", exact: true })
+      .click();
+    const built = await scene(),
+      parts = built.filter((o) => o.construction);
+    expect(calls).toBe(2);
+    expect(parts).toHaveLength(44);
+    expect(parts.filter((o) => o.construction!.role === "stair")).toHaveLength(
+      16,
+    );
+    expect(
+      parts.filter((o) => o.construction!.role === "balcony"),
+    ).toHaveLength(8);
+    expect(
+      parts.filter(
+        (o) => o.construction!.role === "floor" && o.construction!.level === 1,
+      ),
+    ).toHaveLength(4);
+    await expect
+      .poll(() =>
+        page.evaluate(() => window.__HOLO_TEST__!.rendered?.().length),
+      )
+      .toBe(built.length);
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    expect(await scene()).toEqual(base);
+    await page.getByRole("button", { name: "Redo", exact: true }).click();
+    expect(await scene()).toEqual(built);
+    // Undo/Redo intentionally clears selection; the remembered active house must remain the edit target.
+    await page
+      .getByLabel("Ask HoloBuild", { exact: true })
+      .fill(
+        "Could you make the roof a shade of teal while keeping the rest of this same house as it is?",
+      );
+    await page
+      .getByRole("button", { name: "Send request", exact: true })
+      .click();
+    await expect(
+      page.getByLabel("Structure modification preview", { exact: true }),
+    ).toBeVisible();
+    expect(await scene()).toEqual(built);
+    expect(calls).toBe(3);
+    await page
+      .getByRole("button", { name: "Confirm structure edit", exact: true })
+      .click();
+    const recolored = await scene();
+    expect(
+      recolored
+        .filter((o) => o.construction?.role === "roof")
+        .every((o) => o.color === "#008080"),
+    ).toBe(true);
+    expect(recolored.filter((o) => !o.construction)).toEqual(base);
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    expect(await scene()).toEqual(built);
+    await page.getByRole("button", { name: "Redo", exact: true }).click();
+    expect(await scene()).toEqual(recolored);
+    // Inspection-only cutaway of the actual accepted model geometry; no regeneration.
+    const cutaway = parts.filter((o) =>
+      ["floor", "stair", "balcony", "door"].includes(o.construction!.role),
+    );
+    await page.locator("input[type=file][accept='.json']").setInputFiles({
+      name: "live-house-cutaway.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(serialize(cutaway)),
+    });
+    await expect(page.locator(".status")).toContainText("Replace complete.");
+    const view = await page.locator("canvas[data-engine]").boundingBox();
+    if (!view) throw Error("Missing viewport");
+    await page.mouse.move(view.x + view.width / 2, view.y + view.height / 2);
+    await page.mouse.wheel(0, 600);
+    await page.screenshot({
+      path: "test-results/ollama-architecture-cutaway.png",
+    });
+    expect(errors).toEqual([]);
   });
-  await expect(page.locator(".status")).toContainText("Replace complete.");
-  const view = await page.locator("canvas[data-engine]").boundingBox();
-  if (!view) throw Error("Missing viewport");
-  await page.mouse.move(view.x + view.width / 2, view.y + view.height / 2);
-  await page.mouse.wheel(0, 600);
-  await page.screenshot({
-    path: "test-results/ollama-architecture-cutaway.png",
-  });
-  expect(errors).toEqual([]);
-});
+}

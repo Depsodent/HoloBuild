@@ -902,6 +902,15 @@ test("missing proposal prose gets a presentation default without making design o
     material: "concrete",
     roof: "flat",
   };
+  assert.throws(() =>
+    parseModelAssistant(
+      JSON.stringify({
+        kind: "create",
+        design: { ...design, color: "#808080" },
+        message: "Review",
+      }),
+    ),
+  );
   assert.match(
     parseModelAssistant(JSON.stringify({ kind: "create", design })).message,
     /preview/,

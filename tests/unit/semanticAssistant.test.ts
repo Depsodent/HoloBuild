@@ -1,3 +1,4 @@
+import architecturalResponse from "../fixtures/ollama-architecture.json";
 import { beforeEach, afterEach, it, expect, vi } from "vitest";
 import { interpretConversation } from "../../src/generation/semanticAssistant";
 import {
@@ -568,4 +569,64 @@ it("clarification preserves original architectural requirements and newly suppli
       original,
     );
   }
+});
+
+it.each(["auto", "llm"] as const)(
+  "%s creation uses the compact conversational recipe path",
+  async (mode) => {
+    const fetch = vi.fn(async (url: RequestInfo | URL) => {
+      expect(String(url)).toBe("/api/planner/assistant");
+      return Response.json({
+        source: "llm",
+        plan: {
+          ...architecturalResponse,
+          message: "Review the new house.",
+        },
+      });
+    });
+    vi.stubGlobal("fetch", fetch);
+    const base = scene().objects;
+    await dispatchAssistant(
+      "generate a 2 story house including a balcony and stairs",
+      { mode },
+      new CommandInterpreter(async () => {}),
+    );
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(useGenerationStore.getState().status).toBe("preview");
+    expect(scene().objects).toBe(base);
+  },
+);
+
+it("a creation-worded follow-up referring to the same selected house remains an edit", async () => {
+  await chat("Build a two-story house");
+  await chat("Yes");
+  const target = scene().selectedStructureId;
+  await chat("Undo");
+  await chat("Redo");
+  const base = scene().objects;
+  expect(scene().selectedStructureId).toBeNull();
+  expect(target).toBeTruthy();
+  const fetch = vi.fn(async (url: RequestInfo | URL) => {
+    expect(String(url)).toBe("/api/planner/assistant");
+    return Response.json({
+      source: "llm",
+      plan: {
+        kind: "edit",
+        scope: "structure",
+        target,
+        operation: { type: "color", role: "roof", color: "#008080" },
+        message: "Review the roof.",
+      },
+    });
+  });
+  vi.stubGlobal("fetch", fetch);
+  await dispatchAssistant(
+    "Could you make the roof a shade of teal while keeping the rest of this same house as it is?",
+    { mode: "llm" },
+    new CommandInterpreter(async () => {}),
+  );
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(useEditStore.getState().status).toBe("preview");
+  expect(scene().objects).toBe(base);
+  expect(useGenerationStore.getState().prepared).toBeNull();
 });

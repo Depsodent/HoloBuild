@@ -550,14 +550,19 @@ export function createPlannerHandler(
           ? geminiRequest(
               config,
               model,
-              instructions,
+              assisting
+                ? instructions
+                : instructions +
+                    "\n" +
+                    (editing ? "" : geometryContract + "\n") +
+                    'Transport: return {"response":"<complete JSON encoded string>"}. Encode the entire required runtime object in response, including every required field. This envelope changes transport only; never omit geometry, targets, or constraints.',
               editing || assisting
                 ? JSON.stringify({
                     request: effectivePrompt,
                     context: providerContext,
                   })
                 : prompt,
-              z.toJSONSchema(outputSchema),
+              z.toJSONSchema(assistantResponseSchema),
               editing,
               !!wantsEvents,
               abort.signal,
@@ -663,17 +668,22 @@ export function createPlannerHandler(
         validationStarted = performance.now();
       phase = "response-validation";
       progress("Validating");
+      let content =
+        config.provider === "gemini" && !streaming
+          ? geminiText(data)
+          : data.choices?.[0]?.message?.content;
+      if (config.provider === "gemini" && !assisting) {
+        const envelope = JSON.parse(content);
+        if (envelope && typeof envelope === "object" && "response" in envelope)
+          content = assistantResponseSchema.parse(envelope).response;
+      }
       const plan = (
         assisting
           ? parseModelAssistant
           : editing
             ? parseModelEdit
             : parseModelPlan
-      )(
-        config.provider === "gemini" && !streaming
-          ? geminiText(data)
-          : data.choices?.[0]?.message?.content,
-      );
+      )(content);
       if (directCreation && plan.kind !== "create" && plan.kind !== "clarify")
         throw new PlannerError(
           422,

@@ -1,0 +1,103 @@
+{
+  "testedAt": "2026-10-19T15:53:46.445Z",
+  "url": "http://127.0.0.1:5182",
+  "baseCheckpoint": "29a7717961374efa3bc7db1da257bdea1e6e3f9f",
+  "source": "Milestone 10.5 prepublication production-build validation",
+  "physicalDeviceTested": false,
+  "ok": true,
+  "checks": {
+    "creation": {
+      "inertPreview": true,
+      "parts": 44,
+      "stairSteps": 16,
+      "upperFloorVoid": true,
+      "balconyParts": 8,
+      "alignedRealAccess": true,
+      "unrelatedCubePreserved": true,
+      "exactUndoRedo": true
+    },
+    "genuineConversationalEdit": {
+      "sameStructure": true,
+      "inertPreview": true,
+      "unrelatedComponentsPreserved": true,
+      "exactUndoRedo": true
+    },
+    "staircaseConversation": {
+      "material": "concrete",
+      "cancel": true,
+      "inertPreview": true,
+      "exactUndoRedo": true
+    },
+    "editableOpening": {
+      "partInspector": true,
+      "panelIdPreserved": true,
+      "realAccessRetained": true,
+      "stairAndBalconyRecipesPreserved": true,
+      "exactUndoRedo": true
+    },
+    "saveLoad": {
+      "allArchitecturalMetadata": true,
+      "exactObjects": true,
+      "undoRedoLoad": true
+    },
+    "pageErrors": 0
+  },
+  "provider": [
+    {
+      "event": "result",
+      "requestId": "38533c78-3f91-43cf-9b73-8991233b7398",
+      "provider": "Gemini",
+      "model": "gemini-3.5-flash-lite",
+      "kind": "create",
+      "timings": {
+        "firstTokenMs": 16977.104899999977,
+        "headerMs": 16977.004000000015,
+        "providerMs": 17791.31150000001,
+        "validationMs": 0.47419999999692664,
+        "totalMs": 17794.23980000004,
+        "modelLoadMs": null,
+        "residentBefore": null,
+        "residentVramBytes": null
+      }
+    },
+    {
+      "event": "result",
+      "requestId": "ad4a537e-d9cf-4a72-aa75-20ce8b4d7b8c",
+      "provider": "Gemini",
+      "model": "gemini-3.5-flash-lite",
+      "kind": "edit",
+      "timings": {
+        "firstTokenMs": 6078.865600000019,
+        "headerMs": 6078.6947999999975,
+        "providerMs": 6277.447400000005,
+        "validationMs": 0.1441999999806285,
+        "totalMs": 6279.934600000037,
+        "modelLoadMs": null,
+        "residentBefore": null,
+        "residentVramBytes": null
+      }
+    }
+  ],
+  "scope": "Local static production build and real Gemini backend; hosted Redis tested separately with isolated keys",
+  "validation": {
+    "unitTests": 339,
+    "unitFiles": 35,
+    "backendTests": 62,
+    "typecheck": "passed",
+    "eslint": "passed",
+    "productionBuild": "passed",
+    "licensePackages": 70,
+    "unresolvedNotices": 0,
+    "affectedSerialBrowserTests": 28,
+    "fullInventory": 134,
+    "fullInventoryRun": false,
+    "priorFullEvidence": "132/133 passed, unchanged camera rerun 2/2; final affected 13/13 at approved baseline",
+    "redis": "isolated real-store regressions passed; production quotas unchanged"
+  },
+  "limitations": [
+    "Live model latency/output varies; invalid designs remain rejected",
+    "No physical webcam, microphone or friend-laptop acceptance",
+    "Stairs and balconies are visual parametric geometry, not a building-code or structural certification",
+    "Static door panels do not animate"
+  ]
+}
