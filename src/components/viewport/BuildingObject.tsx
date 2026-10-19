@@ -113,19 +113,22 @@ export const BuildingObject = memo(function BuildingObject({
           }
         />
       </mesh>
-      {selected && !group && tool !== "select" && (
-        <TransformControls
-          object={ref as React.RefObject<Mesh>}
-          mode={tool}
-          translationSnap={snap ? 0.5 : null}
-          rotationSnap={snap ? Math.PI / 12 : null}
-          scaleSnap={snap ? 0.1 : null}
-          onObjectChange={() => {
-            gl.shadowMap.needsUpdate = true;
-          }}
-          onMouseUp={commit}
-        />
-      )}
+      {selected &&
+        !group &&
+        !object.construction?.assembly &&
+        tool !== "select" && (
+          <TransformControls
+            object={ref as React.RefObject<Mesh>}
+            mode={tool}
+            translationSnap={snap ? 0.5 : null}
+            rotationSnap={snap ? Math.PI / 12 : null}
+            scaleSnap={snap ? 0.1 : null}
+            onObjectChange={() => {
+              gl.shadowMap.needsUpdate = true;
+            }}
+            onMouseUp={commit}
+          />
+        )}
     </>
   );
 });

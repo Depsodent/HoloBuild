@@ -400,3 +400,96 @@ it("deselection with multiple structures requires clarification before interpret
   expect(useEditStore.getState().message).toMatch(/Which structure|ambiguous/);
   expect(scene().objects).toBe(base);
 });
+
+it("refines an unconfirmed building with real stairs, clarification, material and width without scene/history mutation", async () => {
+  await chat("Build a two-story house");
+  const initial = useGenerationStore.getState().prepared!;
+  await chat("Add stairs");
+  expect(useGenerationStore.getState().prepared).toBe(initial);
+  expect(useConversationStore.getState().messages.at(-1)?.text).toMatch(
+    /left or right/,
+  );
+  await chat("left");
+  expect(useConversationStore.getState().messages.at(-1)?.text).toMatch(
+    /draft geometry is updated/,
+  );
+  const stairs = useGenerationStore
+    .getState()
+    .prepared!.objects.filter((o) => o.construction?.role === "stair");
+  expect(stairs.length).toBeGreaterThan(4);
+  expect(scene().objects).toHaveLength(0);
+  expect(scene().past).toHaveLength(0);
+  await chat("Make the stairs wooden");
+  expect(
+    useGenerationStore
+      .getState()
+      .prepared!.objects.filter((o) => o.construction?.role === "stair")
+      .every((o) => o.material === "wood"),
+  ).toBe(true);
+  await chat("Make the stairs wider");
+  expect(
+    useGenerationStore.getState().prepared!.plan.template?.stairs?.[0].width,
+    useConversationStore.getState().messages.at(-1)?.text,
+  ).toBeCloseTo(1.2);
+  await chat("Yes");
+  expect(scene().past).toHaveLength(1);
+  expect(scene().objects.some((o) => o.construction?.role === "stair")).toBe(
+    true,
+  );
+  const completed = scene().objects;
+  await chat("Undo");
+  expect(scene().objects).toHaveLength(0);
+  await chat("Redo");
+  expect(scene().objects).toEqual(completed);
+});
+it("confirmed staircase removal restores the floor in one reversible operation and preserves unrelated geometry", async () => {
+  await chat("Build a two-story house");
+  await chat("Yes");
+  const before = scene().objects;
+  const oldIds = before
+    .filter((o) => o.construction?.role === "wall")
+    .map((o) => o.id);
+  await chat("Put the stairs on the left");
+  expect(useEditStore.getState().status, useEditStore.getState().message).toBe(
+    "preview",
+  );
+  expect(scene().objects).toBe(before);
+  await chat("Yes");
+  const withStairs = scene().objects;
+  expect(
+    withStairs
+      .filter((o) => o.construction?.role === "wall")
+      .map((o) => o.id)
+      .sort(),
+  ).toEqual(oldIds.sort());
+  const stair = withStairs.find((o) => o.construction?.role === "stair")!;
+  scene().setSelectionMode("component");
+  scene().select(stair.id);
+  await chat("Make the stairs wooden");
+  expect(useEditStore.getState().status, useEditStore.getState().message).toBe(
+    "preview",
+  );
+  await chat("Yes");
+  expect(scene().selectionMode).toBe("component");
+  expect(scene().selectedStructureId).toBeNull();
+  expect(
+    scene()
+      .objects.filter((o) => o.construction?.role === "stair")
+      .every((o) => o.material === "wood"),
+  ).toBe(true);
+  await chat("Remove the staircase");
+  expect(useEditStore.getState().status, useEditStore.getState().message).toBe(
+    "preview",
+  );
+  await chat("Yes");
+  expect(scene().objects.some((o) => o.construction?.role === "stair")).toBe(
+    false,
+  );
+  expect(
+    scene().objects.filter((o) => o.construction?.role === "floor"),
+  ).toHaveLength(2);
+  await chat("Undo");
+  expect(scene().objects.some((o) => o.construction?.role === "stair")).toBe(
+    true,
+  );
+});

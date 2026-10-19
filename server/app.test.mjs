@@ -691,3 +691,45 @@ test("assistant transports bounded staircase parameters as data and rejects exec
   assert.equal(rejected.status, 422);
   assert.ok((await rejected.json()).requestId);
 });
+
+test("edit adapter accepts strict parametric staircase changes without introducing scene-execution payloads", async (t) => {
+  const stairs = [
+    {
+      id: "stairs-1",
+      from: 0,
+      to: 1,
+      steps: 16,
+      rise: 0.2,
+      run: 0.2,
+      width: 1.2,
+      x: -1,
+      z: 0,
+      yaw: 0,
+      material: "wood",
+      color: "#91603e",
+    },
+  ];
+  const url = await fixture(t, async () =>
+    Response.json({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              version: 1,
+              operation: { type: "design", stairs },
+            }),
+          },
+        },
+      ],
+    }),
+  );
+  const response = await editPost(url, {
+    prompt: "Make the selected staircase wider",
+    context: editContext,
+  });
+  assert.equal(response.status, 200);
+  assert.deepEqual((await response.json()).plan.operation, {
+    type: "design",
+    stairs,
+  });
+});

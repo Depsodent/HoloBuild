@@ -19,6 +19,7 @@ export const structureMetadataSchema = z
       z.number().min(0.1).max(20),
     ]),
     template: templateSchema.optional(),
+    architectureTemplate: templateSchema.optional(),
     floorLayouts: z
       .array(z.enum(["ground", "upper"]))
       .min(1)

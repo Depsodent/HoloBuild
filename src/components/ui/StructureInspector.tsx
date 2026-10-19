@@ -39,6 +39,7 @@ export function StructureInspector({ id }: { id: string }) {
   const objects = useSceneStore((s) => s.objects),
     parts = members(objects, id),
     info = structureInfo(parts);
+  const architectureRecipe = info.template ?? info.architectureTemplate;
   const [role, setRole] = useState("all"),
     [level, setLevel] = useState(0);
   const activeLevel = Math.min(
@@ -82,6 +83,27 @@ export function StructureInspector({ id }: { id: string }) {
           Delete structure
         </button>
       </div>
+      {!!architectureRecipe?.stairs?.length && (
+        <details>
+          <summary>Staircases</summary>
+          {architectureRecipe.stairs.map((stair) => (
+            <button
+              key={stair.id}
+              onClick={() => {
+                const part = parts.find(
+                  (p) => p.construction?.assembly === stair.id,
+                );
+                if (part) {
+                  useSceneStore.getState().setSelectionMode("component");
+                  useSceneStore.getState().select(part.id);
+                }
+              }}
+            >
+              Edit staircase {stair.id} · floors {stair.from + 1}–{stair.to + 1}
+            </button>
+          ))}
+        </details>
+      )}
       <Accordion id="structure.transform" title="Structure Transform">
         <label className="field">
           Name

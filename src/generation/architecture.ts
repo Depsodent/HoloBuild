@@ -94,10 +94,15 @@ export function architecturalPlan(input: ConstructionPlan): ConstructionPlan {
         throw Error("Floor opening leaves a slab segment too small.");
       objects.push({
         ...slab,
+        type: "cube",
         id: slab.id + "-cut-" + tile,
         name: `Level ${stair.to + 1} opening slab ${tile + 1}`,
         position: [(x0 + x1) / 2, slab.position[1], (z0 + z1) / 2],
-        dimensions: [x1 - x0, slab.dimensions[1], z1 - z0],
+        dimensions: [
+          Number((x1 - x0).toFixed(10)),
+          slab.dimensions[1],
+          Number((z1 - z0).toFixed(10)),
+        ],
       });
     }
     const bottom = stair.from * span + 0.2;

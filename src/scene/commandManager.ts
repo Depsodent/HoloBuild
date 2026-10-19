@@ -34,7 +34,8 @@ const sceneSchema = z
         });
       if (
         c.structure?.floorLayouts &&
-        c.structure.floorLayouts.length !== c.structure.template?.floors
+        c.structure.floorLayouts.length !==
+          (c.structure.template ?? c.structure.architectureTemplate)?.floors
       )
         ctx.addIssue({
           code: "custom",
@@ -125,6 +126,22 @@ export function execute(command: Command): boolean {
         command.operation.type === "delete"
           ? null
           : result.structureId;
+      const selectedAssembly = s.objects.find((o) => o.id === s.selectedId)
+        ?.construction?.assembly;
+      if (
+        s.selectionMode === "component" &&
+        selectedAssembly &&
+        command.operation.type === "design" &&
+        command.operation.stairs !== undefined
+      ) {
+        selectedId =
+          result.parts.find((o) => o.id === s.selectedId)?.id ??
+          result.parts.find(
+            (o) => o.construction?.assembly === selectedAssembly,
+          )?.id ??
+          null;
+        selectedStructureId = null;
+      }
       if (command.operation.type === "select") {
         useSceneStore.setState({
           selectedId,
@@ -175,6 +192,88 @@ export function execute(command: Command): boolean {
     } else {
       const index = objects.findIndex((o) => o.id === command.id);
       if (index < 0) throw new Error("Select an existing object first.");
+      const assembly = objects[index].construction?.assembly;
+      const stairRecipe =
+        objects[index].construction?.structure?.template ??
+        objects[index].construction?.structure?.architectureTemplate;
+      const protectsFloor =
+        objects[index].construction?.role === "floor" &&
+        objects.some(
+          (o) =>
+            o.construction?.structureId ===
+              objects[index].construction?.structureId &&
+            o.construction?.role === "stair",
+        );
+      if (
+        protectsFloor &&
+        (command.type === "delete" ||
+          (command.type === "update" &&
+            (command.patch.position ||
+              command.patch.rotation ||
+              command.patch.scale)))
+      )
+        throw Error(
+          "This floor connects a staircase. Edit the building/floor parameters or remove the staircase first.",
+        );
+      if (
+        assembly &&
+        !stairRecipe?.stairs?.some((stair) => stair.id === assembly)
+      )
+        throw Error(
+          "Staircase recipe is unavailable. Undo the earlier manual change before editing its components.",
+        );
+      if (
+        assembly &&
+        stairRecipe?.stairs?.some((stair) => stair.id === assembly)
+      ) {
+        if (command.type === "duplicate")
+          throw Error(
+            "Add another staircase connection or duplicate the building; individual treads cannot be duplicated.",
+          );
+        if (command.type === "delete")
+          return execute({
+            type: "structure",
+            structureId: objects[index].construction!.structureId,
+            operation: {
+              type: "design",
+              stairs: stairRecipe.stairs.filter(
+                (stair) => stair.id !== assembly,
+              ),
+            },
+          });
+        if (command.type === "update") {
+          if (
+            command.patch.position ||
+            command.patch.rotation ||
+            command.patch.scale ||
+            command.patch.construction
+          )
+            throw Error(
+              "Edit the staircase assembly so its steps and floor opening remain connected.",
+            );
+          if (command.patch.color || command.patch.material)
+            return execute({
+              type: "structure",
+              structureId: objects[index].construction!.structureId,
+              operation: {
+                type: "design",
+                stairs: stairRecipe.stairs.map((stair) =>
+                  stair.id === assembly
+                    ? {
+                        ...stair,
+                        ...(command.patch.color
+                          ? { color: command.patch.color }
+                          : {}),
+                        ...(command.patch.material
+                          ? { material: command.patch.material }
+                          : {}),
+                      }
+                    : stair,
+                ),
+              },
+            });
+        }
+      }
       if (command.type === "update") {
         const original = objects[index];
         const candidate = objectSchema.parse({ ...original, ...command.patch });

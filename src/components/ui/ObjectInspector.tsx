@@ -1,3 +1,4 @@
+import { StaircaseInspector } from "./StaircaseInspector";
 import { ColorEditor } from "./ColorEditor";
 import { colorPatch } from "../../scene/colors";
 import { StructureInspector } from "./StructureInspector";
@@ -20,6 +21,16 @@ export function ObjectInspector() {
   const group = useSceneStore((s) => s.selectedStructureId);
   if (group && objects.some((o) => o.construction?.structureId === group))
     return <StructureInspector key={group} id={group} />;
+  if (object?.construction?.assembly && object.construction.role === "stair")
+    return (
+      <StaircaseInspector
+        key={
+          object.id +
+          JSON.stringify(object.construction.structure?.template?.stairs)
+        }
+        object={object}
+      />
+    );
   function parameter(control: ReturnType<typeof surfaceControls>[number]) {
     if (!object) return null;
     return (

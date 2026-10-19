@@ -1,3 +1,4 @@
+import { architecturalIntent } from "./architecturalIntent";
 import { normalizeDesignRequest, requestedAppearance } from "./designLanguage";
 import { numeric } from "../commands/parser";
 import type {
@@ -73,13 +74,16 @@ export function conversationIntent(
 export function refinementOperation(
   input: string,
   recipe?: BuildingTemplate,
+  selectedAssembly?: string,
 ): { operation?: StructureOperation; message?: string } {
   const t = input.toLowerCase(),
     ops: AtomicStructureOperation[] = [];
-  if (/\b(?:balcon|stairs|hinged|opening the door|more modern)/.test(t))
+  const architecture = architecturalIntent(input, recipe, selectedAssembly);
+  if (architecture) return architecture;
+  if (/\b(?:balcon|hinged|opening the door|more modern)/.test(t))
     return {
       message:
-        "Balconies, stairs and hinged doors are not supported. I can change window layout, floors, proportions, colors or materials. Which would you like?",
+        "Balconies and animated hinged doors are not supported in this phase. I can change window layout, floors, proportions, colors or materials. Which would you like?",
     };
   const appearance = requestedAppearance(t);
   for (const [role, value] of Object.entries(appearance)) {

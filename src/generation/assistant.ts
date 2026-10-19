@@ -1,3 +1,4 @@
+import { refineGenerationPreview } from "./refinePreview";
 import { interpretConversation } from "./semanticAssistant";
 import { yawRotation } from "../interaction/twoHandMath";
 import { colorPatch } from "../scene/colors";
@@ -56,6 +57,9 @@ function activeStructure(input: string) {
     part = s.objects.find((o) => o.id === s.selectedId);
   const selected =
     s.selectedStructureId ??
+    (part?.construction?.assembly && /\bstair/i.test(input)
+      ? part.construction.structureId
+      : null) ??
     (/\b(?:all|every|whole|entire|structure|house|building)\b/i.test(input)
       ? part?.construction?.structureId
       : null);
@@ -86,6 +90,20 @@ export async function dispatchAssistant(
     return { ok, message: "" };
   };
   try {
+    const pendingArchitecture =
+      useConversationStore.getState().pendingArchitecture;
+    const draftId =
+      useGenerationStore.getState().prepared?.objects[0].construction
+        ?.structureId;
+    if (
+      pendingArchitecture &&
+      pendingArchitecture.target === (draftId ?? activeStructure(raw)) &&
+      /^(?:on |to |the |floor )*(?:left|right|first|second|third|fourth|fifth|sixth|[1-6])(?:\b|$)/i.test(
+        raw,
+      )
+    )
+      raw = pendingArchitecture.text + " " + raw;
+    else useConversationStore.setState({ pendingArchitecture: null });
     const scene = useSceneStore.getState(),
       group = activeStructure(raw),
       intent = conversationIntent(raw, !!group);
@@ -235,11 +253,34 @@ export async function dispatchAssistant(
         state.status === "preview",
       );
     }
-    if (useGenerationStore.getState().prepared)
+    const draft = useGenerationStore.getState().prepared;
+    if (draft) {
+      const proposal = refinementOperation(intent.text, draft.plan.template);
+      if (!proposal.operation) {
+        if (
+          proposal.message &&
+          proposal.message.includes("?") &&
+          /stair/i.test(raw)
+        )
+          useConversationStore.setState({
+            pendingArchitecture: {
+              text: raw,
+              target: draft.objects[0].construction!.structureId,
+            },
+          });
+        return respond(
+          proposal.message ??
+            "Which change should I make to this draft? Specify a floor, opening, material or staircase location.",
+          false,
+        );
+      }
+      refineGenerationPreview(proposal.operation);
+      useConversationStore.setState({ pendingArchitecture: null });
       return respond(
-        "The new design is still a preview. Confirm it first to refine that structure, or cancel and describe a replacement.",
-        false,
+        "The draft geometry is updated. Review the preview; confirming creates the complete design as one Undo step. " +
+          (proposal.message ?? ""),
       );
+    }
     if (
       !group &&
       !scene.selectedId &&
@@ -290,14 +331,31 @@ export async function dispatchAssistant(
       (intent.kind === "refine" ||
         /\broof|walls?|windows?|floors?|entrance\b/i.test(raw))
     ) {
-      if (scene.selectedStructureId !== group) {
+      if (
+        scene.selectedStructureId !== group &&
+        !(
+          scene.objects.find((o) => o.id === scene.selectedId)?.construction
+            ?.assembly && /\bstair/i.test(raw)
+        )
+      ) {
         scene.setSelectionMode("structure");
         scene.select(members(scene.objects, group)[0].id);
       }
       const info = structureInfo(members(scene.objects, group)),
-        proposal = refinementOperation(intent.text, info.template);
-      if (proposal.message && !proposal.operation)
+        proposal = refinementOperation(
+          intent.text,
+          info.template ?? info.architectureTemplate,
+          scene.objects.find((o) => o.id === scene.selectedId)?.construction
+            ?.assembly,
+        );
+      if (proposal.message && !proposal.operation) {
+        if (proposal.message.includes("?") && /stair/i.test(raw))
+          useConversationStore.setState({
+            pendingArchitecture: { text: raw, target: group },
+          });
         return respond(proposal.message, false);
+      }
+      useConversationStore.setState({ pendingArchitecture: null });
       let operation = proposal.operation;
       if (!operation) {
         try {

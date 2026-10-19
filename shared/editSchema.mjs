@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { materials, roles, templateSchema } from "./planSchema.mjs";
+import {
+  materials,
+  roles,
+  templateSchema,
+  staircaseSchema,
+} from "./planSchema.mjs";
 const delta = z.tuple([
   z.number().finite().min(-50).max(50),
   z.number().finite().min(-40).max(40),
@@ -14,6 +19,7 @@ const atomicOperationSchema = z.discriminatedUnion("type", [
   z
     .object({
       type: z.literal("design"),
+      stairs: z.array(staircaseSchema).max(5).optional(),
       floors: z.number().int().min(1).max(6).optional(),
       windows: z.number().int().min(0).max(6).optional(),
       level: z.number().int().min(0).max(5).optional(),
@@ -124,6 +130,10 @@ export const editContextSchema = z
         id: z.string().uuid().optional(),
         type: z.string().max(20).optional(),
         role: z.enum(roles).optional(),
+        assembly: z
+          .string()
+          .regex(/^[a-zA-Z0-9_-]{1,24}$/)
+          .optional(),
         position: delta.optional(),
         scale: scale.optional(),
       })
@@ -150,6 +160,7 @@ export const editContextSchema = z
         ]),
         requestedDesign: z.string().max(400),
         template: templateSchema.optional(),
+        templateIntact: z.boolean().optional(),
         roles: z
           .array(
             z

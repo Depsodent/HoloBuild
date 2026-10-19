@@ -79,6 +79,7 @@ export function editContext(): EditContext {
             id: part.id,
             type: part.type,
             role: part.construction?.role,
+            assembly: part.construction?.assembly,
             position: part.position,
             scale: part.scale,
           }
@@ -96,7 +97,10 @@ export function editContext(): EditContext {
       ? {
           details: {
             id: current,
-            template: structureInfo(selectedParts).template,
+            template:
+              structureInfo(selectedParts).template ??
+              structureInfo(selectedParts).architectureTemplate,
+            templateIntact: !!structureInfo(selectedParts).template,
             dimensions: [
               box.max.x - box.min.x,
               box.max.y - box.min.y,

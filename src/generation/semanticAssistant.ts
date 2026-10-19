@@ -1,3 +1,4 @@
+import { staircaseOperation } from "../scene/staircaseTransform";
 import { assistantPlanSchema } from "../../shared/assistantSchema.mjs";
 import {
   plannerRequest,
@@ -76,18 +77,24 @@ export async function interpretConversation(
     const plan = assistantPlanSchema.parse(data.plan);
     plannerStage("Validating");
     if (plan.kind === "create" || plan.kind === "compose") {
-      if (
-        /\b(?:stairs?|staircases?|balcon\w*|hinged|functional door)\b/i.test(
-          prompt,
-        )
-      )
+      if (/\b(?:balcon\w*|hinged|functional door)\b/i.test(prompt))
         throw Error(
-          "This design needs unsupported stairs, balconies or functional doors. I can prepare a supported fixed-panel design if you choose that alternative.",
+          "This design needs unsupported balconies or functional doors. I can prepare a supported fixed-panel design if you choose that alternative.",
         );
       const built =
         plan.kind === "compose"
           ? plan.plan
           : offlinePlan(plan.design.kind, plan.design);
+      if (
+        /\bstairs?\b|\bstaircases?\b/i.test(prompt) &&
+        !(
+          built.template?.stairs?.length &&
+          built.objects.some((o) => o.role === "stair")
+        )
+      )
+        throw Error(
+          "No staircase was generated. Choose its destination floor and left/right location; scene unchanged.",
+        );
       validateDesignAttributes(prompt, built);
       const prepared = preparePlan(built, base);
       useGenerationStore.setState({
@@ -143,6 +150,46 @@ export async function interpretConversation(
           "That request targets a group; choose Structure or clarify the intended component.",
         );
       const op = plan.operation;
+      const architecturalTemplate =
+        object.construction?.structure?.template ??
+        object.construction?.structure?.architectureTemplate;
+      if (object.construction?.assembly && architecturalTemplate?.stairs) {
+        const stairs = architecturalTemplate.stairs;
+        const assembly = object.construction.assembly;
+        if (
+          (op.type === "color" || op.type === "material") &&
+          ((op.role && op.role !== "stair") ||
+            (op.level !== undefined && op.level !== object.construction.level))
+        )
+          throw Error("That role/floor does not match the selected staircase.");
+        let operation;
+        if (op.type === "color" || op.type === "material")
+          operation = {
+            type: "design" as const,
+            stairs: stairs.map((stair) =>
+              stair.id === assembly
+                ? {
+                    ...stair,
+                    ...(op.type === "color"
+                      ? { color: op.color ?? "#ffffff" }
+                      : { material: op.material }),
+                  }
+                : stair,
+            ),
+          };
+        else operation = staircaseOperation(base, object.id, op);
+        await requestEdit(prompt, settings, operation);
+        const result = useEditStore.getState();
+        return {
+          ok: result.status === "preview",
+          message:
+            result.status === "preview"
+              ? plan.message +
+                " Review the complete staircase and floor opening before confirming."
+              : result.message,
+        };
+      }
+
       if (
         (op.type === "color" || op.type === "material") &&
         ((op.role && op.role !== object.construction?.role) ||

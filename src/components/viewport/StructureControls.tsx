@@ -1,3 +1,4 @@
+import { staircaseOperation } from "../../scene/staircaseTransform";
 import { useRef } from "react";
 import { TransformControls } from "@react-three/drei";
 import { Group } from "three";
@@ -7,16 +8,24 @@ import { execute } from "../../scene/commandManager";
 import { groupPreview } from "../../interaction/structureInteraction";
 import type { Vec3 } from "../../scene/objectTypes";
 export function StructureControls() {
-  const id = useSceneStore((s) => s.selectedStructureId),
+  const groupId = useSceneStore((s) => s.selectedStructureId),
+    selectedId = useSceneStore((s) => s.selectedId),
     objects = useSceneStore((s) => s.objects),
     tool = useSceneStore((s) => s.tool),
     snap = useSceneStore((s) => s.snap);
   const ref = useRef<Group>(null),
     dragging = useRef(false);
+  const assembly = !groupId
+    ? objects.find((o) => o.id === selectedId && o.construction?.assembly)
+    : undefined;
+  const id = groupId ?? assembly?.construction?.structureId;
   const parts = id ? members(objects, id) : [];
   if (!id || !parts.length || tool === "select") return null;
   const info = structureInfo(parts);
-  const operation = () => ({
+  const position = assembly?.position ?? info.position,
+    rotation = assembly?.rotation ?? [0, info.yaw, 0],
+    scale = assembly?.scale ?? info.scale;
+  const rawOperation = () => ({
     type: "setTransform" as const,
     position: ref.current!.position.toArray() as Vec3,
     yaw: Math.atan2(
@@ -25,21 +34,25 @@ export function StructureControls() {
     ),
     scale: ref.current!.scale.toArray() as Vec3,
   });
+  const operation = () =>
+    assembly
+      ? staircaseOperation(objects, assembly.id, rawOperation())
+      : rawOperation();
   function restore() {
     const mesh = ref.current;
     if (mesh) {
-      mesh.position.fromArray(info.position);
-      mesh.rotation.set(0, info.yaw, 0);
-      mesh.scale.fromArray(info.scale);
+      mesh.position.fromArray(position);
+      mesh.rotation.set(...(rotation as Vec3));
+      mesh.scale.fromArray(scale);
     }
   }
   return (
     <>
       <group
         ref={ref}
-        position={info.position}
-        rotation={[0, info.yaw, 0]}
-        scale={info.scale}
+        position={position}
+        rotation={rotation as Vec3}
+        scale={scale}
       />
       <TransformControls
         object={ref as React.RefObject<Group>}
@@ -55,18 +68,44 @@ export function StructureControls() {
         }}
         onObjectChange={() => {
           if (dragging.current && ref.current) {
-            const preview = groupPreview(parts[0].id, operation());
-            useSceneStore.setState({ preview });
+            try {
+              const preview = groupPreview(
+                assembly?.id ?? parts[0].id,
+                operation(),
+              );
+              useSceneStore.setState({ preview });
+            } catch (error) {
+              useSceneStore.setState({
+                preview: {
+                  id: assembly?.id ?? parts[0].id,
+                  position,
+                  valid: false,
+                },
+                status:
+                  error instanceof Error
+                    ? error.message
+                    : "Invalid assembly transform",
+              });
+            }
           }
         }}
         onMouseUp={() => {
           dragging.current = false;
-          if (ref.current)
-            execute({
-              type: "structure",
-              structureId: id,
-              operation: operation(),
+          try {
+            if (ref.current)
+              execute({
+                type: "structure",
+                structureId: id,
+                operation: operation(),
+              });
+          } catch (error) {
+            useSceneStore.setState({
+              status:
+                error instanceof Error
+                  ? error.message
+                  : "Invalid assembly transform",
             });
+          }
           useSceneStore.setState({ preview: null });
           restore();
         }}

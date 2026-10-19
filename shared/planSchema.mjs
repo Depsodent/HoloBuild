@@ -30,7 +30,7 @@ export const staircaseSchema = z
     from: z.number().int().min(0).max(4),
     to: z.number().int().min(1).max(5),
     steps: z.number().int().min(4).max(32),
-    rise: z.number().finite().min(0.08).max(0.4),
+    rise: z.number().finite().min(0.1).max(0.4),
     run: z.number().finite().min(0.15).max(0.5),
     width: z.number().finite().min(0.6).max(3),
     x: z.number().finite().min(-15).max(15),
