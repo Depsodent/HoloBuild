@@ -8,13 +8,18 @@ import {
   useGenerationStore,
   cancelGeneration,
 } from "../../src/generation/generationStore";
-import { useEditStore, cancelEdit } from "../../src/generation/editStore";
+import {
+  useEditStore,
+  cancelEdit,
+  editContext,
+} from "../../src/generation/editStore";
 import { useSceneStore } from "../../src/scene/sceneStore";
 import { offlinePlan } from "../../src/generation/offline";
 import { CommandInterpreter } from "../../src/commands/interpreter";
 import {
   useConversationStore,
   newConversation,
+  conversationMessage,
 } from "../../src/generation/conversationStore";
 const scene = () => useSceneStore.getState();
 const settings = { mode: "auto" as const };
@@ -416,5 +421,151 @@ it("model Part-scope design payloads cannot edit other openings, floors or stair
     expect(result.ok).toBe(false);
     expect(scene().objects).toBe(before);
     expect(useEditStore.getState().prepared).toBeNull();
+  }
+});
+
+it("placement clarification stays on new-building planning while a starter cube is selected", async () => {
+  const cube = createCube();
+  useSceneStore.setState({ objects: [cube], selectedId: cube.id });
+  const design = offlinePlan("house", {
+    width: 6,
+    depth: 6,
+    height: 3,
+    floors: 2,
+    doors: 0,
+    windows: 0,
+    stairs: [
+      {
+        id: "flight",
+        from: 0,
+        to: 1,
+        steps: 16,
+        rise: 0.2,
+        run: 0.2,
+        width: 1,
+        x: -1.5,
+        z: 0,
+        yaw: 0,
+        material: "concrete",
+        color: "#336699",
+      },
+    ],
+    openings: [
+      {
+        id: "entry",
+        kind: "door",
+        level: 1,
+        facade: "front",
+        offset: 0,
+        bottom: 0,
+        width: 1,
+        height: 2.1,
+        panel: true,
+      },
+    ],
+    balconies: [
+      {
+        id: "balcony",
+        level: 1,
+        facade: "front",
+        offset: 0,
+        width: 2.4,
+        depth: 1.5,
+        railHeight: 1.1,
+        material: "concrete",
+        color: "#336699",
+        access: "entry",
+        ownsAccess: true,
+      },
+    ],
+  }).template!;
+  let calls = 0;
+  vi.stubGlobal("fetch", async () =>
+    Response.json({
+      source: "llm",
+      plan:
+        ++calls === 1
+          ? { kind: "clarify", message: "Which facade and floor?" }
+          : { kind: "create", design, message: "Review your placement." },
+    }),
+  );
+  await chat("generate a 2 story house including a balcony and stairs");
+  expect(useConversationStore.getState().pendingCreation).toBe(true);
+  for (let i = 0; i < 8; i++)
+    conversationMessage("assistant", "Placement detail " + i);
+  expect(
+    editContext().conversation?.some((m) =>
+      m.text.includes("generate a 2 story"),
+    ),
+  ).toBe(false);
+  expect(editContext().creationRequest).toBe(
+    "generate a 2 story house including a balcony and stairs",
+  );
+  const base = scene().objects;
+  await chat(
+    "Put the stairs on the left and the balcony on the front of the second floor",
+  );
+  expect(calls).toBe(2);
+  expect(
+    useGenerationStore.getState().status,
+    useGenerationStore.getState().message,
+  ).toBe("preview");
+  expect(scene().objects).toBe(base);
+  expect(useConversationStore.getState().pendingCreation).toBe(false);
+  expect(useConversationStore.getState().pendingCreationRequest).toBe("");
+});
+it("cancel/reset clears unfinished creation clarification without touching existing objects", async () => {
+  const cube = createCube();
+  useSceneStore.setState({ objects: [cube], selectedId: cube.id });
+  useConversationStore.setState({
+    pendingCreation: true,
+    pendingCreationRequest: "Build a house",
+  });
+  cancelAssistantPreview();
+  expect(useConversationStore.getState().pendingCreation).toBe(false);
+  expect(scene().objects).toEqual([cube]);
+  expect(useConversationStore.getState().pendingCreationRequest).toBe("");
+  useConversationStore.setState({
+    pendingCreation: true,
+    pendingCreationRequest: "Build a house",
+  });
+  newConversation();
+  expect(useConversationStore.getState().pendingCreation).toBe(false);
+  expect(useConversationStore.getState().pendingCreationRequest).toBe("");
+});
+
+it("clarification preserves original architectural requirements and newly supplied appearance until validation succeeds", async () => {
+  for (const [original, reply, reason] of [
+    [
+      "generate a 2 story house including a balcony and stairs",
+      "Use left stairs and a front balcony",
+      /No staircase/,
+    ],
+    ["Build a two-story house", "Use yellow walls", /requested wall color/],
+  ] as const) {
+    newConversation();
+    const base = scene().objects;
+    useConversationStore.setState({
+      pendingCreation: true,
+      pendingCreationRequest: original,
+    });
+    const proposal = offlinePlan("house", {
+      floors: 2,
+      appearance: { wall: { color: "#808080" } },
+    }).template!;
+    vi.stubGlobal("fetch", async () =>
+      Response.json({
+        source: "llm",
+        plan: { kind: "create", design: proposal, message: "Review" },
+      }),
+    );
+    const result = await interpretConversation(reply, settings);
+    expect(result.ok).toBe(false);
+    expect(result.message).toMatch(reason);
+    expect(scene().objects).toBe(base);
+    expect(useGenerationStore.getState().prepared).toBeNull();
+    expect(useConversationStore.getState().pendingCreationRequest).toBe(
+      original,
+    );
   }
 });

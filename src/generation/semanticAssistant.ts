@@ -77,9 +77,26 @@ export async function interpretConversation(
         "Scene or selection changed while interpreting. Submit again.",
       );
     const plan = assistantPlanSchema.parse(data.plan);
+    const originalCreation =
+      useConversationStore.getState().pendingCreationRequest;
+    const creationPrompt = originalCreation
+      ? originalCreation + "\n" + prompt
+      : prompt;
+    if (
+      plan.kind === "clarify" &&
+      (useConversationStore.getState().pendingCreation ||
+        /^(?:please\s+)?(?:generate|build|create)\b[\s\S]*\b(?:house|home|cottage|room|tower|office|warehouse|shed|bridge)\b/i.test(
+          prompt,
+        ))
+    )
+      useConversationStore.setState({
+        pendingCreation: true,
+        pendingCreationRequest:
+          useConversationStore.getState().pendingCreationRequest || prompt,
+      });
     plannerStage("Validating");
     if (plan.kind === "create" || plan.kind === "compose") {
-      if (/\b(?:hinged|functional door)\b/i.test(prompt))
+      if (/\b(?:hinged|functional door)\b/i.test(creationPrompt))
         throw Error(
           "This design needs unsupported animated or functional doors. I can prepare a supported fixed-panel design if you choose that alternative.",
         );
@@ -88,7 +105,7 @@ export async function interpretConversation(
           ? plan.plan
           : offlinePlan(plan.design.kind, plan.design);
       if (
-        /\bstairs?\b|\bstaircases?\b/i.test(prompt) &&
+        /\bstairs?\b|\bstaircases?\b/i.test(creationPrompt) &&
         !(
           built.template?.stairs?.length &&
           built.objects.some((o) => o.role === "stair")
@@ -98,7 +115,7 @@ export async function interpretConversation(
           "No staircase was generated. Choose its destination floor and left/right location; scene unchanged.",
         );
       if (
-        /\bbalcon(?:y|ies)\b/i.test(prompt) &&
+        /\bbalcon(?:y|ies)\b/i.test(creationPrompt) &&
         !(
           built.template?.balconies?.length &&
           built.objects.some((o) => o.role === "balcony")
@@ -107,7 +124,7 @@ export async function interpretConversation(
         throw Error(
           "No balcony was generated. Specify its floor and facade; scene unchanged.",
         );
-      validateDesignAttributes(prompt, built);
+      validateDesignAttributes(creationPrompt, built);
       const prepared = preparePlan(built, base);
       useGenerationStore.setState({
         prepared,
@@ -116,7 +133,12 @@ export async function interpretConversation(
         notice: `${data.provider ?? "LLM"} · ${plan.kind === "compose" ? "validated generated geometry" : "interpreted design"} / ${String(data.model).slice(0, 120)} · validated construction primitives. Fixed panels in segmented openings; no hinges.`,
         message: "Review and confirm this design. Scene unchanged.",
       });
-      useConversationStore.setState({ designRequest: prompt, finished: false });
+      useConversationStore.setState({
+        designRequest: creationPrompt,
+        finished: false,
+        pendingCreation: false,
+        pendingCreationRequest: "",
+      });
       plannerStage("Preview Ready");
       return {
         ok: true,

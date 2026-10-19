@@ -1,0 +1,138 @@
+{
+  "validatedAt": "2026-10-19T15:23:00.339Z",
+  "baseCheckpoint": "6c8ad09fad287a73516141c599b810e20ab8c1c8",
+  "scope": "Local Milestone10.5 Ollama architectural streaming; no push or deployment",
+  "gates": {
+    "typecheck": "passed",
+    "eslint": "passed",
+    "unit": {
+      "passed": 336,
+      "files": 35,
+      "receipt": ".cache/milestone105-stream-unit-final.log"
+    },
+    "backend": {
+      "passed": 60,
+      "receipt": ".cache/milestone105-stream-server-final.log"
+    },
+    "productionBuild": {
+      "passed": true,
+      "viteSeconds": 14.13,
+      "packageNotices": 70,
+      "unresolvedNotices": 0,
+      "receipt": ".cache/milestone105-stream-build-final.log"
+    },
+    "browserFull": {
+      "passed": 132,
+      "failed": 1,
+      "total": 133,
+      "minutes": 22.8,
+      "failedCase": "camera.spec.ts: real local MediaPipe processes a synthetic video and releases its stream",
+      "failure": "30000ms browser-context setup timeout before application/test body",
+      "receipt": ".cache/milestone105-stream-browser-full.log",
+      "sourceNote": "Before final clarification-attribute safeguard; affected final cases were rerun below."
+    },
+    "cameraUnchangedRerun": {
+      "passed": 2,
+      "failed": 0,
+      "seconds": 23.5,
+      "receipt": ".cache/milestone105-stream-camera-isolated.log"
+    },
+    "finalAffectedBrowserRerun": {
+      "passed": 13,
+      "failed": 0,
+      "minutes": 2.6,
+      "files": ["architecture.spec.ts", "milestone1041.spec.ts"],
+      "receipt": ".cache/milestone105-stream-browser-focused-final.log"
+    },
+    "securityAudit": {
+      "findings": 0,
+      "report": "docs/PUBLICATION_AUDIT.json",
+      "scope": "source, historical blobs, built bundle"
+    }
+  },
+  "liveBrowser": {
+    "prompt": "generate a 2 story house including a balcony and stairs",
+    "provider": "local Ollama",
+    "model": "qwen3:4b-instruct",
+    "requestId": "ce40a98c-75be-4e77-b223-73d93edbf082",
+    "resultKind": "create",
+    "totalMs": 70404.2744,
+    "firstTokenMs": 994.6411,
+    "parts": 44,
+    "stairSteps": 16,
+    "upperFloorTilesAroundVoid": 4,
+    "balconyParts": 8,
+    "inertPreview": true,
+    "confirmation": true,
+    "exactUndoRedo": true,
+    "pageErrors": 0,
+    "receipt": ".cache/milestone105-stream-live-browser9.log",
+    "sanitizedPlan": "tests/fixtures/ollama-architecture.json"
+  },
+  "diagnosis": {
+    "baselineFinish": "stop",
+    "baselineCharacters": 698,
+    "baselineAssemblyEqual": true,
+    "baselineSchemaFailure": "invalid_union at kind",
+    "contextTokens": 4096,
+    "comparison": {
+      "format": "native json_object",
+      "finish": "stop",
+      "assemblyEqual": true,
+      "promptTokens": 1622,
+      "completionTokens": 353,
+      "totalTokens": 1975
+    },
+    "note": "Token counts are from the isolated decoder comparison with placement supplied, not the browser latency run."
+  },
+  "limits": [
+    "One live architectural browser success does not establish reliability for all model output or hardware load.",
+    "Invalid geometry remains rejected; there is no synthesized/fallback repair.",
+    "Existing large bundle and dependency annotation warnings remain.",
+    "No fresh hosted Gemini verification or arbitrary live model follow-up edit in this resume.",
+    "Physical webcam, microphone and friend-device acceptance not performed."
+  ],
+  "publication": {
+    "pushed": false,
+    "deployed": false,
+    "paidServices": false,
+    "credentialsChanged": false,
+    "hostedQuotasChanged": false
+  },
+  "additionalNativeDiagnostic": {
+    "receipt": ".cache/milestone105-stream-native-final.log",
+    "observation": {
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1507,
+        "completion_tokens": 299,
+        "total_tokens": 1806
+      },
+      "chunks": 298,
+      "characters": 872,
+      "assemblyEqual": true,
+      "valid": true,
+      "kind": "create",
+      "floors": 2,
+      "stairs": 1,
+      "balconies": 1
+    },
+    "terminal": {
+      "http": 200,
+      "event": "event: result",
+      "kind": "create",
+      "requestId": "b2b2d79a-c0f8-4d22-ab45-563c51e7575b",
+      "timings": {
+        "firstTokenMs": 9009.5729,
+        "headerMs": 9005.052099999999,
+        "providerMs": 31819.8983,
+        "validationMs": 9.165500000002794,
+        "totalMs": 31862.134400000003,
+        "modelLoadMs": null,
+        "residentBefore": false,
+        "residentVramBytes": null
+      }
+    },
+    "scope": "Final-source real local backend schema/stream verification, not another rendered/browser verification."
+  }
+}

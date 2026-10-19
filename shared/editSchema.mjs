@@ -135,6 +135,7 @@ export const editPlanSchema = z
   .strict();
 export const editContextSchema = z
   .object({
+    creationRequest: z.string().min(1).max(1200).optional(),
     selected: z.string().uuid().nullable(),
     selection: z
       .object({

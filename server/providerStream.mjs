@@ -1,3 +1,4 @@
+import { PlannerError } from "./plannerError.mjs";
 // Compatible SSE collector: no unvalidated model text is sent to the application.
 export async function collectCompletion(
   response,
@@ -11,6 +12,8 @@ export async function collectCompletion(
   const decoder = new TextDecoder();
   let pending = "",
     content = "",
+    finishReason = null,
+    usage = null,
     bytes = 0,
     finished = provider !== "gemini";
   try {
@@ -33,6 +36,21 @@ export async function collectCompletion(
         if (!text || text === "[DONE]") continue;
         const data = JSON.parse(text);
         if (data.error) throw Error("Provider returned an error.");
+        if (provider !== "gemini") {
+          if (typeof data.choices?.[0]?.finish_reason === "string")
+            finishReason = data.choices[0].finish_reason;
+          if (
+            data.usage &&
+            ["prompt_tokens", "completion_tokens", "total_tokens"].every(
+              (k) => Number.isSafeInteger(data.usage[k]) && data.usage[k] >= 0,
+            )
+          )
+            usage = {
+              prompt_tokens: data.usage.prompt_tokens,
+              completion_tokens: data.usage.completion_tokens,
+              total_tokens: data.usage.total_tokens,
+            };
+        }
         if (
           provider === "gemini" &&
           (data.promptFeedback?.blockReason ||
@@ -67,7 +85,27 @@ export async function collectCompletion(
     }
     if (pending.trim() || !finished)
       throw Error("Incomplete provider event or generation.");
-    return { choices: [{ message: { content } }] };
+    if (finishReason === "length")
+      throw new PlannerError(
+        502,
+        "provider-truncated",
+        "The model stopped at its output/context limit before completing the plan. Shorten the request or conversation and retry; nothing was applied.",
+      );
+    if (finishReason && finishReason !== "stop")
+      throw new PlannerError(
+        502,
+        "provider-incomplete",
+        "The model did not finish a usable plan. Nothing was applied; retry or check the configured model.",
+      );
+    return {
+      choices: [
+        {
+          message: { content },
+          ...(finishReason ? { finish_reason: finishReason } : {}),
+        },
+      ],
+      ...(usage ? { usage } : {}),
+    };
   } catch (error) {
     await reader.cancel().catch(() => {});
     throw error;

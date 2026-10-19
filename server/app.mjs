@@ -4,6 +4,7 @@ import {
 } from "../shared/assistantSchema.mjs";
 import {
   assistantContract,
+  creationExample,
   templateContract,
   operationContract,
   geometryContract,
@@ -428,6 +429,27 @@ export function createPlannerHandler(
       }
       const editing = url.pathname.endsWith("/edit"),
         assisting = url.pathname.endsWith("/assistant");
+      const ollama =
+        config.provider !== "gemini" &&
+        config.local &&
+        new URL(config.base).port === "11434";
+      const creationRequest = (text) =>
+        /^(?:please\s+)?(?:generate|build|create)\b[\s\S]*\b(?:house|home|cottage|room|tower|office|warehouse|shed|bridge)\b/i.test(
+          text ?? "",
+        );
+      const originalCreation = body.context?.creationRequest;
+      const pendingPlacement =
+        !body.context?.selected &&
+        Array.isArray(body.context?.structures) &&
+        body.context.structures.length === 0 &&
+        creationRequest(originalCreation) &&
+        /\b(?:left|right|front|back|facade|offset|floor|stairs?|balcony|width|depth|height|entry|door|roof|material|concrete|wood|flat|defaults|yes)\b/i.test(
+          body.prompt ?? "",
+        );
+      const directCreation =
+        ollama &&
+        assisting &&
+        (creationRequest(body.prompt) || pendingPlacement);
       const outputSchema = assisting
         ? assistantResponseSchema
         : editing
@@ -435,8 +457,13 @@ export function createPlannerHandler(
           : planSchema;
       const instructions = assisting
         ? assistantSystem +
-          "\nUse the transport envelope response. Encode the COMPLETE object matching the following runtime schema as a JSON string in response, including kind, message and its required fields:\n" +
-          assistantContract
+          (directCreation
+            ? "\nReturn the assistant JSON object DIRECTLY. Use ONLY {kind:create,design:<Design>,message:<brief review text>} or {kind:clarify,message:<specific placement question>}. A creation request cannot use finish/explain/edit. kind:create proposes PREVIEW DATA, never scene execution. When placement is answered, return create rather than asking to reconfirm it. Ask clarification only for genuinely missing physical location, not technical dependency rules. A two-floor house uses levels0 and1 internally; interior stairs connect0 to1. A front balcony on the second floor uses level1, facade front, centered offset0 by default, and an aligned access doorway at that same level/facade/offset. Derive these dependencies; never ask the user to reconfirm them. Use flat roof, concrete material, #808080 color, 6m width/depth, 3m storey height, balcony width2.4/depth1.5/railHeight1.1 when unspecified; do not ask for these defaults, explain defaults briefly in message. Never acknowledge a generated design without actual design data.\n" +
+              templateContract +
+              "\nExample of a complete preview proposal after placement is supplied (adapt to the actual request): " +
+              creationExample
+            : "\nUse the transport envelope response. Encode the COMPLETE object matching the following runtime schema as a JSON string in response, including kind, message and its required fields:\n" +
+              assistantContract)
         : editing
           ? editSystem
           : system + "\n" + constructionGuidance;
@@ -451,6 +478,19 @@ export function createPlannerHandler(
               ". This is the single requested retry. Preserve ALL requested attributes. Recompute correct local-axis dimensions, contact faces and elevations; do not omit details or bypass constraints."
             : ""),
         model = args.model || config.models[0];
+      const effectivePrompt = pendingPlacement
+        ? args.context.creationRequest +
+          "\nPlacement answer for this NEW design, not an edit to an existing structure: " +
+          prompt
+        : prompt;
+      const providerContext = directCreation
+        ? {
+            ...args.context,
+            conversation: args.context.conversation?.filter(
+              (message) => message.role === "user",
+            ),
+          }
+        : args.context;
       if (!config.models.includes(model))
         throw new PlannerError(
           400,
@@ -468,10 +508,6 @@ export function createPlannerHandler(
       progress("Connecting");
       if (config.provider === "gemini")
         await verifyGeminiModel(config, fetcher, abort.signal);
-      const ollama =
-        config.provider !== "gemini" &&
-        config.local &&
-        new URL(config.base).port === "11434";
       const providerName =
         config.provider === "gemini"
           ? "Gemini"
@@ -516,7 +552,10 @@ export function createPlannerHandler(
               model,
               instructions,
               editing || assisting
-                ? JSON.stringify({ request: prompt, context: args.context })
+                ? JSON.stringify({
+                    request: effectivePrompt,
+                    context: providerContext,
+                  })
                 : prompt,
               z.toJSONSchema(outputSchema),
               editing,
@@ -542,28 +581,38 @@ export function createPlannerHandler(
                 role: "user",
                 content:
                   editing || assisting
-                    ? JSON.stringify({ request: prompt, context: args.context })
+                    ? JSON.stringify({
+                        request: effectivePrompt,
+                        context: providerContext,
+                      })
                     : prompt,
               },
             ],
             stream: !!wantsEvents,
+            ...(ollama && wantsEvents
+              ? { stream_options: { include_usage: true } }
+              : {}),
             temperature: 0.2,
             max_tokens: editing ? 768 : 10000,
             ...(config.jsonMode
               ? {
                   response_format:
-                    ollama && !editing
-                      ? {
-                          type: "json_schema",
-                          json_schema: {
-                            name: editing ? "holobuild_edit" : "holobuild_plan",
-                            strict: true,
-                            schema: providerSchema(
-                              z.toJSONSchema(outputSchema),
-                            ),
-                          },
-                        }
-                      : { type: "json_object" },
+                    ollama && directCreation
+                      ? { type: "json_object" }
+                      : ollama && !editing
+                        ? {
+                            type: "json_schema",
+                            json_schema: {
+                              name: editing
+                                ? "holobuild_edit"
+                                : "holobuild_plan",
+                              strict: true,
+                              schema: providerSchema(
+                                z.toJSONSchema(outputSchema),
+                              ),
+                            },
+                          }
+                        : { type: "json_object" },
                 }
               : {}),
           }),
@@ -625,6 +674,12 @@ export function createPlannerHandler(
           ? geminiText(data)
           : data.choices?.[0]?.message?.content,
       );
+      if (directCreation && plan.kind !== "create" && plan.kind !== "clarify")
+        throw new PlannerError(
+          422,
+          "response-schema",
+          "The local model did not return a creation proposal or a placement question. Nothing was applied; retry with the required details.",
+        );
       await send(200, {
         source: "llm",
         model,

@@ -1,0 +1,71 @@
+{
+  "kind": "create",
+  "design": {
+    "balconies": [
+      {
+        "id": "balcony",
+        "level": 1,
+        "facade": "front",
+        "offset": 0,
+        "width": 2.4,
+        "depth": 1.5,
+        "railHeight": 1.1,
+        "material": "concrete",
+        "color": "#808080",
+        "access": "access",
+        "ownsAccess": true
+      }
+    ],
+    "openings": [
+      {
+        "id": "entry",
+        "kind": "door",
+        "level": 0,
+        "facade": "front",
+        "offset": 0,
+        "bottom": 0,
+        "width": 1,
+        "height": 2.1,
+        "panel": true
+      },
+      {
+        "id": "access",
+        "kind": "door",
+        "level": 1,
+        "facade": "front",
+        "offset": 0,
+        "bottom": 0,
+        "width": 1,
+        "height": 2.1,
+        "panel": true
+      }
+    ],
+    "stairs": [
+      {
+        "id": "flight",
+        "from": 0,
+        "to": 1,
+        "steps": 16,
+        "rise": 0.2,
+        "run": 0.2,
+        "width": 1,
+        "x": -1.5,
+        "z": 0,
+        "yaw": 0,
+        "material": "concrete",
+        "color": "#808080"
+      }
+    ],
+    "kind": "house",
+    "width": 6,
+    "depth": 6,
+    "height": 3,
+    "floors": 2,
+    "thickness": 0.2,
+    "doors": 1,
+    "windows": 0,
+    "material": "concrete",
+    "roof": "flat"
+  },
+  "message": "Review left interior stairs, a centered second-floor front balcony and its access; default dimensions 6x6m, storey height3m."
+}

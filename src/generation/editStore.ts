@@ -72,6 +72,13 @@ export function editContext(): EditContext {
   });
   const part = s.objects.find((o) => o.id === s.selectedId);
   return {
+    ...(useConversationStore.getState().pendingCreation &&
+    useConversationStore.getState().pendingCreationRequest
+      ? {
+          creationRequest:
+            useConversationStore.getState().pendingCreationRequest,
+        }
+      : {}),
     selection: {
       mode: s.selectedStructureId ? "structure" : part ? "component" : "none",
       ...(part

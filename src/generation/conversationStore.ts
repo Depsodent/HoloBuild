@@ -12,6 +12,8 @@ export const useConversationStore = create(() => ({
       text: "Describe a design, or select something to refine. I will prepare changes for your review.",
     },
   ] as DesignMessage[],
+  pendingCreation: false,
+  pendingCreationRequest: "",
   pendingArchitecture: null as { text: string; target: string } | null,
   target: null as string | null,
   designRequest: "",
@@ -31,7 +33,12 @@ export function conversationMessage(role: DesignMessage["role"], text: string) {
   }));
 }
 export function confirmedDesign(target: string | null, summary: string) {
-  useConversationStore.setState({ target, finished: false });
+  useConversationStore.setState({
+    target,
+    finished: false,
+    pendingCreation: false,
+    pendingCreationRequest: "",
+  });
   conversationMessage(
     "assistant",
     summary + " Would you like to make any changes or add details?",
@@ -46,6 +53,8 @@ export function newConversation() {
         text: "New conversation. Your scene is preserved. What would you like to design?",
       },
     ],
+    pendingCreation: false,
+    pendingCreationRequest: "",
     pendingArchitecture: null,
     target: null,
     designRequest: "",

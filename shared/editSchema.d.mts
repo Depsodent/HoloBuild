@@ -60,6 +60,7 @@ export interface EditPlan {
   operation: StructureOperation;
 }
 export interface EditContext {
+  creationRequest?: string;
   selection?: {
     mode: "component" | "structure" | "none";
     id?: string;

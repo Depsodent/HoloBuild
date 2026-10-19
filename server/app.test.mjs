@@ -916,3 +916,183 @@ test("missing proposal prose gets a presentation default without making design o
   );
   assert.throws(() => parseModelAssistant(JSON.stringify({ kind: "clarify" })));
 });
+
+test("local Ollama creation uses native JSON without encoded strings or the full union decoder", async (t) => {
+  for (const streaming of [false, true]) {
+    let sent;
+    const url = await fixture(t, async (endpoint, options) => {
+      if (endpoint.endsWith("/api/ps")) return Response.json({ models: [] });
+      sent = JSON.parse(options.body);
+      const plan = {
+        kind: "clarify",
+        message:
+          "Which side should the stairs use, and which facade should receive the balcony?",
+      };
+      return streaming
+        ? providerEvents(plan)
+        : Response.json({
+            choices: [{ message: { content: JSON.stringify(plan) } }],
+          });
+    });
+    const response = await fetch(url + "/api/planner/assistant", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(streaming ? { Accept: "text/event-stream" } : {}),
+      },
+      body: JSON.stringify({
+        prompt: "generate a 2 story house including a balcony and stairs",
+        context: { selected: null, structures: [] },
+      }),
+    });
+    const text = await response.text();
+    assert.equal(response.status, 200);
+    assert.ok(text.includes("clarify"));
+    assert.deepEqual(sent.response_format, { type: "json_object" });
+    assert.match(sent.messages[0].content, /DIRECTLY/);
+    assert.ok(!sent.messages[0].content.includes("Transport: return"));
+    assert.equal(sent.stream, streaming);
+    if (streaming)
+      assert.deepEqual(sent.stream_options, { include_usage: true });
+  }
+});
+
+test("placement replies retain bounded creation decoding without changing existing structure editing", async (t) => {
+  let sent;
+  const url = await fixture(t, async (_url, options) => {
+    sent = JSON.parse(options.body);
+    return Response.json({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              kind: "clarify",
+              message: "Which offset?",
+            }),
+          },
+        },
+      ],
+    });
+  });
+  for (const [selected, pending] of [
+    [null, true],
+    [editContext.selected, true],
+    [null, false],
+  ]) {
+    const response = await fetch(url + "/api/planner/assistant", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: "Stairs on the left and balcony on the front second floor",
+        context: {
+          selected,
+          ...(pending
+            ? {
+                creationRequest:
+                  "generate a 2 story house including a balcony and stairs",
+              }
+            : {}),
+          structures: selected ? editContext.structures : [],
+          conversation: [
+            {
+              role: "user",
+              text: "generate a 2 story house including a balcony and stairs",
+            },
+            { role: "assistant", text: "Which facade?" },
+          ],
+        },
+      }),
+    });
+    assert.equal(response.status, 200);
+    await response.json();
+    if (selected || !pending)
+      assert.ok(sent.response_format.json_schema.schema.properties.response);
+    else assert.deepEqual(sent.response_format, { type: "json_object" });
+  }
+});
+
+test("original creation intent survives a clipped conversation and remains bounded", async (t) => {
+  let sent;
+  const url = await fixture(t, async (_url, options) => {
+    sent = JSON.parse(options.body);
+    return Response.json({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              kind: "clarify",
+              message: "Which side?",
+            }),
+          },
+        },
+      ],
+    });
+  });
+  const prompt = "generate a 2 story house including a balcony and stairs";
+  const context = {
+    selected: null,
+    structures: [],
+    creationRequest: prompt,
+    conversation: [{ role: "assistant", text: "Which roof?" }],
+  };
+  const response = await fetch(url + "/api/planner/assistant", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      prompt: "Flat concrete roof; use defaults",
+      context,
+    }),
+  });
+  assert.equal(response.status, 200);
+  await response.json();
+  assert.deepEqual(sent.response_format, { type: "json_object" });
+  assert.ok(sent.messages.at(-1).content.includes(prompt));
+  for (const invalid of [
+    { ...context, creationRequest: "x".repeat(1201) },
+    { ...context, conversation: [null] },
+  ]) {
+    const r = await fetch(url + "/api/planner/assistant", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: "Use defaults", context: invalid }),
+    });
+    assert.equal(r.status, 422);
+    await r.json();
+  }
+});
+
+test("native local creation still rejects malformed model data", async (t) => {
+  for (const content of [
+    JSON.stringify({ kind: "finish", message: "A house is ready" }),
+    "not JSON",
+    JSON.stringify({
+      kind: "create",
+      design: { kind: "house" },
+      message: "Review",
+    }),
+    JSON.stringify({
+      kind: "create",
+      design: { kind: "house" },
+      unexpected: true,
+    }),
+  ]) {
+    const url = await fixture(t, async () =>
+      Response.json({ choices: [{ message: { content } }] }),
+    );
+    const r = await fetch(url + "/api/planner/assistant", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "text/event-stream",
+      },
+      body: JSON.stringify({
+        prompt: "Build a house",
+        context: { selected: null, structures: [] },
+      }),
+    });
+    const text = await r.text();
+    assert.match(text, /event: error/);
+    assert.match(text, /response-schema/);
+    assert.ok(!text.includes("event: result"));
+  }
+});

@@ -45,6 +45,10 @@ import type {
 let busy = false,
   version = 0;
 export function cancelAssistantPreview() {
+  useConversationStore.setState({
+    pendingCreation: false,
+    pendingCreationRequest: "",
+  });
   version++;
   cancelGeneration();
   cancelEdit();
@@ -414,6 +418,16 @@ export async function dispatchAssistant(
           : state.message,
         state.status === "preview" || state.status === "complete",
       );
+    }
+    if (
+      useConversationStore.getState().pendingCreation &&
+      !primitiveRequest &&
+      /\b(?:left|right|front|back|facade|offset|floor|stairs?|balcony|width|depth|height|entry|door|roof|material|concrete|wood|flat|defaults|yes)\b/i.test(
+        intent.text,
+      )
+    ) {
+      const result = await interpretConversation(raw, settings);
+      return respond(result.message, result.ok);
     }
     let quick: Intent;
     const selectedPart = scene.objects.find((o) => o.id === scene.selectedId);
