@@ -1,4 +1,6 @@
-import {SelectionMode} from "./components/ui/StructureInspector";
+import { useViewStore, exploring } from "./exploration/viewStore";
+import { ExplorationControls } from "./components/ui/ExplorationControls";
+import { SelectionMode } from "./components/ui/StructureInspector";
 import { useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { GestureCursor } from "./components/ui/GestureCursor";
@@ -32,6 +34,7 @@ import { CompactHint } from "./workspace/CompactHint";
 import { useWorkspaceLayout } from "./workspace/layoutStore";
 import { useTrackingStore } from "./vision/trackingStore";
 export default function App() {
+  const readOnly = useViewStore((s) => s.walking || s.presentation);
   const cameraActive = useTrackingStore(
     (s) => s.status === "running" || s.status === "starting",
   );
@@ -51,6 +54,7 @@ export default function App() {
   const [help, setHelp] = useState(false);
   useEffect(() => {
     function keys(e: KeyboardEvent) {
+      if (exploring()) return;
       if (
         (e.target as HTMLElement).closest("input,select,textarea") ||
         e.altKey
@@ -113,7 +117,7 @@ export default function App() {
           <button
             title="Undo (Ctrl+Z)"
             aria-label="Undo"
-            disabled={!s.past.length}
+            disabled={readOnly || !s.past.length}
             onClick={undo}
           >
             <Undo2 size={17} />
@@ -121,13 +125,14 @@ export default function App() {
           <button
             title="Redo (Ctrl+Shift+Z)"
             aria-label="Redo"
-            disabled={!s.future.length}
+            disabled={readOnly || !s.future.length}
             onClick={redo}
           >
             <Redo2 size={17} />
           </button>
           <i />
           <button
+            disabled={readOnly}
             aria-label="Load"
             title="Load scene JSON"
             onClick={() => file.current?.click()}
@@ -146,6 +151,7 @@ export default function App() {
           </button>
           <button
             title="Reset scene"
+            disabled={readOnly}
             aria-label="Reset scene"
             onClick={() => {
               if (confirm("Clear the scene? You can undo this action."))
@@ -210,7 +216,7 @@ export default function App() {
               <span className="eyebrow">WORKSPACE / 01</span>
               <h1>3D Workspace</h1>
             </div>
-            <SelectionMode/>
+            <SelectionMode />
             <span className="view-label">
               PERSPECTIVE <span>⌖</span>
             </span>
@@ -221,10 +227,15 @@ export default function App() {
             </span>
             <span>Drag to orbit · Scroll to zoom · Right-drag to pan</span>
           </div>
-          <GestureCursor />
-          <GestureMenu />
-          <HandGuides />
-          <InteractionStatus />
+          <ExplorationControls />
+          {!readOnly && (
+            <>
+              <GestureCursor />
+              <GestureMenu />
+              <HandGuides />
+              <InteractionStatus />
+            </>
+          )}
         </section>
       </WorkspaceLayout>
       <footer>

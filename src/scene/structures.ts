@@ -774,6 +774,33 @@ export function applyStructure(
     const matrix = frameMatrix(info).multiply(before.invert());
     parts = parts.map((o) => transformPart(o, matrix));
   }
+  if (
+    (operation.type === "material" || operation.type === "color") &&
+    !operation.opening &&
+    (operation.level === undefined || operation.level === 0)
+  ) {
+    if (
+      info.standaloneStairs &&
+      (!operation.role || operation.role === "stair")
+    ) {
+      const sample = parts.find((o) => o.construction?.role === "stair")!;
+      info.standaloneStairs = {
+        ...info.standaloneStairs,
+        ...(operation.type === "material"
+          ? { material: sample.material }
+          : { color: sample.color }),
+      };
+    }
+    if (info.nativeWall && (!operation.role || operation.role === "wall")) {
+      const sample = parts.find((o) => o.construction?.role === "wall")!;
+      info.nativeWall = {
+        ...info.nativeWall,
+        ...(operation.type === "material"
+          ? { material: sample.material }
+          : { color: sample.color }),
+      };
+    }
+  }
   parts = parts.map((o) => ({
     ...o,
     construction: { ...o.construction!, structure: structuredClone(info) },

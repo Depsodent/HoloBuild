@@ -1,3 +1,4 @@
+import type { Vec3 } from "../scene/objectTypes";
 import { landmarkStream, type Landmark } from "../vision/landmarkStream";
 import { useSceneStore } from "../scene/sceneStore";
 import { useTrackingStore } from "../vision/trackingStore";
@@ -17,6 +18,13 @@ declare global {
         preview: ReturnType<typeof useSceneStore.getState>["preview"];
       };
       scene: () => ReturnType<typeof useSceneStore.getState>["objects"];
+      view?: () => {
+        position: number[];
+        quaternion: number[];
+        target: number[];
+        walking: boolean;
+        feet: Vec3 | null;
+      };
       project?: (id: string) => { x: number; y: number } | null;
       rendered?: () => {
         id: string;

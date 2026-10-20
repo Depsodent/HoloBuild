@@ -1,3 +1,4 @@
+import { exploring } from "../exploration/viewStore";
 import { nativePartOperation } from "./nativeAssemblies";
 import { duplicateAssembly } from "../generation/libraryOperations";
 import { protectConnectedPart } from "./precision";
@@ -77,6 +78,13 @@ export type Command =
       selection?: { id: string; mode: "component" | "structure" };
     };
 export function execute(command: Command): boolean {
+  if (exploring()) {
+    useSceneStore.setState({
+      status:
+        "Exit exploration before editing. Scene and history are unchanged.",
+    });
+    return false;
+  }
   const s = useSceneStore.getState();
   try {
     if (
@@ -585,6 +593,7 @@ export function execute(command: Command): boolean {
   }
 }
 export function undo() {
+  if (exploring()) return;
   const s = useSceneStore.getState();
   const objects = s.past.at(-1);
   if (objects)
@@ -599,6 +608,7 @@ export function undo() {
     });
 }
 export function redo() {
+  if (exploring()) return;
   const s = useSceneStore.getState();
   const objects = s.future[0];
   if (objects)

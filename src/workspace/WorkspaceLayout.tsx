@@ -1,3 +1,4 @@
+import { useViewStore, exploring } from "../exploration/viewStore";
 import { useLeftStore, type LeftTab } from "./leftStore";
 import { SceneCollection } from "../components/ui/SceneCollection";
 import { useTrackingStore } from "../vision/trackingStore";
@@ -26,6 +27,7 @@ import {
 } from "./layoutStore";
 
 export function WorkspaceLayout({ children }: { children: ReactNode }) {
+  const exploration = useViewStore((s) => s.walking || s.presentation);
   const { tab, setTab } = useLeftStore();
   const tracking = useTrackingStore((s) => s.status);
   const root = useRef<HTMLDivElement>(null);
@@ -52,7 +54,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setDrawer(null);
+      if (event.key === "Escape" && !exploring()) setDrawer(null);
     };
     window.addEventListener("keydown", key);
     return () => {
@@ -79,7 +81,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
   return (
     <div
       ref={root}
-      className={`workspace adaptive-workspace ${small ? "small-workspace" : ""}`}
+      className={`workspace adaptive-workspace ${exploration ? "exploration-mode" : ""} ${small ? "small-workspace" : ""}`}
       style={
         {
           "--left-width": `${leftCollapsed ? 44 : widths.left}px`,

@@ -1,3 +1,5 @@
+import { isPassableDoor } from "../../exploration/navigation";
+import { useViewStore } from "../../exploration/viewStore";
 import { updateMouseGuide, clearMouseGuide } from "../../scene/precisionGuide";
 import { usePrecisionSettings } from "../../scene/precisionSettings";
 import { isArchitecturalPart } from "../../scene/architecturalTransform";
@@ -18,6 +20,8 @@ export const BuildingObject = memo(function BuildingObject({
 }: {
   object: SceneObject;
 }) {
+  const walking = useViewStore((s) => s.walking);
+  const readOnly = useViewStore((s) => s.walking || s.presentation);
   const gridStep = usePrecisionSettings((s) => s.gridStep);
   const gl = useThree((s) => s.gl);
   const ref = useRef<Mesh>(null);
@@ -52,7 +56,8 @@ export const BuildingObject = memo(function BuildingObject({
     };
   }, [object.id]);
   const [hover, setHover] = useState(false);
-  const selected = useSceneStore((s) => s.selectedId === object.id);
+  const selected =
+    useSceneStore((s) => s.selectedId === object.id) && !readOnly;
   useEffect(() => {
     if (!selected && dragBase.current) {
       cancelled.current = true;
@@ -66,7 +71,8 @@ export const BuildingObject = memo(function BuildingObject({
     }
   }, [selected, object]);
   const group = useSceneStore((s) => s.selectedStructureId);
-  const groupSelected = !!group && object.construction?.structureId === group;
+  const groupSelected =
+    !readOnly && !!group && object.construction?.structureId === group;
   const tool = useSceneStore((s) => s.tool);
   const snap = useSceneStore((s) => s.snap);
   const gestureHover = useInteractionStore((s) => s.hoveredId === object.id);
@@ -110,16 +116,18 @@ export const BuildingObject = memo(function BuildingObject({
         scale={object.scale}
         castShadow={object.type !== "model"}
         receiveShadow
+        visible={!(walking && isPassableDoor(object))}
         userData={{ objectId: object.id }}
         onClick={(e) => {
           e.stopPropagation();
+          if (readOnly) return;
           useSceneStore.getState().select(object.id);
           if (useSceneStore.getState().selectedStructureId)
             useLeftStore.getState().setTab("inspector");
         }}
         onPointerOver={(e) => {
           e.stopPropagation();
-          setHover(true);
+          if (!readOnly) setHover(true);
         }}
         onPointerOut={() => setHover(false)}
       >
@@ -135,7 +143,7 @@ export const BuildingObject = memo(function BuildingObject({
             <ImportedModel
               object={object}
               grabbed={grabbed}
-              highlight={hover || gestureHover}
+              highlight={!readOnly && (hover || gestureHover)}
             />
           </>
         ) : (

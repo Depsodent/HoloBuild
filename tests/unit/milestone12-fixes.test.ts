@@ -275,3 +275,50 @@ it("intermittent speech failure permits a deliberate restart and catches an alre
   Speech.last.onresult?.(speechEvent("Move this object right"));
   expect(final).toHaveBeenCalledOnce();
 });
+
+it("whole staircase appearance survives adding new native treads", () => {
+  const p = standaloneFlight(recipe, [0, 0, 0]);
+  execute({ type: "construct", objects: p });
+  const id = p[0].construction!.structureId;
+  execute({
+    type: "structure",
+    structureId: id,
+    operation: { type: "material", material: "polished-metal" },
+  });
+  execute({
+    type: "structure",
+    structureId: id,
+    operation: { type: "color", color: "#ddbb22" },
+  });
+  const saved = useSceneStore.getState().objects,
+    info = saved[0].construction!.structure!;
+  expect(
+    execute({
+      type: "structure",
+      structureId: id,
+      operation: {
+        type: "design",
+        standaloneStairs: { ...info.standaloneStairs!, steps: 10, height: 2 },
+      },
+    }),
+  ).toBe(true);
+  expect(
+    useSceneStore
+      .getState()
+      .objects.every(
+        (o) => o.material === "polished-metal" && o.color === "#ddbb22",
+      ),
+  ).toBe(true);
+  undo();
+  expect(useSceneStore.getState().objects).toEqual(saved);
+});
+
+it("native recipe metadata cannot certify forged or missing tread geometry", () => {
+  const parts = standaloneFlight(recipe, [0, 0, 0]),
+    forged = structuredClone(parts);
+  forged[2].position[1] += 0.1;
+  expect(() => validateBatch(forged, [])).toThrow(
+    /recipe does not match actual geometry/,
+  );
+  expect(() => validateBatch(parts.slice(1), [])).toThrow(/component count/);
+});

@@ -6,16 +6,23 @@ if (process.env.HOLO_LIVE_GEMINI !== "1")
   throw Error("Explicit opt-in required for real Gemini release verification.");
 const base = process.env.HOLO_RELEASE_URL || "http://127.0.0.1:5182",
   name = base.startsWith("https:") ? "public" : "local",
-  milestone = process.env.HOLO_PRECISION_SMOKE === "1" ? "m11" : "m105";
+  milestone =
+    process.env.HOLO_EXPLORATION_SMOKE === "1"
+      ? "m12"
+      : process.env.HOLO_PRECISION_SMOKE === "1"
+        ? "m11"
+        : "m105";
 const report = {
   testedAt: new Date().toISOString(),
   url: base,
   baseCheckpoint:
     process.env.HOLO_SOURCE_SHA || "29a7717961374efa3bc7db1da257bdea1e6e3f9f",
   source:
-    milestone === "m11"
-      ? "Milestone 11 production-build release validation"
-      : "Milestone 10.5 release validation",
+    milestone === "m12"
+      ? "Milestone 12 production-build release validation"
+      : milestone === "m11"
+        ? "Milestone 11 production-build release validation"
+        : "Milestone 10.5 release validation",
   physicalDeviceTested: false,
   ok: false,
   checks: {},
@@ -372,6 +379,10 @@ try {
     report.checks.library = await (
       await import("./smoke-library.mjs")
     ).smokeLibrary(page);
+  if (process.env.HOLO_EXPLORATION_SMOKE === "1")
+    report.checks.exploration = await (
+      await import("./smoke-exploration.mjs")
+    ).smokeExploration(page);
   await page.locator("canvas[data-engine]").hover();
   await page.mouse.wheel(0, 500);
   await page.screenshot({

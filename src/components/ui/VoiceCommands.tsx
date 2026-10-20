@@ -182,8 +182,14 @@ export function VoiceCommands() {
     const hide = () => {
       if (document.hidden) controller.current?.cancel();
     };
+    const explore = () =>
+      controller.current?.cancel(
+        "Microphone paused for exploration. Finalized text is preserved; restart after exiting.",
+      );
+    window.addEventListener("holobuild:exploration-enter", explore);
     document.addEventListener("visibilitychange", hide);
     return () => {
+      window.removeEventListener("holobuild:exploration-enter", explore);
       mounted.current = false;
       controller.current?.cancel();
       cancelUnconfirmedGeneration();

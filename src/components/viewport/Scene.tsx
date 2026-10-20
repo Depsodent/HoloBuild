@@ -1,3 +1,4 @@
+import { useViewStore, exploring } from "../../exploration/viewStore";
 import { PrecisionOverlay } from "./PrecisionOverlay";
 import { recordGraphics } from "../../vision/graphicsInfo";
 import { useLightingStore } from "../../scene/lightingStore";
@@ -66,6 +67,7 @@ function Metrics() {
 }
 export const Scene = memo(function Scene() {
   const objects = useSceneStore((s) => s.objects);
+  const readOnly = useViewStore((s) => s.walking || s.presentation);
   return (
     <ViewportBoundary>
       <Canvas
@@ -77,7 +79,9 @@ export const Scene = memo(function Scene() {
         shadows
         dpr={[1, 1.75]}
         camera={{ position: [7, 6, 9], fov: 45 }}
-        onPointerMissed={() => useSceneStore.getState().select(null)}
+        onPointerMissed={() => {
+          if (!exploring()) useSceneStore.getState().select(null);
+        }}
         gl={{ antialias: true }}
       >
         <color attach="background" args={["#0a121e"]} />
@@ -88,11 +92,15 @@ export const Scene = memo(function Scene() {
         <Grid />
         <CameraController />
         <Metrics />
-        <GestureInteraction />
-        <PlacementPreview />
-        <StructureControls />
-        <PrecisionOverlay />
-        <GenerationPreview />
+        {!readOnly && (
+          <>
+            <GestureInteraction />
+            <PlacementPreview />
+            <StructureControls />
+            <PrecisionOverlay />
+            <GenerationPreview />
+          </>
+        )}
         <SurfaceResources>
           {objects.map((object) => (
             <BuildingObject key={object.id} object={object} />

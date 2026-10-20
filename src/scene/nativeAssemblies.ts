@@ -81,20 +81,43 @@ export function nativeParts(
         position: [o.position[0], o.position[1] - 0.2, 0] as Vec3,
       }));
   } else throw Error("Native recipe unavailable.");
+  const lastInfo = previous[0]?.construction?.structure,
+    oldBase = lastInfo?.standaloneStairs ?? lastInfo?.nativeWall,
+    nextBase = info.standaloneStairs ?? info.nativeWall;
+  const changedMaterial = !!oldBase && oldBase.material !== nextBase?.material,
+    changedColor = !!oldBase && oldBase.color !== nextBase?.color;
+  const previousLocal = info.nativeWall
+    ? previous.map((o) => transformPart(o, frameMatrix(info).invert()))
+    : [];
   return plan.map((p) => {
-    const old = previous.find((o) => o.construction?.partId === p.id);
+    const exact = previous.find((o) => o.construction?.partId === p.id);
+    const inherited =
+      p.role === "wall"
+        ? previousLocal.find(
+            (o) =>
+              o.construction?.role === "wall" &&
+              bounds(o).containsPoint(new Vector3(...p.position)),
+          )
+        : undefined;
+    const old =
+      exact ??
+      (inherited ? previous.find((o) => o.id === inherited.id) : undefined);
+    const basePart = !!info.standaloneStairs || p.role === "wall";
     const o = objectSchema.parse({
       ...createObject(p.type),
-      id: old?.id ?? crypto.randomUUID(),
+      id: exact?.id ?? crypto.randomUUID(),
       name: (info.name + " / " + p.name).slice(0, 60),
       position: p.position,
       rotation: p.rotation,
       scale: p.dimensions.map(
         (n, i) => n / objectSize(createObject(p.type))[i],
       ),
-      color: old && p.role !== "wall" ? old.color : p.color,
-      material: old && p.role !== "wall" ? old.material : p.material,
-      ...(old?.surface ? { surface: old.surface } : {}),
+      color: old && !(basePart && changedColor) ? old.color : p.color,
+      material:
+        old && !(basePart && changedMaterial) ? old.material : p.material,
+      ...(old?.surface && !(basePart && changedMaterial)
+        ? { surface: old.surface }
+        : {}),
       construction: {
         structureId: group,
         structure: info,

@@ -1,3 +1,4 @@
+import { exploring } from "../exploration/viewStore";
 import { selectedWallIntent } from "./selectedWall";
 import { precisionIntent } from "./precisionIntent";
 import { openingTarget } from "../scene/openingTransform";
@@ -95,6 +96,12 @@ export async function dispatchAssistant(
   settings: { mode: PlannerMode; model?: string; timeoutMs?: number },
   interpreter: CommandInterpreter,
 ): Promise<CommandResult> {
+  if (exploring())
+    return {
+      ok: false,
+      message:
+        "Exit Walkthrough or Presentation before requesting scene changes. Your transcript remains available.",
+    };
   if (busy)
     return {
       ok: false,
