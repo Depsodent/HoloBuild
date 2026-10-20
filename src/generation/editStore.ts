@@ -183,6 +183,7 @@ export async function requestEdit(
   prompt: string,
   settings: { mode: PlannerMode; model?: string; timeoutMs?: number },
   operation?: StructureOperation,
+  precise = false,
 ) {
   if (useEditStore.getState().status === "planning") return;
   cancelEdit();
@@ -247,7 +248,12 @@ export async function requestEdit(
       });
       return;
     }
-    const result = applyStructure(base, target, plan.operation, s.snap),
+    const result = applyStructure(
+        base,
+        target,
+        plan.operation,
+        precise ? false : s.snap,
+      ),
       changes = new Map(result.objects.map((o) => [o.id, o]));
     const affected = [
       ...new Set([
@@ -270,6 +276,18 @@ export async function requestEdit(
       message: result.summary,
       prepared: {
         result,
+        ...(precise
+          ? {
+              command: {
+                type: "structure" as const,
+                structureId: target,
+                operation: plan.operation,
+                base,
+                prepared: result,
+                snap: false,
+              },
+            }
+          : {}),
         operation: plan.operation,
         base,
         selected,

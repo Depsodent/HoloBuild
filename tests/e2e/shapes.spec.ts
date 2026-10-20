@@ -52,9 +52,14 @@ for (const kind of kinds) {
     ).toEqual(position);
     await showLeft(page, "collection");
     await page.locator(".scene-list button").click();
+    await page.getByRole("button", { name: "Advanced", exact: true }).click();
     await page.getByLabel("position Y", { exact: true }).fill("4");
+    await page.getByLabel("position Y", { exact: true }).press("Enter");
     await page.getByLabel("rotation Y", { exact: true }).fill("45");
+    await page.getByLabel("rotation Y", { exact: true }).press("Enter");
     await page.getByLabel("scale X", { exact: true }).fill("1.5");
+    await page.getByLabel("scale X", { exact: true }).press("Enter");
+    await page.getByRole("button", { name: "Materials", exact: true }).click();
     await page.getByLabel("Material", { exact: true }).selectOption("glass");
     await page.getByLabel("Object color", { exact: true }).fill("#ff8844");
     await page
@@ -146,21 +151,29 @@ test("mouse placement validation rejects overlap, supports snapping and keyboard
   });
   await showLeft(page, "collection");
   await page.locator(".scene-list button").last().click();
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await page.getByLabel("position X", { exact: true }).fill("0");
-  await expect(page.locator("footer .status")).toContainText("Action rejected");
+  await page.getByLabel("position X", { exact: true }).press("Enter");
+  await expect(page.locator("footer .status")).toContainText(
+    "Invalid placement",
+  );
   expect(
     (await page.evaluate(() => window.__HOLO_TEST__!.scene()[1])).position[0],
   ).toBe(4);
   expect(
     (await page.evaluate(() => window.__HOLO_TEST__!.snapshot())).history,
   ).toBe(1);
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await page.getByLabel("position X", { exact: true }).fill("3.26");
+  await page.getByLabel("position X", { exact: true }).press("Enter");
   await expect(page.getByLabel("position X", { exact: true })).toHaveValue(
-    "3.5",
+    "3.26",
   );
   await showTools(page, "edit");
   await page.getByLabel(/Snap to grid/).uncheck();
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await page.getByLabel("position X", { exact: true }).fill("3.26");
+  await page.getByLabel("position X", { exact: true }).press("Enter");
   await expect(page.getByLabel("position X", { exact: true })).toHaveValue(
     "3.26",
   );

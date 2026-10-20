@@ -111,7 +111,7 @@ export function SurfaceMaterial({
           ? new Color(color).lerp(new Color("#28cbff"), 0.65)
           : color
       }
-      transparent={grabbed || preset.transparent}
+      transparent={grabbed || values.transparent}
       opacity={grabbed ? 0.2 : values.opacity}
       emissive={preset.holographic ? "#25cfff" : color}
       emissiveIntensity={

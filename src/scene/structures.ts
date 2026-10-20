@@ -1,3 +1,4 @@
+import { snapCoordinate } from "../interaction/coordinateMapping";
 import {
   openingDesign,
   floorOpeningDesign,
@@ -291,7 +292,29 @@ export function applyStructure(
     );
   };
   if (operation.type === "rename") info.name = operation.name;
-  else if (operation.type === "material") {
+  else if (operation.type === "surface") {
+    const affected = parts.filter(
+      (o) =>
+        (!operation.role || o.construction!.role === operation.role) &&
+        (operation.level === undefined ||
+          o.construction!.level === operation.level),
+    );
+    if (!affected.length) throw Error("No components match that role/floor.");
+    const ids = new Set(affected.map((o) => o.id));
+    parts = parts.map((o) =>
+      ids.has(o.id)
+        ? {
+            ...o,
+            surface: operation.reset
+              ? {}
+              : { ...o.surface, ...operation.values },
+            ...(o.model
+              ? { model: { ...o.model, originalMaterials: false } }
+              : {}),
+          }
+        : o,
+    );
+  } else if (operation.type === "material") {
     const affected = parts.filter(
       (o) =>
         (!operation.role || o.construction!.role === operation.role) &&
@@ -709,7 +732,7 @@ export function applyStructure(
       (operation.type === "move" || operation.type === "setTransform")
     )
       info.position = info.position.map((v, i) =>
-        i === 1 ? v : Math.round(v * 2) / 2,
+        i === 1 ? v : snapCoordinate(v),
       ) as Vec3;
     if (
       sameVector(info.position, baseline.position) &&

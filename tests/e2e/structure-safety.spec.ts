@@ -27,13 +27,11 @@ test("group inspector defaults stay compact; keyboard sections and named materia
   await ready(page);
   await ask(page, "Select the whole house");
   await showLeft(page, "inspector");
-  const inspector = page.getByLabel("Structure Inspector", { exact: true });
-  await expect(inspector).toBeVisible();
-  await expect(inspector.locator("details[open]")).toHaveCount(0);
-  const section = page.locator('[data-accordion-key="structure.materials"]');
-  await section.locator(":scope > summary").focus();
+  await expect(
+    page.getByLabel("Precision Inspector", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Materials", exact: true }).focus();
   await page.keyboard.press("Enter");
-  await expect(section).toHaveAttribute("open", "");
   const material = page.getByLabel("Structure material", { exact: true });
   await expect(material.locator('option[value="brick"]')).toHaveText("Brick");
   await expect(material.locator('option[value="polished-metal"]')).toHaveText(
@@ -57,14 +55,6 @@ test("group inspector defaults stay compact; keyboard sections and named materia
   expect(
     await page.evaluate(() => window.__HOLO_TEST__!.snapshot().history),
   ).toBe(before + 1);
-  expect(
-    await page.evaluate(
-      () =>
-        JSON.parse(localStorage.getItem("holobuild.accordions.v1")!)[
-          "structure.materials"
-        ],
-    ),
-  ).toBe(true);
   await ask(page, "Move the entire house right by 2 meters");
   await expect(page.getByLabel("Structure edit result")).toContainText(
     "[2, 0, 0]",

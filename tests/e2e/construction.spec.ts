@@ -83,7 +83,9 @@ test("real raycasting, pinch preview, release, single-step undo/redo and mouse e
   ).toEqual(placed.object.position);
   await showLeft(page, "collection");
   await page.locator(".scene-list button").first().click();
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await page.getByLabel("position X", { exact: true }).fill("3");
+  await page.getByLabel("position X", { exact: true }).press("Enter");
   await expect(page.getByLabel("position X", { exact: true })).toHaveValue("3");
   expect(errors).toEqual([]);
 });

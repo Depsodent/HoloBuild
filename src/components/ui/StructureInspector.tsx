@@ -37,7 +37,13 @@ export function SelectionMode() {
     </label>
   );
 }
-export function StructureInspector({ id }: { id: string }) {
+export function StructureInspector({
+  id,
+  precision = false,
+}: {
+  id: string;
+  precision?: boolean;
+}) {
   const objects = useSceneStore((s) => s.objects),
     parts = members(objects, id),
     info = structureInfo(parts);
@@ -72,10 +78,15 @@ export function StructureInspector({ id }: { id: string }) {
       />
     );
   return (
-    <aside className="panel inspector" aria-label="Structure Inspector">
+    <aside
+      className="panel inspector"
+      aria-label={
+        precision ? "Advanced structure controls" : "Structure Inspector"
+      }
+    >
       <div className="eyebrow">STRUCTURE INSPECTOR</div>
 
-      <h2>{info.name}</h2>
+      {!precision && <h2>{info.name}</h2>}
       <div className="object-id">
         {info.type.toUpperCase()} <span>WHOLE STRUCTURE</span>
       </div>
@@ -150,136 +161,140 @@ export function StructureInspector({ id }: { id: string }) {
           )}
         </details>
       )}
-      <Accordion id="structure.transform" title="Structure Transform">
-        <label className="field">
-          Name
-          <input
-            aria-label="Structure name"
-            key={info.name}
-            defaultValue={info.name}
-            maxLength={60}
-            onBlur={(e) => {
-              if (e.target.value !== info.name)
-                run({ type: "rename", name: e.target.value });
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") e.currentTarget.blur();
-            }}
-          />
-        </label>
-        {(["position", "scale"] as const).map((key) => (
-          <fieldset key={key}>
-            <legend>{key}</legend>
-            <div className="vector">
-              {["X", "Y", "Z"].map((axis, i) => (
-                <label key={axis}>
-                  {axis}
-                  <input
-                    type="number"
-                    aria-label={`Structure ${key} ${axis}`}
-                    step={key === "scale" ? 0.1 : 0.5}
-                    value={Number(info[key][i].toFixed(3))}
-                    onChange={(e) => {
-                      if (e.target.value !== "") {
-                        const v = [...info[key]] as Vec3;
-                        v[i] = Number(e.target.value);
-                        transform({ [key]: v });
-                      }
-                    }}
-                  />
-                </label>
-              ))}
-            </div>
-          </fieldset>
-        ))}
-        <label className="field">
-          Yaw · degrees
-          <input
-            type="number"
-            aria-label="Structure yaw"
-            step={15}
-            value={Number(((info.yaw * 180) / Math.PI).toFixed(2))}
-            onChange={(e) => {
-              if (e.target.value !== "")
-                transform({
-                  yaw: Math.atan2(
-                    Math.sin((Number(e.target.value) * Math.PI) / 180),
-                    Math.cos((Number(e.target.value) * Math.PI) / 180),
-                  ),
-                });
-            }}
-          />
-        </label>
-      </Accordion>
+      {!precision && (
+        <Accordion id="structure.transform" title="Structure Transform">
+          <label className="field">
+            Name
+            <input
+              aria-label="Structure name"
+              key={info.name}
+              defaultValue={info.name}
+              maxLength={60}
+              onBlur={(e) => {
+                if (e.target.value !== info.name)
+                  run({ type: "rename", name: e.target.value });
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") e.currentTarget.blur();
+              }}
+            />
+          </label>
+          {(["position", "scale"] as const).map((key) => (
+            <fieldset key={key}>
+              <legend>{key}</legend>
+              <div className="vector">
+                {["X", "Y", "Z"].map((axis, i) => (
+                  <label key={axis}>
+                    {axis}
+                    <input
+                      type="number"
+                      aria-label={`Structure ${key} ${axis}`}
+                      step={key === "scale" ? 0.1 : 0.5}
+                      value={Number(info[key][i].toFixed(3))}
+                      onChange={(e) => {
+                        if (e.target.value !== "") {
+                          const v = [...info[key]] as Vec3;
+                          v[i] = Number(e.target.value);
+                          transform({ [key]: v });
+                        }
+                      }}
+                    />
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          ))}
+          <label className="field">
+            Yaw · degrees
+            <input
+              type="number"
+              aria-label="Structure yaw"
+              step={15}
+              value={Number(((info.yaw * 180) / Math.PI).toFixed(2))}
+              onChange={(e) => {
+                if (e.target.value !== "")
+                  transform({
+                    yaw: Math.atan2(
+                      Math.sin((Number(e.target.value) * Math.PI) / 180),
+                      Math.cos((Number(e.target.value) * Math.PI) / 180),
+                    ),
+                  });
+              }}
+            />
+          </label>
+        </Accordion>
+      )}
       <button onClick={() => useLeftStore.getState().setTab("collection")}>
         Browse components
       </button>
-      <Accordion id="structure.materials" title="Materials">
-        <p className="muted">
-          {[
-            ...new Set(parts.map((o) => MATERIAL_PRESETS[o.material].label)),
-          ].join(", ")}
-        </p>
-        <label className="field">
-          Apply to
-          <select
-            aria-label="Structure material target"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          >
-            <option value="all">All components</option>
-            {[...new Set(parts.map((o) => o.construction!.role))].map((r) => (
-              <option key={r} value={r}>
-                {r}
+      {!precision && (
+        <Accordion id="structure.materials" title="Materials">
+          <p className="muted">
+            {[
+              ...new Set(parts.map((o) => MATERIAL_PRESETS[o.material].label)),
+            ].join(", ")}
+          </p>
+          <label className="field">
+            Apply to
+            <select
+              aria-label="Structure material target"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <option value="all">All components</option>
+              {[...new Set(parts.map((o) => o.construction!.role))].map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="field">
+            Material
+            <select
+              aria-label="Structure material"
+              value=""
+              onChange={(e) =>
+                run({
+                  type: "material",
+                  material: e.target.value as MaterialId,
+                  ...(role === "all" ? {} : { role: role as "wall" }),
+                })
+              }
+            >
+              <option value="" disabled>
+                Choose material
               </option>
-            ))}
-          </select>
-        </label>
-        <label className="field">
-          Material
-          <select
-            aria-label="Structure material"
-            value=""
-            onChange={(e) =>
+              {MATERIAL_IDS.map((m) => (
+                <option key={m} value={m}>
+                  {MATERIAL_PRESETS[m].label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <ColorEditor
+            key={`${id}:${role}`}
+            label="Structure color"
+            objects={parts.filter(
+              (o) => role === "all" || o.construction!.role === role,
+            )}
+            onApply={(color) =>
               run({
-                type: "material",
-                material: e.target.value as MaterialId,
+                type: "color",
+                color,
                 ...(role === "all" ? {} : { role: role as "wall" }),
               })
             }
-          >
-            <option value="" disabled>
-              Choose material
-            </option>
-            {MATERIAL_IDS.map((m) => (
-              <option key={m} value={m}>
-                {MATERIAL_PRESETS[m].label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <ColorEditor
-          key={`${id}:${role}`}
-          label="Structure color"
-          objects={parts.filter(
-            (o) => role === "all" || o.construction!.role === role,
-          )}
-          onApply={(color) =>
-            run({
-              type: "color",
-              color,
-              ...(role === "all" ? {} : { role: role as "wall" }),
-            })
-          }
-          onReset={() =>
-            run({
-              type: "color",
-              reset: true,
-              ...(role === "all" ? {} : { role: role as "wall" }),
-            })
-          }
-        />
-      </Accordion>
+            onReset={() =>
+              run({
+                type: "color",
+                reset: true,
+                ...(role === "all" ? {} : { role: role as "wall" }),
+              })
+            }
+          />
+        </Accordion>
+      )}
       <Accordion id="structure.ai" title="AI Edit">
         <button
           onClick={() => {

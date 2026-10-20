@@ -1,3 +1,4 @@
+import { precisionUpdate } from "../scene/precision";
 import { selectedParameterScope } from "./parameterScope";
 import { balconyOperation } from "../scene/balconyTransform";
 import { openingTarget, openingOperation } from "../scene/openingTransform";
@@ -199,6 +200,25 @@ export async function interpretConversation(
               ? plan.message +
                 " Review the selected architectural change before confirming."
               : result.message,
+        };
+      }
+      if (op.type === "surface") {
+        if (
+          (op.role && op.role !== (object.construction?.role ?? object.type)) ||
+          (op.level !== undefined && op.level !== object.construction?.level)
+        )
+          throw Error("The surface role/floor differs from the selected Part.");
+        const r = precisionUpdate(base, object, {
+          surface: op.reset ? {} : { ...object.surface, ...op.values },
+          ...(object.model
+            ? { model: { ...object.model, originalMaterials: false } }
+            : {}),
+        });
+        prepareComponentCommand(r.command, r.objects, r.parts, plan.message);
+        return {
+          ok: true,
+          message:
+            "Surface preview ready. Review and confirm; scene unchanged.",
         };
       }
       if (object.construction?.role === "balcony") {

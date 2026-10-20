@@ -46,6 +46,22 @@ export async function openWorkspaceSection(page: Page, key: string) {
   }
   if (key.startsWith("inspector.") || key.startsWith("structure."))
     await showLeft(page, "inspector");
+  if (
+    key === "inspector.appearance" ||
+    key === "structure.materials" ||
+    key === "inspector.transform"
+  ) {
+    await page
+      .getByRole("button", {
+        name: key === "inspector.transform" ? "Advanced" : "Materials",
+        exact: true,
+      })
+      .click();
+    return;
+  }
+  if (key.startsWith("structure.")) {
+    await page.getByRole("button", { name: "Advanced", exact: true }).click();
+  }
   if (key.startsWith("camera.")) await showLeft(page, "gesture");
   const details = page.locator(`[data-accordion-key="${key}"]`);
   await expect(details).toBeAttached();

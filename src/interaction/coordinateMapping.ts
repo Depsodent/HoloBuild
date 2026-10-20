@@ -1,3 +1,4 @@
+import { usePrecisionSettings } from "../scene/precisionSettings";
 import { Vector2 } from "three";
 export interface Cursor {
   x: number;
@@ -11,5 +12,10 @@ export const isOnViewport = (p: Cursor) =>
   p.y >= 0 &&
   p.y <= 1;
 export const toNdc = (p: Cursor) => new Vector2(p.x * 2 - 1, 1 - p.y * 2);
-export const snapCoordinate = (value: number, step = 0.5) =>
-  Math.round(value / step) * step;
+export const snapCoordinate = (
+  value: number,
+  step = usePrecisionSettings.getState().gridStep,
+) =>
+  Number.isFinite(value) && Number.isFinite(step) && step > 0
+    ? Math.round(value / step) * step
+    : NaN;

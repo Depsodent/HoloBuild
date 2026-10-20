@@ -22,6 +22,13 @@ export type AtomicStructureOperation =
       doors?: number;
       roof?: "flat" | "none";
     }
+  | {
+      type: "surface";
+      reset?: true;
+      values?: { roughness?: number; metalness?: number; opacity?: number };
+      role?: PlanPart["role"];
+      level?: number;
+    }
   | { type: "select" | "duplicate" | "ungroup" | "delete" }
   | { type: "move"; delta: Vec3 }
   | { type: "rotate"; angle: number }
@@ -97,3 +104,9 @@ export const operationSchema: z.ZodType<StructureOperation>;
 export const editPlanSchema: z.ZodType<EditPlan>;
 export const editContextSchema: z.ZodType<EditContext>;
 export function parseModelEdit(text: unknown): EditPlan;
+
+export const surfacePatchSchema: z.ZodType<{
+  roughness?: number;
+  metalness?: number;
+  opacity?: number;
+}>;

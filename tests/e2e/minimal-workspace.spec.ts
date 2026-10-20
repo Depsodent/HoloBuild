@@ -4,8 +4,6 @@ import { openWorkspaceSection } from "../helpers/workspaceTools";
 import { test, expect, type Page } from "@playwright/test";
 import { target, hold, poseAt } from "../helpers/gestureInput";
 
-const group = (page: Page, key: string) =>
-  page.locator(`[data-accordion-key="${key}"]`);
 async function open(page: Page, key: string) {
   await openWorkspaceSection(page, key);
 }
@@ -70,28 +68,37 @@ test("flat tabs are exclusive, keyboard accessible and remember the active categ
   await expect(page.getByTitle("Create Cube", { exact: true })).toBeVisible();
 });
 
-test("Inspector is contextual and exposes transform, appearance and collection without duplicate groups", async ({
+test("Inspector is contextual and exposes Materials AI Edit and Advanced without losing collection", async ({
   page,
 }) => {
   await ready(page);
   await showLeft(page, "inspector");
-  await expect(page.locator(".inspector > h2")).toContainText("Cube");
-  await expect(
-    page.locator(".inspector > .workspace-accordion > summary > span"),
-  ).toHaveText(["Transform", "Appearance"]);
-  await open(page, "inspector.appearance");
+  const inspector = page.getByLabel("Precision Inspector", { exact: true });
+  await expect(inspector.locator(".inspector-heading h2")).toContainText(
+    "Cube",
+  );
+  for (const name of ["Materials", "AI Edit", "Advanced"])
+    await expect(
+      inspector.getByRole("button", { name, exact: true }),
+    ).toBeVisible();
   await expect(page.getByLabel("Material", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Object color", { exact: true })).toBeVisible();
+  await inspector
+    .getByRole("button", { name: "Advanced", exact: true })
+    .click();
   await expect(page.getByLabel("Object name", { exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
-  await expect(page.locator(".inspector > h2")).toHaveText("Nothing selected");
-  await expect(group(page, "inspector.transform")).toHaveCount(0);
-  await expect(group(page, "inspector.appearance")).toHaveCount(0);
-  await open(page, "inspector.collection");
+  await expect(
+    inspector.getByRole("heading", { name: "Nothing selected", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByLabel("Selection width (m)", { exact: true }),
+  ).toHaveCount(0);
   await showLeft(page, "collection");
   await page.locator(".scene-list button").click();
-  await showLeft(page, "inspector");
-  await expect(page.locator(".inspector > h2")).toContainText("Cube");
+  await expect(inspector.locator(".inspector-heading h2")).toContainText(
+    "Cube",
+  );
 });
 
 test("one Ask field runs commands and previews plans only when pending; confirm and cancel restore a clean input", async ({

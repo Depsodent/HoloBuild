@@ -1,7 +1,18 @@
 import { MATERIAL_PRESETS, presetValues } from "./materialPresets";
 import type { SceneObject } from "./objectTypes";
 export function surfaceValues(object: SceneObject) {
-  return { ...presetValues(object.material), ...object.surface };
+  const values = {
+    ...presetValues(object.material),
+    roughness: MATERIAL_PRESETS[object.material].roughness,
+    metalness: MATERIAL_PRESETS[object.material].metalness,
+    opacity: MATERIAL_PRESETS[object.material].opacity,
+    ...object.surface,
+  };
+  return {
+    ...values,
+    transparent: values.transparent || values.opacity < 1,
+    depthWrite: values.opacity < 1 ? false : values.depthWrite,
+  };
 }
 export function surfaceControls(object: SceneObject) {
   const preset = MATERIAL_PRESETS[object.material];

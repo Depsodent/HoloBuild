@@ -1,9 +1,11 @@
+import { updateMouseGuide, clearMouseGuide } from "../../scene/precisionGuide";
+import { usePrecisionSettings } from "../../scene/precisionSettings";
 import { isArchitecturalPart } from "../../scene/architecturalTransform";
 import { useLeftStore } from "../../workspace/leftStore";
 import { ObjectGeometry } from "./ObjectGeometry";
 import { SurfaceMaterial } from "./SurfaceMaterial";
 import { ImportedModel } from "./ImportedModel";
-import { useRef, useState, memo } from "react";
+import { useRef, useState, useEffect, memo } from "react";
 import { useThree } from "@react-three/fiber";
 import { Edges, TransformControls } from "@react-three/drei";
 import { Mesh } from "three";
@@ -16,10 +18,53 @@ export const BuildingObject = memo(function BuildingObject({
 }: {
   object: SceneObject;
 }) {
+  const gridStep = usePrecisionSettings((s) => s.gridStep);
   const gl = useThree((s) => s.gl);
   const ref = useRef<Mesh>(null);
+  const dragBase = useRef<SceneObject[] | null>(null);
+  const cancelled = useRef(false);
+  useEffect(() => {
+    const cancel = (e: Event) => {
+      if (
+        !dragBase.current ||
+        (e instanceof KeyboardEvent && e.key !== "Escape")
+      )
+        return;
+      clearMouseGuide(object.id);
+      cancelled.current = true;
+      dragBase.current = null;
+      const accepted = useSceneStore
+        .getState()
+        .objects.find((v) => v.id === object.id);
+      if (ref.current && accepted) {
+        ref.current.position.fromArray(accepted.position);
+        ref.current.rotation.set(...accepted.rotation);
+        ref.current.scale.fromArray(accepted.scale);
+      }
+      useSceneStore.getState().setTool("select");
+    };
+    window.addEventListener("keydown", cancel);
+    window.addEventListener("blur", cancel);
+    return () => {
+      window.removeEventListener("keydown", cancel);
+      window.removeEventListener("blur", cancel);
+      clearMouseGuide(object.id);
+    };
+  }, [object.id]);
   const [hover, setHover] = useState(false);
   const selected = useSceneStore((s) => s.selectedId === object.id);
+  useEffect(() => {
+    if (!selected && dragBase.current) {
+      cancelled.current = true;
+      dragBase.current = null;
+      const mesh = ref.current;
+      if (mesh) {
+        mesh.position.fromArray(object.position);
+        mesh.rotation.set(...object.rotation);
+        mesh.scale.fromArray(object.scale);
+      }
+    }
+  }, [selected, object]);
   const group = useSceneStore((s) => s.selectedStructureId);
   const groupSelected = !!group && object.construction?.structureId === group;
   const tool = useSceneStore((s) => s.tool);
@@ -27,17 +72,24 @@ export const BuildingObject = memo(function BuildingObject({
   const gestureHover = useInteractionStore((s) => s.hoveredId === object.id);
   const grabbed = useSceneStore((s) => s.preview?.id === object.id);
   function commit() {
+    clearMouseGuide(object.id);
     const mesh = ref.current;
     if (mesh) {
-      execute({
-        type: "update",
-        id: object.id,
-        patch: {
-          position: mesh.position.toArray() as Vec3,
-          rotation: [mesh.rotation.x, mesh.rotation.y, mesh.rotation.z],
-          scale: mesh.scale.toArray() as Vec3,
-        },
-      });
+      const stale =
+        cancelled.current ||
+        (dragBase.current &&
+          dragBase.current !== useSceneStore.getState().objects);
+      dragBase.current = null;
+      if (!stale)
+        execute({
+          type: "update",
+          id: object.id,
+          patch: {
+            position: mesh.position.toArray() as Vec3,
+            rotation: [mesh.rotation.x, mesh.rotation.y, mesh.rotation.z],
+            scale: mesh.scale.toArray() as Vec3,
+          },
+        });
       // Reflect validation/snapping even when rejected props did not change.
       const accepted = useSceneStore
         .getState()
@@ -116,16 +168,36 @@ export const BuildingObject = memo(function BuildingObject({
       </mesh>
       {selected &&
         !group &&
+        !grabbed &&
         !isArchitecturalPart(object) &&
         tool !== "select" && (
           <TransformControls
             object={ref as React.RefObject<Mesh>}
             mode={tool}
-            translationSnap={snap ? 0.5 : null}
+            translationSnap={snap ? gridStep : null}
             rotationSnap={snap ? Math.PI / 12 : null}
             scaleSnap={snap ? 0.1 : null}
             onObjectChange={() => {
               gl.shadowMap.needsUpdate = true;
+              if (dragBase.current && ref.current)
+                updateMouseGuide(
+                  {
+                    ...object,
+                    position: ref.current.position.toArray() as Vec3,
+                    rotation: [
+                      ref.current.rotation.x,
+                      ref.current.rotation.y,
+                      ref.current.rotation.z,
+                    ],
+                    scale: ref.current.scale.toArray() as Vec3,
+                  },
+                  useSceneStore.getState().objects,
+                  snap,
+                );
+            }}
+            onMouseDown={() => {
+              dragBase.current = useSceneStore.getState().objects;
+              cancelled.current = false;
             }}
             onMouseUp={commit}
           />

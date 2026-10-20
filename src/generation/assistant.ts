@@ -1,3 +1,4 @@
+import { precisionIntent } from "./precisionIntent";
 import { openingTarget } from "../scene/openingTransform";
 import { refineGenerationPreview } from "./refinePreview";
 import { interpretConversation } from "./semanticAssistant";
@@ -172,6 +173,8 @@ export async function dispatchAssistant(
           : "Redid the action.",
       );
     }
+    const precise = await precisionIntent(raw, settings);
+    if (precise) return respond(precise);
     if (intent.kind === "finish") {
       if (
         useGenerationStore.getState().prepared ||

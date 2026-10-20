@@ -1,3 +1,5 @@
+import { ArchitecturalLibrary } from "./ArchitecturalLibrary";
+import { usePrecisionSettings } from "../../scene/precisionSettings";
 import { useToolsStore, type ToolsTab } from "../../workspace/toolsStore";
 import { SHAPES } from "../../scene/objectFactory";
 import {
@@ -41,6 +43,7 @@ export function Toolbar({ compact = false }: { compact?: boolean }) {
     setTab = useToolsStore((s) => s.setTab);
   const active = useSceneStore((s) => s.tool);
   const snap = useSceneStore((s) => s.snap);
+  const gridStep = usePrecisionSettings((s) => s.gridStep);
   const selected = useSceneStore((s) => s.selectedId);
   const lastStructureId = useGenerationStore((s) => s.lastStructureId);
   const pending = useGenerationStore((s) => !!s.prepared);
@@ -129,6 +132,7 @@ export function Toolbar({ compact = false }: { compact?: boolean }) {
               </button>
             ),
           )}
+          <ArchitecturalLibrary />
         </div>
         {!compact && <ModelImport compact={false} section="import" />}
       </section>
@@ -163,7 +167,7 @@ export function Toolbar({ compact = false }: { compact?: boolean }) {
             onChange={(e) => useSceneStore.setState({ snap: e.target.checked })}
           />
           <span className="snap-description">Snap to grid</span>{" "}
-          <span>0.5 m</span>
+          <span>{gridStep} m</span>
         </label>
         {!compact && (
           <div className="object-actions">

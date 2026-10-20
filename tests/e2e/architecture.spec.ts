@@ -67,6 +67,7 @@ test("parametric stair geometry and a real upper-floor opening render, select an
     .first()
     .click();
   await page.getByRole("tab", { name: "Inspector", exact: true }).click();
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await expect(
     page.getByLabel("Staircase Inspector", { exact: true }),
   ).toBeVisible();
@@ -137,6 +138,7 @@ test("conversation refines draft stairs then edits the confirmed assembly throug
     .first()
     .click();
   await page.getByRole("tab", { name: "Inspector", exact: true }).click();
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await expect(
     page.getByLabel("Staircase Inspector", { exact: true }),
   ).toBeVisible();
@@ -298,6 +300,7 @@ test("selected opening inspector rebuilds rendered wall geometry with inert prev
     .first()
     .click();
   await page.getByRole("tab", { name: "Inspector", exact: true }).click();
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await expect(
     page.getByLabel("Opening Inspector", { exact: true }),
   ).toBeVisible();
@@ -376,6 +379,7 @@ test("balcony draft refinement, grouped Inspector edits and rendered access pres
     .first()
     .click();
   await page.getByRole("tab", { name: "Inspector", exact: true }).click();
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await expect(
     page.getByLabel("Balcony Inspector", { exact: true }),
   ).toBeVisible();

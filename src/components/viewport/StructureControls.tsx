@@ -1,9 +1,10 @@
+import { usePrecisionSettings } from "../../scene/precisionSettings";
 import {
   architecturalOperation,
   isArchitecturalPart,
   isOpeningPart,
 } from "../../scene/architecturalTransform";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { TransformControls } from "@react-three/drei";
 import { Group } from "three";
 import { useSceneStore } from "../../scene/sceneStore";
@@ -12,6 +13,7 @@ import { execute } from "../../scene/commandManager";
 import { groupPreview } from "../../interaction/structureInteraction";
 import type { Vec3 } from "../../scene/objectTypes";
 export function StructureControls() {
+  const gridStep = usePrecisionSettings((s) => s.gridStep);
   const groupId = useSceneStore((s) => s.selectedStructureId),
     selectedId = useSceneStore((s) => s.selectedId),
     objects = useSceneStore((s) => s.objects),
@@ -19,6 +21,28 @@ export function StructureControls() {
     snap = useSceneStore((s) => s.snap);
   const ref = useRef<Group>(null),
     dragging = useRef(false);
+  const base = useRef(objects);
+  useEffect(() => {
+    const cancel = (e: Event) => {
+      if (
+        !dragging.current ||
+        (e instanceof KeyboardEvent && e.key !== "Escape")
+      )
+        return;
+      dragging.current = false;
+      useSceneStore.setState({
+        preview: null,
+        tool: "select",
+        status: "Transform cancelled; scene unchanged.",
+      });
+    };
+    window.addEventListener("keydown", cancel);
+    window.addEventListener("blur", cancel);
+    return () => {
+      window.removeEventListener("keydown", cancel);
+      window.removeEventListener("blur", cancel);
+    };
+  }, []);
   const assembly = !groupId
     ? objects.find((o) => o.id === selectedId && isArchitecturalPart(o))
     : undefined;
@@ -66,11 +90,12 @@ export function StructureControls() {
         showZ={
           tool !== "rotate" && !(isOpeningPart(assembly) && tool === "scale")
         }
-        translationSnap={snap ? 0.5 : null}
+        translationSnap={snap ? gridStep : null}
         rotationSnap={snap ? Math.PI / 12 : null}
         scaleSnap={snap ? 0.1 : null}
         onMouseDown={() => {
           dragging.current = true;
+          base.current = useSceneStore.getState().objects;
         }}
         onObjectChange={() => {
           if (dragging.current && ref.current) {
@@ -96,6 +121,15 @@ export function StructureControls() {
           }
         }}
         onMouseUp={() => {
+          if (
+            !dragging.current ||
+            base.current !== useSceneStore.getState().objects
+          ) {
+            dragging.current = false;
+            useSceneStore.setState({ preview: null });
+            restore();
+            return;
+          }
           dragging.current = false;
           try {
             if (ref.current)

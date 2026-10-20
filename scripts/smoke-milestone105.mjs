@@ -297,6 +297,7 @@ try {
     .first()
     .click();
   await page.getByRole("tab", { name: "Inspector", exact: true }).click();
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await expect(
     page.getByLabel("Opening Inspector", { exact: true }),
   ).toBeVisible();
@@ -345,13 +346,11 @@ try {
     exactUndoRedo: true,
   };
   await page.getByRole("button", { name: "Undo", exact: true }).click();
-  await page
-    .locator("input[type=file][accept='.json']")
-    .setInputFiles({
-      name: "milestone105.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(opened)),
-    });
+  await page.locator("input[type=file][accept='.json']").setInputFiles({
+    name: "milestone105.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(opened)),
+  });
   await expect(page.locator(".status")).toContainText("Replace complete.");
   assert.deepEqual((await saved()).objects, opened.objects);
   await exactHistory(wooden, opened);
@@ -360,6 +359,14 @@ try {
     exactObjects: true,
     undoRedoLoad: true,
   };
+  if (process.env.HOLO_PRECISION_SMOKE === "1")
+    report.checks.precision = await (
+      await import("./smoke-precision.mjs")
+    ).smokePrecision(page);
+  if (process.env.HOLO_LIBRARY_SMOKE === "1")
+    report.checks.library = await (
+      await import("./smoke-library.mjs")
+    ).smokeLibrary(page);
   await page.locator("canvas[data-engine]").hover();
   await page.mouse.wheel(0, 500);
   await page.screenshot({ path: ".cache/m105-" + name + "-scene.png" });

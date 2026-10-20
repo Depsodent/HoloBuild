@@ -233,11 +233,7 @@ test("Part-scoped natural editing coexists with mouse selection, inspector edits
   );
   await expect(page.getByLabel("Selection mode")).toHaveValue("component");
   await page.getByRole("tab", { name: "Inspector", exact: true }).click();
-  const appearance = page.locator(
-    '[data-accordion-key="inspector.appearance"]',
-  );
-  if ((await appearance.getAttribute("open")) === null)
-    await appearance.locator(":scope > summary").click();
+  await page.getByRole("button", { name: "Materials", exact: true }).click();
   await page.getByLabel("Material", { exact: true }).selectOption("brick");
   const inspected = await scene();
   expect(inspected.find((o) => o.id === wall.id)?.material).toBe("brick");

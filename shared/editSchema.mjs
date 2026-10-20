@@ -17,6 +17,14 @@ const scale = z.tuple([
   z.number().finite().min(0.1).max(20),
   z.number().finite().min(0.1).max(20),
 ]);
+export const surfacePatchSchema = z
+  .object({
+    roughness: z.number().finite().min(0).max(1).optional(),
+    metalness: z.number().finite().min(0).max(1).optional(),
+    opacity: z.number().finite().min(0.05).max(1).optional(),
+  })
+  .strict()
+  .refine((v) => Object.keys(v).length > 0, "Specify a surface property.");
 const atomicOperationSchema = z.discriminatedUnion("type", [
   z
     .object({
@@ -34,6 +42,19 @@ const atomicOperationSchema = z.discriminatedUnion("type", [
     })
     .strict()
     .refine((o) => Object.keys(o).length > 1, "Choose a design change."),
+  z
+    .object({
+      type: z.literal("surface"),
+      values: surfacePatchSchema.optional(),
+      reset: z.literal(true).optional(),
+      role: z.enum(roles).optional(),
+      level: z.number().int().min(0).max(5).optional(),
+    })
+    .strict()
+    .refine(
+      (o) => Boolean(o.values) !== Boolean(o.reset),
+      "Choose values or reset.",
+    ),
   z.object({ type: z.literal("select") }).strict(),
   z.object({ type: z.literal("move"), delta }).strict(),
   z

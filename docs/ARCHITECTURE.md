@@ -101,3 +101,14 @@ Both `generation/offline` and optional backend LLM output feed `shared/planSchem
 ## Milestone 10.2 integration
 
 `ColorEditor` and transient `colorPreview` separate visual drafts from persistent SceneObject tint. Shared validated `color` structure operations and existing object updates own all mutations/history. Imported original PBR copies retain shared immutable maps and explicit tint metadata. `leftStore` owns only navigation; `SceneCollection` resolves existing construction metadata. Workspace keeps the existing WebcamPreview/HandTracker mounted independently of pane visibility. `graphicsInfo` reads the existing renderer context; `delegateDetector` owns GPU/CPU initialization, fallback and cleanup, with serialized factory starts. No second scene, inference loop, model asset bundle or input-specific command system was added.
+
+
+## Milestone 11 precision integration
+
+The Inspector uses Materials / AI Edit / Advanced nested navigation matching the existing AI panel. AI Edit calls the same dispatchAssistant and shared review store, retaining preview, target/selection-version checks, confirmation/cancellation and atomic history. No alternate scene or gesture command system was introduced. Strict surface operations extend the existing bounded edit schema; raw provider output is still validated. Material overrides persist in SceneObject.surface, and opacity below 1 enables proper transparency/depth-write handling across presets. Original imported materials remain an explicit option.
+
+Precision math lives in scene/precision.ts. Numeric inputs commit on blur/Enter; Escape restores the input. Explicit numeric positions and AI measurements bypass grid rounding, but keep schema, collision and architectural checks. Dimensions refer to actual local primitive extents; whole-structure dimensions are world bounds and require zero yaw. Whole structures retain yaw-only rotation. Standalone boxes support exact face-edge alignment, and floor alignment uses an actual containing standalone floor top or ground. Rotated boxes/complex/imported surfaces and connected architecture are intentionally excluded from approximate edge attachment.
+
+Configurable 0.05/0.1/0.25/0.5/1 m grid increments are shared by ordinary placement, whole structures and gizmos; existing snap enable/disable remains. Increment, optional measurements and gesture placement guides are local preferences. The grid shader tracks the same increment. Guides are transient R3F/DOM overlays with no object IDs, ray targets, history or serialized geometry. Existing scene reference sharing prevents unrelated objects rerendering on small updates.
+
+Opening-bearing facades reject loose wall transforms; unrelated no-opening facades retain their earlier manual-edit behavior. Connected floor changes and parametric stair/balcony/opening edits retain existing recipe validation. Unsupported tilt or unsafe attachment gives an explanation rather than discarding dependencies.

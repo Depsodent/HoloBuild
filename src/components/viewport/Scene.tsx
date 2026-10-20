@@ -1,3 +1,4 @@
+import { PrecisionOverlay } from "./PrecisionOverlay";
 import { recordGraphics } from "../../vision/graphicsInfo";
 import { useLightingStore } from "../../scene/lightingStore";
 import { StructureControls } from "./StructureControls";
@@ -90,6 +91,7 @@ export const Scene = memo(function Scene() {
         <GestureInteraction />
         <PlacementPreview />
         <StructureControls />
+        <PrecisionOverlay />
         <GenerationPreview />
         <SurfaceResources>
           {objects.map((object) => (

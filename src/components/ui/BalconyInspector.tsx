@@ -105,7 +105,7 @@ export function BalconyInspector({ object }: { object: SceneObject }) {
         >
           {MATERIAL_IDS.map((m) => (
             <option key={m} value={m}>
-              {MATERIAL_PRESETS[m].name}
+              {MATERIAL_PRESETS[m].label}
             </option>
           ))}
         </select>

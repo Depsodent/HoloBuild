@@ -58,7 +58,9 @@ test("workspace renders and mouse editor commands persist through undo and impor
   ).toBeVisible();
   await page.getByRole("button", { name: "Cube 1 × 1 × 1 m" }).click();
   await expect(page.locator(".scene-list button")).toHaveCount(2);
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await page.getByLabel("position X", { exact: true }).fill("4");
+  await page.getByLabel("position X", { exact: true }).press("Enter");
   await page.getByLabel("position X", { exact: true }).press("Tab");
   await expect(page.getByLabel("position X", { exact: true })).toHaveValue("4");
   await page.getByRole("button", { name: "Undo", exact: true }).click();

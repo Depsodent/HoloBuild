@@ -1,3 +1,5 @@
+import { duplicateAssembly } from "../generation/libraryOperations";
+import { protectConnectedPart } from "./precision";
 import { balconyOperation } from "./balconyTransform";
 import { openingTarget, openingOperation } from "./openingTransform";
 import {
@@ -54,6 +56,7 @@ export type Command =
       operation: StructureOperation;
       base?: SceneObject[];
       prepared?: StructureResult;
+      snap?: boolean;
     }
   | { type: "create"; objectType?: ObjectType; prepared?: SceneObject }
   | { type: "import"; object: SceneObject }
@@ -62,6 +65,7 @@ export type Command =
       type: "update";
       id: string;
       patch: Partial<Omit<SceneObject, "id" | "type">>;
+      precise?: boolean;
     }
   | { type: "delete"; id: string }
   | { type: "duplicate"; id: string; preparedId?: string }
@@ -81,6 +85,18 @@ export function execute(command: Command): boolean {
         structureId: s.selectedStructureId,
         operation: { type: command.type },
       });
+    if (command.type === "duplicate") {
+      const operation = duplicateAssembly(s.objects, command.id);
+      const id = s.objects.find((o) => o.id === command.id)?.construction
+        ?.structureId;
+      if (operation && id)
+        return execute({
+          type: "structure",
+          structureId: id,
+          operation,
+          snap: false,
+        });
+    }
     let objects = structuredClone(s.objects);
     let selectedId = s.selectedId;
     let selectedStructureId = s.selectedStructureId;
@@ -93,7 +109,7 @@ export function execute(command: Command): boolean {
           s.objects,
           command.structureId,
           command.operation,
-          s.snap,
+          command.snap ?? s.snap,
         );
       if (command.prepared) {
         if (!command.base || command.base !== s.objects)
@@ -413,6 +429,12 @@ export function execute(command: Command): boolean {
       }
       if (command.type === "update") {
         const original = objects[index];
+        if (
+          command.patch.position ||
+          command.patch.rotation ||
+          command.patch.scale
+        )
+          protectConnectedPart(original);
         const candidate = objectSchema.parse({ ...original, ...command.patch });
         if (
           command.patch.position ||
@@ -432,7 +454,7 @@ export function execute(command: Command): boolean {
             candidate,
             candidate.position,
             objects,
-            s.snap,
+            command.precise ? false : s.snap,
           );
           if (!result.valid) throw Error("Invalid placement");
           candidate.position = result.position;

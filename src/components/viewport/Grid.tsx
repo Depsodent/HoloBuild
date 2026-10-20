@@ -1,11 +1,13 @@
+import { usePrecisionSettings } from "../../scene/precisionSettings";
 import { Grid as ConstructionGrid } from "@react-three/drei";
 export function Grid() {
+  const step = usePrecisionSettings((s) => s.gridStep);
   return (
     <>
       <ConstructionGrid
         position={[0, -0.015, 0]}
         args={[60, 60]}
-        cellSize={1}
+        cellSize={step}
         cellThickness={0.6}
         cellColor="#203e50"
         sectionSize={5}

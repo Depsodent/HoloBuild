@@ -74,38 +74,36 @@ async function camera(page: Page, fallback = false, worker = false) {
     { fallback, worker },
   );
 }
-test("accordion defaults, keyboard expansion, independent persistence and compact layout work", async ({
+test("Inspector tabs support keyboard navigation and narrow layout without mutating the scene", async ({
   page,
 }) => {
   await page.goto("/?testInput");
   const start = await target(page);
   await showLeft(page, "inspector");
-  const materials = page.locator('[data-accordion-key="inspector.appearance"]'),
-    transform = page.locator('[data-accordion-key="inspector.transform"]');
-  expect(await materials.getAttribute("open")).toBeNull();
-  expect(await transform.getAttribute("open")).not.toBeNull();
-  await materials.locator("summary").focus();
+  const inspector = page.getByLabel("Precision Inspector", { exact: true });
+  await expect(
+    inspector.getByRole("button", { name: "Materials", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  const advanced = inspector.getByRole("button", {
+    name: "Advanced",
+    exact: true,
+  });
+  await advanced.focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByLabel("Material", { exact: true })).toBeVisible();
-  await expect(page.getByLabel("Object color", { exact: true })).toBeVisible();
-  const height = (await transform.boundingBox())!.height;
-  await transform.locator("summary").click();
+  await expect(page.getByLabel("position X", { exact: true })).toBeVisible();
+  await inspector
+    .getByRole("button", { name: "Materials", exact: true })
+    .click();
   await expect(
     page.getByLabel("position X", { exact: true }),
   ).not.toBeVisible();
-  expect((await transform.boundingBox())!.height).toBeLessThan(height - 100);
-  await page.reload();
-  await target(page);
+  await page.setViewportSize({ width: 1000, height: 800 });
   await expect(page.getByLabel("Material", { exact: true })).toBeVisible();
-  await expect(page.getByLabel("Object color", { exact: true })).toBeVisible();
-  await expect(
-    page.getByLabel("position X", { exact: true }),
-  ).not.toBeVisible();
   expect(
     (await page.evaluate(() => window.__HOLO_TEST__!.scene()[0])).position,
   ).toEqual(start.object.position);
-  await page.screenshot({ path: "test-results/milestone-71-accordions.png" });
 });
+
 test("one-hand selection survives scale/rotate switching and staggered pinches need no new ray hit", async ({
   page,
 }) => {

@@ -22,6 +22,7 @@ const scene = (page: Page) =>
   page.evaluate(() => window.__HOLO_TEST__!.scene());
 async function selectGroup(page: Page) {
   await ask(page, "Select the whole house");
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await expect(
     page.getByLabel("Structure Inspector", { exact: true }),
   ).toBeVisible();
@@ -47,7 +48,7 @@ test("whole/group selection, contextual controls and component mode remain disti
   await selectGroup(page);
   await expect(page.getByLabel("Selection mode")).toHaveValue("structure");
   await expect(
-    page.locator('[data-accordion-key="structure.transform"]'),
+    page.getByLabel("Structure name", { exact: true }),
   ).toBeVisible();
   await page.getByLabel("Structure name", { exact: true }).fill("Studio");
   await page.getByLabel("Structure name", { exact: true }).press("Enter");
@@ -55,7 +56,11 @@ test("whole/group selection, contextual controls and component mode remain disti
     page.getByRole("heading", { name: "Studio", exact: true }),
   ).toBeVisible();
   const before = await scene(page);
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await page.getByLabel("Structure position X", { exact: true }).fill("15");
+  await page.getByLabel("Structure position X", { exact: true }).press("Enter");
+  await page.getByLabel("Structure position X", { exact: true }).press("Enter");
   const moved = await scene(page);
   const parts = before.filter((o) => o.construction);
   const now = moved.filter((o) => o.construction);
@@ -378,7 +383,9 @@ test("Collection respects Part/Structure Target and group inspector transforms r
   await expect(
     page.getByLabel("Structure Inspector", { exact: true }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await page.getByLabel("Structure position X", { exact: true }).fill("15");
+  await page.getByLabel("Structure position X", { exact: true }).press("Enter");
   const moved = await scene(page),
     parts = original.filter((o) => o.construction),
     delta =
@@ -432,7 +439,7 @@ test("mouse ray selection resolves the parent only in Structure mode and reveals
   await expect(
     page.getByLabel("Structure Inspector", { exact: true }),
   ).toHaveCount(0);
-  await expect(page.locator(".inspector h2")).toContainText(/roof/i);
+  await expect(page.locator(".inspector-heading h2")).toContainText(/roof/i);
 });
 test("first gesture pinch targets the whole parent before movement and releases one reversible action", async ({
   page,
