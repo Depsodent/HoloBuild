@@ -1,3 +1,7 @@
+import {
+  standaloneStairSchema,
+  nativeWallSchema,
+} from "../../shared/nativeSchema.mjs";
 import { z } from "zod";
 import { templateSchema, contactsSchema } from "../../shared/planSchema.mjs";
 import { MATERIAL_IDS } from "./materialPresets";
@@ -18,6 +22,8 @@ export const structureMetadataSchema = z
       z.number().min(0.1).max(20),
       z.number().min(0.1).max(20),
     ]),
+    standaloneStairs: standaloneStairSchema.optional(),
+    nativeWall: nativeWallSchema.optional(),
     template: templateSchema.optional(),
     architectureTemplate: templateSchema.optional(),
     floorLayouts: z
@@ -27,7 +33,14 @@ export const structureMetadataSchema = z
       .optional(),
     contacts: contactsSchema.default([]),
   })
-  .strict();
+  .strict()
+  .refine(
+    (v) =>
+      !(v.nativeWall && v.standaloneStairs) &&
+      (!(v.nativeWall || v.standaloneStairs) ||
+        !(v.template || v.architectureTemplate)),
+    "Choose one compatible native recipe family.",
+  );
 export type StructureMetadata = z.infer<typeof structureMetadataSchema>;
 export const objectSchema = z
   .object({

@@ -1,3 +1,4 @@
+import { nativeSupport, certifyNative } from "../scene/nativeAssemblies";
 import { offlinePlan } from "./offline";
 import { Box3, Vector3 } from "three";
 import {
@@ -192,7 +193,18 @@ export function validateBatch(
     ids.add(o.id);
     partIds.add(o.construction.partId);
   }
-  geometry(objects, contacts);
+  certifyNative(objects);
+  if (objects[0].construction?.structure?.standaloneStairs) {
+    nativeSupport(objects, existing);
+    const min = Math.min(...objects.map((o) => bounds(o).min.y));
+    geometry(
+      objects.map((o) => ({
+        ...o,
+        position: [o.position[0], o.position[1] - min, o.position[2]] as Vec3,
+      })),
+      contacts,
+    );
+  } else geometry(objects, contacts);
   if (objects.some((o) => !placement(o, o.position, existing, false).valid))
     throw Error(
       "Structure collides with existing objects or exceeds workspace bounds.",

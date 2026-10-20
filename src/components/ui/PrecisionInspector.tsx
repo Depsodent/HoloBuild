@@ -205,7 +205,7 @@ export function PrecisionInspector() {
             className="inspector-heading"
             aria-label={group ? "Structure Inspector" : undefined}
           >
-            <h2>{info?.name ?? o.name}</h2>
+            <h2 title={info?.name ?? o.name}>{info?.name ?? o.name}</h2>
             <p className="muted">
               {group ? "Structure" : "Part"} ·{" "}
               {info?.type ?? o.construction?.role ?? o.type}

@@ -13,6 +13,7 @@ export interface Recognition {
   onresult: ((event: SpeechResults) => void) | null;
   onnomatch: (() => void) | null;
   start(): void;
+  stop?(): void;
   abort(): void;
 }
 export type RecognitionConstructor = new () => Recognition;
@@ -31,6 +32,8 @@ export type SpeechState = {
 export class SpeechController {
   private recognition: Recognition | null = null;
   private generation = 0;
+  private transcript = "";
+  private timer: ReturnType<typeof setTimeout> | undefined;
   constructor(
     private factory: RecognitionConstructor | undefined,
     private change: (state: SpeechState) => void,
@@ -38,6 +41,15 @@ export class SpeechController {
   ) {}
   start() {
     if (this.recognition) return;
+    if (globalThis.isSecureContext === false) {
+      this.change({
+        status: "error",
+        message:
+          "Microphone requires HTTPS or localhost. Open the secure website, or type your request.",
+        transcript: this.transcript,
+      });
+      return;
+    }
     if (!this.factory) {
       this.change({
         status: "unsupported",
@@ -46,6 +58,7 @@ export class SpeechController {
       });
       return;
     }
+    clearTimeout(this.timer);
     const generation = ++this.generation;
     let r: Recognition;
     try {
@@ -90,6 +103,8 @@ export class SpeechController {
         seen.add(i); // Result indices are stable within one recognition session.
         const text = e.results[i][0]?.transcript.trim();
         if (text) {
+          this.transcript = text;
+          clearTimeout(this.timer);
           this.recognition = null;
           this.generation++;
           r.onstart = r.onend = r.onnomatch = null;
@@ -142,10 +157,16 @@ export class SpeechController {
       });
       this.recognition = null;
       this.generation++;
-      r.abort();
+      clearTimeout(this.timer);
+      try {
+        r.abort();
+      } catch {
+        /* Service already ended. */
+      }
     };
     r.onend = () => {
       if (current()) {
+        clearTimeout(this.timer);
         this.recognition = null;
         this.change({
           status: "idle",
@@ -171,6 +192,38 @@ export class SpeechController {
   }
   stop() {
     const r = this.recognition;
+    if (!r) return;
+    if (!r.stop) {
+      this.cancel();
+      return;
+    }
+    this.change({
+      status: "listening",
+      message:
+        "Finishing captured speech… Final text will remain available to send.",
+      transcript: this.transcript,
+    });
+    try {
+      r.stop();
+    } catch {
+      this.cancel(
+        "Microphone ended. Finalized text is preserved; restart or type your request.",
+      );
+      return;
+    }
+    clearTimeout(this.timer);
+    if(this.recognition===r)this.timer = setTimeout(
+      () =>
+        this.cancel(
+          "Speech service did not finalize. Finalized text is preserved; retry or use text.",
+        ),
+      4000,
+    );
+  }
+  cancel(message = "Microphone paused. Finalized text is preserved.") {
+    clearTimeout(this.timer);
+    const r = this.recognition;
+    if(!r)return;
     this.recognition = null;
     this.generation++;
     if (r) {
@@ -184,8 +237,26 @@ export class SpeechController {
     }
     this.change({
       status: this.factory ? "idle" : "unsupported",
-      message: "Listening stopped. Pending audio discarded.",
-      transcript: "",
+      message,
+      transcript: this.transcript,
     });
   }
+}
+
+/** Read-only checks: never opens a second recording stream or promises recognition support. */
+export async function microphonePrecheck(): Promise<string | null> {
+  if (!recognitionConstructor())
+    return "Speech recognition is unavailable in this browser. Type your request instead.";
+  if (!window.isSecureContext)
+    return "Use HTTPS or localhost for microphone access.";
+  try {
+    const result = await navigator.permissions?.query({
+      name: "microphone" as PermissionName,
+    });
+    if (result?.state === "denied")
+      return "Microphone permission denied. Allow this site's microphone in browser settings, then retry; text remains available.";
+  } catch {
+    /* Some compatible browsers cannot query microphone permissions. */
+  }
+  return null;
 }

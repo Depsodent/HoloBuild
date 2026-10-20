@@ -1,3 +1,4 @@
+import { nativeParts, nativeSupport, certifyNative } from "./nativeAssemblies";
 import { snapCoordinate } from "../interaction/coordinateMapping";
 import {
   openingDesign,
@@ -136,6 +137,8 @@ export function validateStructure(parts: SceneObject[], others: SceneObject[]) {
   if (!parts.length || parts.length > 120 || parts.length + others.length > 200)
     throw Error("Structure/scene budget exceeded (120/200).");
   const parsed = parts.map((o) => objectSchema.parse(o));
+  certifyNative(parsed);
+  nativeSupport(parsed, others);
   const ids = new Set(others.map((o) => o.id)),
     partIds = new Set<string>();
   const info = structureInfo(parsed),
@@ -387,6 +390,29 @@ export function applyStructure(
           }
         }
     if (!found) throw Error("No free location for a duplicate structure.");
+  } else if (
+    operation.type === "design" &&
+    (operation.standaloneStairs || operation.nativeWall)
+  ) {
+    if (
+      (operation.standaloneStairs && !info.standaloneStairs) ||
+      (operation.nativeWall && !info.nativeWall)
+    )
+      throw Error("Native recipe type does not match the selected assembly.");
+    if (
+      Object.keys(operation).some(
+        (k) => !["type", "standaloneStairs", "nativeWall"].includes(k),
+      )
+    )
+      throw Error("Edit one native recipe at a time.");
+    info = {
+      ...info,
+      ...(operation.standaloneStairs
+        ? { standaloneStairs: operation.standaloneStairs }
+        : {}),
+      ...(operation.nativeWall ? { nativeWall: operation.nativeWall } : {}),
+    };
+    parts = nativeParts(info, structureId, original);
   } else if (operation.type === "floors" || operation.type === "design") {
     const action = operation.type === "floors" ? operation.action : undefined;
     const partialArchitecture =
@@ -753,6 +779,7 @@ export function applyStructure(
     construction: { ...o.construction!, structure: structuredClone(info) },
   }));
   validateStructure(parts, operation.type === "duplicate" ? objects : others);
+  nativeSupport(parts, operation.type === "duplicate" ? objects : others);
   const replacement = new Map(parts.map((o) => [o.id, o]));
   const result =
     operation.type === "duplicate"

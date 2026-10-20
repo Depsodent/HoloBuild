@@ -248,7 +248,7 @@ test("collapsing commands stops microphone; confirmation cannot delete a changed
     .click();
   await showTools(page, "build");
   await showTools(page, "ai");
-  await expect(page.getByLabel("Listening status")).toContainText("stopped");
+  await expect(page.getByLabel("Listening status")).toContainText("paused");
   await command(page, "delete it");
   await showTools(page, "build");
   await showTools(page, "build");

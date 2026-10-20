@@ -1,3 +1,4 @@
+import { NativeAssemblyInspector } from "./NativeAssemblyInspector";
 export { PrecisionInspector as ObjectInspector } from "./PrecisionInspector";
 import { BalconyInspector } from "./BalconyInspector";
 import { OpeningInspector } from "./OpeningInspector";
@@ -26,6 +27,16 @@ export function LegacyObjectInspector({
     id = useSceneStore((s) => s.selectedId),
     object = objects.find((o) => o.id === id);
   const group = useSceneStore((s) => s.selectedStructureId);
+  if (
+    object?.construction?.structure?.standaloneStairs ||
+    object?.construction?.structure?.nativeWall
+  )
+    return (
+      <NativeAssemblyInspector
+        key={object.id + JSON.stringify(object.construction.structure)}
+        object={object}
+      />
+    );
   if (group && objects.some((o) => o.construction?.structureId === group))
     return <StructureInspector key={group} id={group} precision={precision} />;
   if (object?.construction?.role === "balcony")

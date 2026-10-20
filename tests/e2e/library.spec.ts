@@ -29,6 +29,7 @@ test("architectural cards require a compatible building and never insert floatin
   const before = await scene(page);
   for (const name of ["Stairs", "Balcony"]) {
     await page.getByTitle("Create " + name, { exact: true }).click();
+    if(name==="Stairs")await page.getByLabel("Stair configuration").selectOption("connected");
     await expect(page.getByLabel("Architectural insertion")).toContainText(
       "Create or load a multi-floor building first",
     );

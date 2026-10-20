@@ -1,3 +1,4 @@
+import { nativePartOperation } from "./nativeAssemblies";
 import type { SceneObject } from "./objectTypes";
 import type { StructureOperation } from "../../shared/editSchema.mjs";
 import { balconyOperation } from "./balconyTransform";
@@ -21,6 +22,9 @@ export function architecturalOperation(
   id: string,
   operation: StructureOperation,
 ) {
+  const info = objects.find((o) => o.id === id)?.construction?.structure;
+  if (info?.standaloneStairs || info?.nativeWall)
+    return nativePartOperation(objects, id, operation);
   return isOpeningPart(objects.find((o) => o.id === id))
     ? openingOperation(objects, id, operation)
     : objects.find((o) => o.id === id)?.construction?.role === "balcony"

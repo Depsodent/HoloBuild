@@ -1,3 +1,4 @@
+import { selectedWallIntent } from "./selectedWall";
 import { precisionIntent } from "./precisionIntent";
 import { openingTarget } from "../scene/openingTransform";
 import { refineGenerationPreview } from "./refinePreview";
@@ -173,6 +174,8 @@ export async function dispatchAssistant(
           : "Redid the action.",
       );
     }
+    const wallCreation = selectedWallIntent(raw);
+    if (wallCreation) return respond(wallCreation);
     const precise = await precisionIntent(raw, settings);
     if (precise) return respond(precise);
     if (intent.kind === "finish") {

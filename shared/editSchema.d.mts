@@ -1,3 +1,4 @@
+import type { StandaloneStair, NativeWall } from "./nativeSchema.mjs";
 import type { z } from "zod";
 import type { Vec3 } from "../src/scene/objectTypes";
 import type { MaterialId } from "../src/scene/materialPresets";
@@ -11,6 +12,8 @@ import type {
 export type AtomicStructureOperation =
   | {
       type: "design";
+      standaloneStairs?: StandaloneStair;
+      nativeWall?: NativeWall;
       balconies?: Balcony[];
       openings?: Opening[];
       stairs?: Staircase[];

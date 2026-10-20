@@ -1,6 +1,10 @@
 import { balconyPlan } from "./balconies";
 import { openingPlan } from "./openings";
-import type { ConstructionPlan, Staircase } from "../../shared/planSchema.mjs";
+import type {
+  ConstructionPlan,
+  Staircase,
+  PlanPart,
+} from "../../shared/planSchema.mjs";
 
 type Rect = { minX: number; maxX: number; minZ: number; maxZ: number };
 const epsilon = 1e-6;
@@ -109,27 +113,7 @@ export function architecturalPlan(input: ConstructionPlan): ConstructionPlan {
       });
     }
     const bottom = stair.from * span + 0.2;
-    for (let step = 0; step < stair.steps; step++) {
-      const distance = (step + 0.5) * stair.run - half;
-      const height = (step + 1) * stair.rise;
-      objects.push({
-        id: `${stair.id}-step-${step + 1}`,
-        name: `Stair ${stair.id} step ${step + 1}`,
-        role: "stair",
-        level: stair.from,
-        assembly: stair.id,
-        type: "cube",
-        position: [
-          stair.x + dx * distance,
-          bottom + height / 2,
-          stair.z + dz * distance,
-        ],
-        dimensions: [stair.width, height, stair.run],
-        rotation: [0, angle, 0],
-        material: stair.material,
-        color: stair.color,
-      });
-    }
+    objects.push(...stairParts(stair, bottom));
   }
   return {
     ...input,
@@ -139,4 +123,35 @@ export function architecturalPlan(input: ConstructionPlan): ConstructionPlan {
       "Parametric stairs and floor voids are visual geometry only; not certified for building regulations or structural safety.",
     ],
   };
+}
+
+/** Shared native solid-riser geometry for connected and freestanding flights. */
+export function stairParts(stair: Staircase, bottom: number): PlanPart[] {
+  const objects: PlanPart[] = [];
+  const angle = ((stair.yaw === 270 ? -90 : stair.yaw) * Math.PI) / 180,
+    dx = Math.sin(angle),
+    dz = Math.cos(angle),
+    half = (stair.steps * stair.run) / 2;
+  for (let step = 0; step < stair.steps; step++) {
+    const distance = (step + 0.5) * stair.run - half;
+    const height = (step + 1) * stair.rise;
+    objects.push({
+      id: `${stair.id}-step-${step + 1}`,
+      name: `Stair ${stair.id} step ${step + 1}`,
+      role: "stair",
+      level: stair.from,
+      assembly: stair.id,
+      type: "cube",
+      position: [
+        stair.x + dx * distance,
+        bottom + height / 2,
+        stair.z + dz * distance,
+      ],
+      dimensions: [stair.width, height, stair.run],
+      rotation: [0, angle, 0],
+      material: stair.material,
+      color: stair.color,
+    });
+  }
+  return objects;
 }

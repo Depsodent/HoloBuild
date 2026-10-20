@@ -1,3 +1,4 @@
+import { nativePartOperation } from "./nativeAssemblies";
 import { duplicateAssembly } from "../generation/libraryOperations";
 import { protectConnectedPart } from "./precision";
 import { balconyOperation } from "./balconyTransform";
@@ -70,7 +71,11 @@ export type Command =
   | { type: "delete"; id: string }
   | { type: "duplicate"; id: string; preparedId?: string }
   | { type: "reset" }
-  | { type: "replace"; objects: SceneObject[] };
+  | {
+      type: "replace";
+      objects: SceneObject[];
+      selection?: { id: string; mode: "component" | "structure" };
+    };
 export function execute(command: Command): boolean {
   const s = useSceneStore.getState();
   try {
@@ -85,6 +90,51 @@ export function execute(command: Command): boolean {
         structureId: s.selectedStructureId,
         operation: { type: command.type },
       });
+    if (
+      ["update", "delete", "duplicate"].includes(command.type) &&
+      "id" in command
+    ) {
+      const o = s.objects.find((o) => o.id === command.id),
+        info = o?.construction?.structure;
+      if (o && (info?.standaloneStairs || info?.nativeWall)) {
+        if (command.type === "delete" || command.type === "duplicate")
+          return execute({
+            type: "structure",
+            structureId: o.construction!.structureId,
+            operation: nativePartOperation(s.objects, o.id, {
+              type: command.type,
+            }),
+          });
+        if (
+          command.type === "update" &&
+          (command.patch.position ||
+            command.patch.rotation ||
+            command.patch.scale)
+        ) {
+          if (
+            command.patch.rotation &&
+            [0, 2].some(
+              (i) =>
+                Math.abs(command.patch.rotation![i] - o.rotation[i]) > 1e-5,
+            )
+          )
+            throw Error(
+              "Native assemblies support upright yaw rotations. Use the structure controls.",
+            );
+          return execute({
+            type: "structure",
+            structureId: o.construction!.structureId,
+            operation: nativePartOperation(s.objects, o.id, {
+              type: "setTransform",
+              position: command.patch.position ?? o.position,
+              yaw: command.patch.rotation?.[1] ?? o.rotation[1],
+              scale: command.patch.scale ?? o.scale,
+            }),
+            snap: !command.precise && s.snap,
+          });
+        }
+      }
+    }
     if (command.type === "duplicate") {
       const operation = duplicateAssembly(s.objects, command.id);
       const id = s.objects.find((o) => o.id === command.id)?.construction
@@ -221,7 +271,12 @@ export function execute(command: Command): boolean {
       selectedId = null;
     } else if (command.type === "replace") {
       objects = command.objects;
-      selectedId = null;
+      selectedId = command.selection?.id ?? null;
+      selectedStructureId =
+        command.selection?.mode === "structure"
+          ? (objects.find((o) => o.id === selectedId)?.construction
+              ?.structureId ?? null)
+          : null;
     } else {
       const index = objects.findIndex((o) => o.id === command.id);
       if (index < 0) throw new Error("Select an existing object first.");
@@ -343,9 +398,12 @@ export function execute(command: Command): boolean {
         }
       }
       const assembly =
-        objects[index].construction?.role === "balcony"
+        objects[index].construction?.structure?.standaloneStairs ||
+        objects[index].construction?.structure?.nativeWall
           ? undefined
-          : objects[index].construction?.assembly;
+          : objects[index].construction?.role === "balcony"
+            ? undefined
+            : objects[index].construction?.assembly;
       const stairRecipe =
         objects[index].construction?.structure?.template ??
         objects[index].construction?.structure?.architectureTemplate;

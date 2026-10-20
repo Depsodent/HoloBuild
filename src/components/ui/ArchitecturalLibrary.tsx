@@ -1,3 +1,6 @@
+import { standaloneFlight, nativeSupport } from "../../scene/nativeAssemblies";
+import { validateStructure } from "../../scene/structures";
+import { prepareComponentCommand } from "../../generation/editStore";
 import { useState } from "react";
 import { Layers, RectangleHorizontal, Plus } from "lucide-react";
 import { useSceneStore } from "../../scene/sceneStore";
@@ -16,6 +19,11 @@ import {
 import type { Balcony, Staircase } from "../../../shared/planSchema.mjs";
 export function ArchitecturalLibrary() {
   const objects = useSceneStore((s) => s.objects);
+  const [stairMode, setStairMode] = useState<"standalone" | "connected">(
+      "connected",
+    ),
+    [rise, setRise] = useState(3.2),
+    [base, setBase] = useState(0);
   const [kind, setKind] = useState<"stairs" | "balcony" | null>(null),
     [host, setHost] = useState("");
   const [level, setLevel] = useState(1),
@@ -47,6 +55,8 @@ export function ArchitecturalLibrary() {
         state.objects.find((o) => o.id === state.selectedId)?.construction
           ?.structureId;
     setKind(type);
+    if (type === "stairs")
+      setStairMode(buildings.length ? "connected" : "standalone");
     setWidth(type === "stairs" ? 1 : 2.4);
     setHost(
       buildings.some((b) => b.id === preferred)
@@ -93,7 +103,7 @@ export function ArchitecturalLibrary() {
             <span>
               {name}
               <small>
-                {type === "stairs" ? "Connect floors" : "Attach to facade"}
+                {type === "stairs" ? "Standalone / floors" : "Attach to facade"}
               </small>
             </span>
             <Plus size={14} />
@@ -107,6 +117,24 @@ export function ArchitecturalLibrary() {
           onSubmit={async (e) => {
             e.preventDefault();
             try {
+              if (kind === "stairs" && stairMode === "standalone") {
+                const parts = standaloneFlight(
+                  { steps, height: rise, run, width, material, color },
+                  [x, base, z],
+                  (yaw * Math.PI) / 180,
+                );
+                validateStructure(parts, objects);
+                nativeSupport(parts, objects);
+                prepareComponentCommand(
+                  { type: "construct", objects: parts },
+                  [...objects, ...parts],
+                  parts,
+                  "Standalone staircase: no automatic floor connection or opening. Review support and placement.",
+                );
+                useToolsStore.setState({ aiView: "main" });
+                openTools("ai");
+                return;
+              }
               if (!current)
                 throw Error("Choose a compatible multi-floor building first.");
               const operation =
@@ -155,48 +183,65 @@ export function ArchitecturalLibrary() {
           }}
         >
           <h3>Add {kind === "stairs" ? "Stairs" : "Balcony"}</h3>
-          <label className="field">
-            Building
-            <select
-              aria-label="Library building"
-              value={host}
-              onChange={(e) => {
-                setHost(e.target.value);
-                setLevel(1);
-              }}
-            >
-              <option value="">Select a building</option>
-              {buildings.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.info.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          {!buildings.length && (
-            <p className="muted">
-              Create or load a multi-floor building first. These connected
-              assemblies require real floors; freestanding insertion is
-              unsupported.
-            </p>
+          {kind === "stairs" && (
+            <label className="field">
+              Stair configuration
+              <select
+                aria-label="Stair configuration"
+                value={stairMode}
+                onChange={(e) =>
+                  setStairMode(e.target.value as "standalone" | "connected")
+                }
+              >
+                <option value="standalone">Standalone Stairs</option>
+                <option value="connected">Connect Floors</option>
+              </select>
+            </label>
           )}
-          <label className="field">
-            Destination floor
-            <select
-              aria-label="Library floor"
-              value={level}
-              onChange={(e) => setLevel(Number(e.target.value))}
-            >
-              {Array.from(
-                { length: (current?.recipe.floors ?? 2) - 1 },
-                (_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    Floor {i + 2}
+          <div hidden={kind === "stairs" && stairMode === "standalone"}>
+            <label className="field">
+              Building
+              <select
+                aria-label="Library building"
+                value={host}
+                onChange={(e) => {
+                  setHost(e.target.value);
+                  setLevel(1);
+                }}
+              >
+                <option value="">Select a building</option>
+                {buildings.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.info.name}
                   </option>
-                ),
-              )}
-            </select>
-          </label>
+                ))}
+              </select>
+            </label>
+            {!buildings.length && (
+              <p className="muted">
+                Create or load a multi-floor building first. These connected
+                assemblies require real floors. Choose Standalone Stairs for a
+                freestanding flight.
+              </p>
+            )}
+            <label className="field">
+              Destination floor
+              <select
+                aria-label="Library floor"
+                value={level}
+                onChange={(e) => setLevel(Number(e.target.value))}
+              >
+                {Array.from(
+                  { length: (current?.recipe.floors ?? 2) - 1 },
+                  (_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      Floor {i + 2}
+                    </option>
+                  ),
+                )}
+              </select>
+            </label>
+          </div>
           <div className="precision-grid">
             {field("Width", width, setWidth)}
             {kind === "stairs" ? (
@@ -219,12 +264,19 @@ export function ArchitecturalLibrary() {
                     ))}
                   </select>
                 </label>
-                <label>
-                  Overall rise (m)
-                  <output>
-                    {((current?.recipe.height ?? 3) + 0.2).toFixed(2)}
-                  </output>
-                </label>
+                {stairMode === "standalone" ? (
+                  <>
+                    {field("Overall rise", rise, setRise, 0.1)}
+                    {field("Base elevation", base, setBase, 0.1)}
+                  </>
+                ) : (
+                  <label>
+                    Overall rise (m)
+                    <output>
+                      {((current?.recipe.height ?? 3) + 0.2).toFixed(2)}
+                    </output>
+                  </label>
+                )}
               </>
             ) : (
               <>
@@ -277,7 +329,13 @@ export function ArchitecturalLibrary() {
             for a different rise. Visual design only.
           </p>
           <div className="object-actions">
-            <button disabled={!current}>Preview library {kind}</button>
+            <button
+              disabled={
+                !current && !(kind === "stairs" && stairMode === "standalone")
+              }
+            >
+              Preview library {kind}
+            </button>
             <button type="button" onClick={() => setKind(null)}>
               Close insertion
             </button>

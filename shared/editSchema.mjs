@@ -1,3 +1,4 @@
+import { standaloneStairSchema, nativeWallSchema } from "./nativeSchema.mjs";
 import { z } from "zod";
 import {
   materials,
@@ -29,6 +30,8 @@ const atomicOperationSchema = z.discriminatedUnion("type", [
   z
     .object({
       type: z.literal("design"),
+      standaloneStairs: standaloneStairSchema.optional(),
+      nativeWall: nativeWallSchema.optional(),
       balconies: z.array(balconySchema).max(6).optional(),
       openings: z.array(openingSchema).max(32).optional(),
       stairs: z.array(staircaseSchema).max(5).optional(),

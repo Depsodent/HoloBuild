@@ -29,6 +29,7 @@ import {
 import {
   SpeechController,
   recognitionConstructor,
+  microphonePrecheck,
   type SpeechState,
 } from "../../commands/speech";
 import { saveProject } from "../../assets/saveProject";
@@ -179,19 +180,19 @@ export function VoiceCommands() {
       },
     );
     const hide = () => {
-      if (document.hidden) controller.current?.stop();
+      if (document.hidden) controller.current?.cancel();
     };
     document.addEventListener("visibilitychange", hide);
     return () => {
       mounted.current = false;
-      controller.current?.stop();
+      controller.current?.cancel();
       cancelUnconfirmedGeneration();
       document.removeEventListener("visibilitychange", hide);
     };
   }, [interpreter]);
   const active = speech.status === "starting" || speech.status === "listening";
   useEffect(() => {
-    if (!open && active) controller.current?.stop();
+    if (!open && active) controller.current?.cancel();
   }, [open, active]);
 
   const [slowSpeech, setSlowSpeech] = useState(false);
@@ -206,7 +207,7 @@ export function VoiceCommands() {
     busyRef.current = true;
     setBusy(true);
     setHeard("");
-    controller.current?.stop();
+    controller.current?.cancel();
     try {
       const r = await dispatch(input);
       if (mounted.current) {
@@ -240,7 +241,7 @@ export function VoiceCommands() {
         <button
           type="button"
           onClick={() => {
-            controller.current?.stop();
+            controller.current?.cancel();
             cancelAssistantPreview();
             newConversation();
             setDraft("");
@@ -280,7 +281,20 @@ export function VoiceCommands() {
               onClick={() =>
                 active
                   ? controller.current?.stop()
-                  : controller.current?.start()
+                  : void microphonePrecheck().then((error) => {
+                      if (
+                        !mounted.current ||
+                        !useToolsStore.getState().tab.includes("ai")
+                      )
+                        return;
+                      if (error)
+                        setSpeech({
+                          status: "error",
+                          message: error,
+                          transcript: speech.transcript,
+                        });
+                      else controller.current?.start();
+                    })
               }
             >
               {active ? <MicOff size={16} /> : <Mic size={16} />}
@@ -324,7 +338,7 @@ export function VoiceCommands() {
         {(active || heard || busy) && (
           <button
             onClick={() => {
-              controller.current?.stop();
+              controller.current?.cancel();
               cancelAssistantPreview();
               setHeard("");
               setResult(interpreter.cancel());
@@ -361,7 +375,7 @@ export function VoiceCommands() {
           <div className="object-actions">
             <button
               onClick={() => {
-                controller.current?.stop();
+                controller.current?.cancel();
                 setResult(interpreter.confirm());
               }}
             >
@@ -376,7 +390,7 @@ export function VoiceCommands() {
           <button
             type="button"
             onClick={() => {
-              controller.current?.stop();
+              controller.current?.cancel();
               cancelAssistantPreview();
               setDraft("");
             }}
