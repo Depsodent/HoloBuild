@@ -3,12 +3,16 @@
 Updated 2026-10-20T07:54:57.776Z. Project D:\Projects\HoloBuild. Preserve all completed work; no reset/discard. Current runtime includes standalone/connected native stairs, real selected-wall openings, speech lifecycle/permission fixes, compact Inspector, read-only walkthrough/presentation and saved views. See WALKTHROUGH.md and DEVELOPMENT.md for coverage and limitations.
 
 ## Completed local gates
--392/392 units,39files: .cache/m12-final-all-units.log.
--66/66 backend tests: .cache/m12-all-backend.log; backend unchanged since that gate.
--Referenced TypeScript and ESLint: .cache/m12-final-types.log / m12-final-lint.log.
+- 392/392 units,39files: .cache/m12-final-all-units.log.
+- 66/66 backend tests: .cache/m12-all-backend.log; backend unchanged since that gate.
+- Referenced TypeScript and ESLint: .cache/m12-final-types.log / m12-final-lint.log.
 -Production build29.13s: .cache/m12-release-build.log;70 notices/0unresolved, existing annotation/chunk warnings.
--Full148-case serial browser gate:147pass/1test fixture startup race,28.0min (.cache/m12-final-browser-full.log).
--All13 affected command/native/Inspector browser cases now pass,1.7min (.cache/m12-final-targeted-browser.log). Mock audio waits for actual Listening;270degree standalone yaw is equivalent-normalized to-90 inside existing strict schema. All148 distinct cases have passing evidence. No full-suite rerun needed for this bounded change.
+- Full148-case serial browser gate:147pass/1test fixture startup race,28.0min (.cache/m12-final-browser-full.log).
+- All13 affected command/native/Inspector browser cases now pass,1.7min (.cache/m12-final-targeted-browser.log). Mock audio waits for actual Listening;270degree standalone yaw is equivalent-normalized to-90 inside existing strict schema. All148 distinct cases have passing evidence. No full-suite rerun needed for this bounded change.
+
+## Release progress
+
+Local Gemini/UI gate now PASSED with zero page errors (.cache/m12-local-workflow.json). Exact 44-part host and all exploration/manual/edit/history/IO checks pass. Initial literal-status smoke assertion was corrected to disabled movement, with failure receipt retained. Runtime remains exactly3573e60; later changes are smoke/docs only. See MILESTONE_12_RELEASE_VALIDATION.json.
 
 ## Remaining release steps
 1. Run publication audit against final source/build, save local implementation checkpoint.

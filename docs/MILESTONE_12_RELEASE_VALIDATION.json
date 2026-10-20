@@ -1,0 +1,192 @@
+{
+  "validatedAt": "2026-10-20T08:04:25.631Z",
+  "implementationCheckpoint": "3573e602b1c5a44a69d5ab14e9ea3f5e5a06cfc3",
+  "automated": {
+    "typescript": "passed (tsc -b)",
+    "eslint": "passed, including final smoke helper",
+    "unitTests": {
+      "passed": 392,
+      "files": 39
+    },
+    "backendTests": {
+      "passed": 66,
+      "unchangedSinceGate": true
+    },
+    "browser": {
+      "inventory": 148,
+      "fullRun": {
+        "passed": 147,
+        "failed": 1,
+        "durationMinutes": 28
+      },
+      "failureClassification": "Mock audio was injected before async permission precheck created recognition. Application logic unchanged; test now waits for actual Listening state.",
+      "affectedRerun": {
+        "passed": 13,
+        "failed": 0,
+        "durationMinutes": 1.7
+      },
+      "allDistinctCasesHavePassingEvidence": true,
+      "oneUninterruptedFullPass": false,
+      "lastRuntimeCorrection": "Equivalent 270-degree standalone yaw normalized to -90 degrees within the existing strict schema; all units and standalone UI retested."
+    },
+    "build": {
+      "passed": true,
+      "seconds": 29.13,
+      "licensePackages": 70,
+      "unresolvedNotices": 0,
+      "warnings": [
+        "Existing third-party annotation notices",
+        "Existing large main JavaScript chunk"
+      ]
+    },
+    "security": {
+      "sourceHistoryBundle": "Zero unresolved pattern/exact-local-secret matches; see PUBLICATION_AUDIT.json",
+      "dependenciesAndLockUnchanged": true,
+      "priorProductionDependencyAuditReused": true,
+      "hostedSettingsChanged": false
+    }
+  },
+  "localGemini": {
+    "testedAt": "2026-10-20T07:57:52.389Z",
+    "url": "http://127.0.0.1:5182",
+    "baseCheckpoint": "3573e602b1c5a44a69d5ab14e9ea3f5e5a06cfc3",
+    "source": "Milestone 12 production-build release validation",
+    "physicalDeviceTested": false,
+    "ok": true,
+    "checks": {
+      "creation": {
+        "inertPreview": true,
+        "parts": 44,
+        "stairSteps": 16,
+        "upperFloorVoid": true,
+        "balconyParts": 8,
+        "alignedRealAccess": true,
+        "unrelatedCubePreserved": true,
+        "exactUndoRedo": true
+      },
+      "genuineConversationalEdit": {
+        "sameStructure": true,
+        "inertPreview": true,
+        "unrelatedComponentsPreserved": true,
+        "exactUndoRedo": true
+      },
+      "staircaseConversation": {
+        "material": "concrete",
+        "cancel": true,
+        "inertPreview": true,
+        "exactUndoRedo": true
+      },
+      "editableOpening": {
+        "partInspector": true,
+        "panelIdPreserved": true,
+        "realAccessRetained": true,
+        "stairAndBalconyRecipesPreserved": true,
+        "exactUndoRedo": true
+      },
+      "saveLoad": {
+        "allArchitecturalMetadata": true,
+        "exactObjects": true,
+        "undoRedoLoad": true
+      },
+      "precision": {
+        "productionUI": true,
+        "developmentBridgeUsed": false,
+        "inspectorTabs": true,
+        "roughnessMetalnessOpacity": true,
+        "partScopePreservesArchitecture": true,
+        "numericDimensions": true,
+        "centimetrePreview": true,
+        "draftAcrossTabs": true,
+        "gridControls": true,
+        "measurements": true,
+        "exactUndoRedo": true,
+        "portableSurfaceAndTransformPersistence": true,
+        "physicalDeviceTested": false
+      },
+      "exploration": {
+        "productionUI": true,
+        "developmentBridgeUsed": false,
+        "realGeminiHost": true,
+        "doorPassage": true,
+        "connectedStairClimb": true,
+        "upperFloorVoid": true,
+        "balconyAccessAndReturn": true,
+        "pointerLockMouseLook": true,
+        "escapePause": true,
+        "presentationRestoresLayout": true,
+        "exactEditorCameraRestored": true,
+        "namedViewpoints": true,
+        "selectedGeneratedWallWindow": true,
+        "selectedManualWallWindow": true,
+        "previewCancelAndConfirmation": true,
+        "standalone270DegreeStairs": true,
+        "appearanceOnNewTreads": true,
+        "portableSaveLoad": true,
+        "exactUndoRedo": true,
+        "additionalProviderCalls": 0,
+        "physicalDeviceTested": false
+      },
+      "pageErrors": 0
+    },
+    "provider": [
+      {
+        "event": "result",
+        "requestId": "f85e8f96-7120-430b-bfa2-a2d2b0a27e60",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "create",
+        "timings": {
+          "firstTokenMs": 2100.754799999995,
+          "headerMs": 2100.5080999999773,
+          "providerMs": 2741.6148999999277,
+          "validationMs": 0.7729999998118728,
+          "totalMs": 2743.8574000000954,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      },
+      {
+        "event": "result",
+        "requestId": "4ea09cb9-3bef-4cb0-8e42-853f6797bc20",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "edit",
+        "timings": {
+          "firstTokenMs": 3195.1132000000216,
+          "headerMs": 3194.8020000001416,
+          "providerMs": 3384.280100000091,
+          "validationMs": 0.24369999999180436,
+          "totalMs": 3385.5719000000972,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      }
+    ]
+  },
+  "retainedAttempt": {
+    "creationAndEditPassed": true,
+    "endToEndPassed": false,
+    "classification": "Smoke expected literal Paused at initial entry, while valid paused status said Choose controls. Replaced text assertion with disabled movement assertion.",
+    "sourceChanged": false
+  },
+  "limitations": [
+    "Imported, curved and pitched/rolled geometry use conservative solid collision bounds; internal mesh cavities are unsupported.",
+    "Static native door panels are treated as open portals and hidden only while walking; no hinged animation.",
+    "Standalone stairs create no inferred destination landing or floor opening; raised flights require real support.",
+    "Camera viewpoints are browser-local preferences, not portable project data.",
+    "Browser recognition/pointer lock/fullscreen depend on browser support and permissions; text and keyboard/touch alternatives remain.",
+    "Physical webcam, microphone, touch and friend-device acceptance remain pending.",
+    "Software-rendered headless browser tests do not establish hardware performance on ordinary laptops.",
+    "Existing model variability remains; invalid output fails strict validation with no geometry repair.",
+    "Architectural geometry is visual design, not building-code/structural certification."
+  ],
+  "publication": {
+    "status": "Local gates passed; stage and verify existing production project next",
+    "url": "https://holobuild.vercel.app",
+    "paidServicesActivated": false,
+    "quotaOrCredentialChanges": false,
+    "rollbackDeployment": "dpl_ENkGDZHgqYubXaakkSfWWFZCJTWp"
+  }
+}

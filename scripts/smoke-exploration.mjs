@@ -67,6 +67,12 @@ export async function smokeExploration(page) {
         o.construction.structure.template.balconies?.length,
     );
   assert.ok(seed, "Expected genuine Gemini two-floor architectural host");
+  await fs.writeFile(
+    ".cache/m12-" +
+      (new URL(page.url()).protocol === "https:" ? "public" : "local") +
+      "-exploration-input.json",
+    JSON.stringify(base),
+  );
   const id = seed.construction.structureId,
     info = seed.construction.structure,
     t = info.template,
@@ -95,7 +101,9 @@ export async function smokeExploration(page) {
   await expect(page.getByLabel("Construction tools sidebar")).toBeHidden();
   const original = await saveView("Release editor view");
   await page.getByRole("button", { name: "Walkthrough", exact: true }).click();
-  await expect(page.getByLabel("Exploration controls")).toContainText("Paused");
+  await expect(
+    page.getByRole("button", { name: "Forward", exact: true }),
+  ).toBeDisabled();
   const beforeLook = await saveView("Before mouse look");
   await page.getByRole("button", { name: "Look around", exact: true }).click();
   await expect
