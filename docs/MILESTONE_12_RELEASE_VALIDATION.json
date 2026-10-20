@@ -1,19 +1,20 @@
 {
-  "validatedAt": "2026-10-20T08:04:25.631Z",
+  "validatedAt": "2026-10-20T08:22:33.056Z",
   "implementationCheckpoint": "3573e602b1c5a44a69d5ab14e9ea3f5e5a06cfc3",
   "automated": {
     "typescript": "passed (tsc -b)",
     "eslint": "passed, including final smoke helper",
     "unitTests": {
       "passed": 392,
-      "files": 39
+      "files": 39,
+      "rerunAfterPermissionCorrection": true
     },
     "backendTests": {
       "passed": 66,
       "unchangedSinceGate": true
     },
     "browser": {
-      "inventory": 148,
+      "inventory": 149,
       "fullRun": {
         "passed": 147,
         "failed": 1,
@@ -27,17 +28,25 @@
       },
       "allDistinctCasesHavePassingEvidence": true,
       "oneUninterruptedFullPass": false,
-      "lastRuntimeCorrection": "Equivalent 270-degree standalone yaw normalized to -90 degrees within the existing strict schema; all units and standalone UI retested."
+      "lastRuntimeCorrection": "Equivalent 270-degree standalone yaw normalized to -90 degrees within the existing strict schema; all units and standalone UI retested.",
+      "baseInventory": 148,
+      "finalPermissionRerun": {
+        "passed": 17,
+        "failed": 0,
+        "durationMinutes": 3.1,
+        "includedNewRegression": true
+      }
     },
     "build": {
       "passed": true,
-      "seconds": 29.13,
+      "seconds": 14.58,
       "licensePackages": 70,
       "unresolvedNotices": 0,
       "warnings": [
         "Existing third-party annotation notices",
         "Existing large main JavaScript chunk"
-      ]
+      ],
+      "previousSeconds": 29.13
     },
     "security": {
       "sourceHistoryBundle": "Zero unresolved pattern/exact-local-secret matches; see PUBLICATION_AUDIT.json",
@@ -183,10 +192,159 @@
     "Architectural geometry is visual design, not building-code/structural certification."
   ],
   "publication": {
-    "status": "Local gates passed; stage and verify existing production project next",
+    "status": "Main M12 production gates passed; validated permission lifecycle correction ready to publish",
     "url": "https://holobuild.vercel.app",
     "paidServicesActivated": false,
     "quotaOrCredentialChanges": false,
-    "rollbackDeployment": "dpl_ENkGDZHgqYubXaakkSfWWFZCJTWp"
+    "rollbackDeployment": "dpl_ENkGDZHgqYubXaakkSfWWFZCJTWp",
+    "previousWorkingM12Deployment": "dpl_BSCM9hc1dQx9GzpXLA4zQHGoApyo"
+  },
+  "finalImplementationCheckpoint": "7001ada217d2cbc33142fa2637bef4100b3f6d4b",
+  "microphoneRace": {
+    "reproduced": true,
+    "beforeFix": {
+      "expectedCaptureStarts": 0,
+      "actualCaptureStarts": 1
+    },
+    "correction": "Cancellation generations invalidate pending permission checks on existing cancellation, submit, panel exit, page hide, cleanup and exploration transitions. Hidden/exploring state also rejects startup.",
+    "localProductionBundle": {
+      "testedAt": "2026-10-20T08:21:05.629Z",
+      "url": "http://127.0.0.1:5182",
+      "sourceCheckpoint": "7001ada217d2cbc33142fa2637bef4100b3f6d4b",
+      "syntheticRecognition": true,
+      "physicalDeviceTested": false,
+      "providerCalls": 0,
+      "ok": true,
+      "lateResultDuringWalkingIgnored": true,
+      "lateResultAfterPresentationExitIgnored": true,
+      "deliberateRestartWorks": true,
+      "stopPreservesActualFinalResult": true,
+      "sceneUnchanged": true,
+      "pageErrors": 0
+    }
+  },
+  "publicGeminiAndExplorationEvidence": {
+    "sourceCheckpoint": "00d883247346e773abb6b98bcc260cad0a816d8f",
+    "workflow": {
+      "testedAt": "2026-10-20T08:07:46.226Z",
+      "url": "https://holobuild.vercel.app",
+      "baseCheckpoint": "00d883247346e773abb6b98bcc260cad0a816d8f",
+      "source": "Milestone 12 production-build release validation",
+      "physicalDeviceTested": false,
+      "ok": true,
+      "checks": {
+        "creation": {
+          "inertPreview": true,
+          "parts": 44,
+          "stairSteps": 16,
+          "upperFloorVoid": true,
+          "balconyParts": 8,
+          "alignedRealAccess": true,
+          "unrelatedCubePreserved": true,
+          "exactUndoRedo": true
+        },
+        "genuineConversationalEdit": {
+          "sameStructure": true,
+          "inertPreview": true,
+          "unrelatedComponentsPreserved": true,
+          "exactUndoRedo": true
+        },
+        "staircaseConversation": {
+          "material": "concrete",
+          "cancel": true,
+          "inertPreview": true,
+          "exactUndoRedo": true
+        },
+        "editableOpening": {
+          "partInspector": true,
+          "panelIdPreserved": true,
+          "realAccessRetained": true,
+          "stairAndBalconyRecipesPreserved": true,
+          "exactUndoRedo": true
+        },
+        "saveLoad": {
+          "allArchitecturalMetadata": true,
+          "exactObjects": true,
+          "undoRedoLoad": true
+        },
+        "precision": {
+          "productionUI": true,
+          "developmentBridgeUsed": false,
+          "inspectorTabs": true,
+          "roughnessMetalnessOpacity": true,
+          "partScopePreservesArchitecture": true,
+          "numericDimensions": true,
+          "centimetrePreview": true,
+          "draftAcrossTabs": true,
+          "gridControls": true,
+          "measurements": true,
+          "exactUndoRedo": true,
+          "portableSurfaceAndTransformPersistence": true,
+          "physicalDeviceTested": false
+        },
+        "exploration": {
+          "productionUI": true,
+          "developmentBridgeUsed": false,
+          "realGeminiHost": true,
+          "doorPassage": true,
+          "connectedStairClimb": true,
+          "upperFloorVoid": true,
+          "balconyAccessAndReturn": true,
+          "pointerLockMouseLook": true,
+          "escapePause": true,
+          "presentationRestoresLayout": true,
+          "exactEditorCameraRestored": true,
+          "namedViewpoints": true,
+          "selectedGeneratedWallWindow": true,
+          "selectedManualWallWindow": true,
+          "previewCancelAndConfirmation": true,
+          "standalone270DegreeStairs": true,
+          "appearanceOnNewTreads": true,
+          "portableSaveLoad": true,
+          "exactUndoRedo": true,
+          "additionalProviderCalls": 0,
+          "physicalDeviceTested": false
+        },
+        "pageErrors": 0
+      },
+      "provider": [
+        {
+          "event": "result",
+          "requestId": "e465babb-e6aa-41f8-8e57-66ba64ac9b2d",
+          "provider": "Gemini",
+          "model": "gemini-3.5-flash-lite",
+          "kind": "create",
+          "timings": {
+            "firstTokenMs": 603.7154819999996,
+            "headerMs": 602.9714300000051,
+            "providerMs": 1245.03643800001,
+            "validationMs": 10.042388000001665,
+            "totalMs": 1828.9418270000024,
+            "modelLoadMs": null,
+            "residentBefore": null,
+            "residentVramBytes": null
+          }
+        },
+        {
+          "event": "result",
+          "requestId": "ecbb293c-91e6-4529-b93b-bc623fedfe18",
+          "provider": "Gemini",
+          "model": "gemini-3.5-flash-lite",
+          "kind": "edit",
+          "timings": {
+            "firstTokenMs": 1030.3833060000034,
+            "headerMs": 1030.1545130000013,
+            "providerMs": 1166.9202470000018,
+            "validationMs": 2.3101610000012442,
+            "totalMs": 1574.2684089999966,
+            "modelLoadMs": null,
+            "residentBefore": null,
+            "residentVramBytes": null
+          }
+        }
+      ]
+    },
+    "providerGeometryAndNavigationCodeUnchangedByPermissionCorrection": true,
+    "extraLiveGeminiCallsForPermissionCorrection": 0
   }
 }

@@ -1,25 +1,13 @@
-# Milestone 12 release handoff
+# Milestone 12 handoff
 
-Updated 2026-10-20T07:54:57.776Z. Project D:\Projects\HoloBuild. Preserve all completed work; no reset/discard. Current runtime includes standalone/connected native stairs, real selected-wall openings, speech lifecycle/permission fixes, compact Inspector, read-only walkthrough/presentation and saved views. See WALKTHROUGH.md and DEVELOPMENT.md for coverage and limitations.
+Updated 2026-10-20T08:22:33.058Z. Project D:\Projects\HoloBuild. Main M12 release00d8832 is public at https://holobuild.vercel.app and full live Gemini/navigation/geometry/history/UI smoke passed. Preserve all completed work.
 
-## Completed local gates
-- 392/392 units,39files: .cache/m12-final-all-units.log.
-- 66/66 backend tests: .cache/m12-all-backend.log; backend unchanged since that gate.
-- Referenced TypeScript and ESLint: .cache/m12-final-types.log / m12-final-lint.log.
--Production build29.13s: .cache/m12-release-build.log;70 notices/0unresolved, existing annotation/chunk warnings.
-- Full148-case serial browser gate:147pass/1test fixture startup race,28.0min (.cache/m12-final-browser-full.log).
-- All13 affected command/native/Inspector browser cases now pass,1.7min (.cache/m12-final-targeted-browser.log). Mock audio waits for actual Listening;270degree standalone yaw is equivalent-normalized to-90 inside existing strict schema. All148 distinct cases have passing evidence. No full-suite rerun needed for this bounded change.
+Final bounded speech correction7001ada is validated locally and ready to publish: delayed permission checks are invalidated by existing cancellation/submit/panel-hide/page-hide/cleanup/exploration actions. Reproduced before fix(1unexpected capture), regression now passes. New production-only permission smoke additionally verifies stale result after exit, deliberate restart and Stop actual-final-result retention. Recognition is synthetic; physical acceptance pending.
 
-## Release progress
+Gates:392units/39files,66backend tests(unchanged backend), referenced TypeScript/ESLint, build14.58s/70notices/0unresolved. Original full148case browser run147pass/1mock startup timing failure;13affected rerun passes. Final17command/exploration cases pass including new regression:149distinct passing cases across runs. No full suite repetition needed for the isolated input lifecycle guard. Source/history/bundle audit has0unresolved findings. No dependencies/lock changes.
 
-Local Gemini/UI gate now PASSED with zero page errors (.cache/m12-local-workflow.json). Exact 44-part host and all exploration/manual/edit/history/IO checks pass. Initial literal-status smoke assertion was corrected to disabled movement, with failure receipt retained. Runtime remains exactly3573e60; later changes are smoke/docs only. See MILESTONE_12_RELEASE_VALIDATION.json.
+Live main provider receipts in .cache/m12-local-workflow.json and m12-public-workflow.json: exact44part two-floor house,16steps, real slab void,8balcony parts/aligned access; door/stairs/balcony navigation, pointer lock, camera/layout restore, generated/manual selected-wall windows,270degree standalone stairs, appearance inheritance, Inspector precision, preview/cancel/confirm, save/load and exact Undo/Redo all pass with0page errors. Actual screenshots inspected. Backend/provider/geometry/navigation code unchanged by permission correction; reuse these results without additional Gemini calls. Public timing1.829s creation/1.574s edit.
 
-## Remaining release steps
-1. Run publication audit against final source/build, save local implementation checkpoint.
-2. Isolated production-compatible Gemini server is already running at http://127.0.0.1:5182, PID24840 (.cache/production-gemini12.mjs). Reads ignored credentials only; never print them. Fresh dist is served per request. Frontend5175/planner5180 remain unchanged.
-3. Run real Gemini UI: HOLO_LIVE_GEMINI=1 HOLO_EXPLORATION_SMOKE=1 HOLO_PRECISION_SMOKE=1 HOLO_SOURCE_SHA=<checkpoint> HOLO_RELEASE_URL=http://127.0.0.1:5182 node scripts/smoke-milestone105.mjs. Prepared script has NOT yet executed. It tests actual generated two-floor host, door/stairs/balcony navigation, mouse look, restored views/layout, wall openings,270degree stairs, new-tread appearance and history/save-load without DEV bridge or extra provider calls. Diagnose failures honestly. View actual screenshot.
-4. Record release receipts/docs; audit; commit/push master; official Vercel deploy --prod --skip-domain --yes (existing .cache/vercel-auth) with exact SHA metadata. Preflight already captured in .cache/m12-preflight.json: M11 d49952e / dpl_ENkGDZHgqYubXaakkSfWWFZCJTWp is rollback. Do not overwrite baseline after promotion.
-5. Verify candidate .cache/verify-release12.mjs (HOLO_DEPLOYMENT_ID, HOLO_SOURCE_SHA), READY/source/private uploads/Hobby/env metadata. Promote only after checks. Run same real public UI smoke, scripts/verify-hosted-security.mjs, metadata verification, safe Vercel log review (.cache/sanitize12-logs.mjs) and read-only lease cleanup (.cache/check-production-leases12.mjs). Preserve prior deployment READY.
-6. Commit/push receipt-only final docs, clean tree, report deployed/runtime/doc commits and actual URLs/test counts.
+Next: push validated candidate; stage existing Vercel project --prod --skip-domain with exact fullSHA; verify .cache/verify-release12.mjs against original immutable .cache/m12-preflight.json; promote; run scripts/smoke-exploration-permissions.mjs with HOLO_RELEASE_URL/public and HOLO_SOURCE_SHA. Re-run scripts/verify-hosted-security.mjs(new bundle hashes), source/alias/env/Hobby/rollback checks and safe log/lease checks. Keep current M12 dpl_BSCM9hc1dQx9GzpXLA4zQHGoApyo and M11 dpl_ENkGDZHgqYubXaakkSfWWFZCJTWp READY for rollback. Main release metadata/security/log receipts preserved with m12-main prefixes in .cache. Finish production receipt/docs and clean tree.
 
-Standing release authorization applies. No paid services, credential changes, quota changes, production deletion or Milestone13. Model output can fail strict schema; record failures rather than infer success fromHTTP200SSE. Physical webcam/microphone/touch/friend-device acceptance is pending.
+Do not start Milestone13. Standing routine push/deploy authorization applies; no separate approval needed. Never print ignored env/auth contents, weaken geometry/security, change quotas or activate paid services. Physical webcam/microphone/touch/friend-device acceptance remains pending.
