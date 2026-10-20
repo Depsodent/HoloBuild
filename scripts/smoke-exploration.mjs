@@ -158,23 +158,57 @@ export async function smokeExploration(page) {
     ["d", right],
     ["a", right.map((n) => -n)],
   ];
+  async function settled() {
+    await page.evaluate(
+      () =>
+        new Promise((resolve) => {
+          const until = performance.now() + 280;
+          function frame(t) {
+            if (t >= until) resolve();
+            else window.requestAnimationFrame(frame);
+          }
+          window.requestAnimationFrame(frame);
+        }),
+    );
+  }
   async function axis(axis, target) {
-    const current = (await point())[axis];
-    if (Math.abs(current - target) < 0.1) return;
-    const sign = Math.sign(target - current),
-      component = axis === 0 ? 0 : 1,
-      key = directions.find(([, v]) => v[component] * sign > 0.99)?.[0];
-    assert.ok(key, "Unsupported camera heading");
-    await page.keyboard.down(key);
-    try {
-      await expect
-        .poll(async () => sign * ((await point())[axis] - target), {
-          timeout: 30000,
-        })
-        .toBeGreaterThan(-0.06);
-    } finally {
-      await page.keyboard.up(key);
+    // Human position output is throttled. Stop coarse travel early, then use one-frame
+    // key pulses with fresh telemetry; a crossed coordinate is not proof of alignment.
+    for (let attempt = 0; attempt < 80; attempt++) {
+      const current = (await point())[axis],
+        distance = target - current;
+      if (Math.abs(distance) <= 0.13) return;
+      const sign = Math.sign(distance),
+        component = axis === 0 ? 0 : 1,
+        key = directions.find(([, v]) => v[component] * sign > 0.99)?.[0];
+      assert.ok(key, "Unsupported camera heading");
+      await page.keyboard.down(key);
+      try {
+        if (Math.abs(distance) > 1)
+          await expect
+            .poll(async () => sign * ((await point())[axis] - target), {
+              timeout: 30000,
+              intervals: [40],
+            })
+            .toBeGreaterThan(-0.65);
+        else
+          await page.evaluate(
+            () =>
+              new Promise((resolve) => window.requestAnimationFrame(resolve)),
+          );
+      } finally {
+        await page.keyboard.up(key);
+      }
+      await settled();
     }
+    assert.fail(
+      "Could not align waypoint axis " +
+        axis +
+        " at " +
+        target +
+        "; actual " +
+        (await point())[axis],
+    );
   }
   const doorAxis = face === "front" || face === "back" ? 2 : 0;
   await axis(

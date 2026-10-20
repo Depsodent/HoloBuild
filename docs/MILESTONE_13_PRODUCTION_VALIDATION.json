@@ -1,0 +1,503 @@
+{
+  "validatedAt": "2026-10-20T13:34:14.915Z",
+  "publicUrl": "https://holobuild.vercel.app",
+  "deployedSource": "2d90378a9e90e8b848e1b4848cc8697b4a508bac",
+  "implementationCheckpoint": "4db535487ccab5bff1caa9091b600405335eff4c",
+  "deployment": {
+    "checkedAt": "2026-10-20T13:32:38.288Z",
+    "deploymentId": "dpl_4kLa2xBZ2ADGTLxYq18H8ZSuMf6Z",
+    "sourceCheckpoint": "2d90378a9e90e8b848e1b4848cc8697b4a508bac",
+    "state": "READY",
+    "url": "https://holobuild-4icyst1vk-aaryand616-6524.vercel.app",
+    "publicAliasDeployment": "dpl_4kLa2xBZ2ADGTLxYq18H8ZSuMf6Z",
+    "previousDeployment": "dpl_4498oLZWjGa9tHyXbTsYY1C1njzs",
+    "previousUrl": "holobuild-apkpq0z5g-aaryand616-6524.vercel.app",
+    "rollbackReady": true,
+    "accountPlan": "hobby",
+    "protectedVariableMetadataUnchanged": true,
+    "filesChecked": 296,
+    "unsafeUploadPaths": [],
+    "emptyDirectoryMarkers": [
+      "src/dist",
+      "src/docs",
+      "src/playwright-report",
+      "src/public/assets",
+      "src/public/models",
+      "src/public/textures",
+      "src/public/third-party-notices",
+      "src/public/vision/wasm",
+      "src/src/ai",
+      "src/src/hooks",
+      "src/src/utils",
+      "src/test-results"
+    ],
+    "privateValuesLogged": false
+  },
+  "remoteBuild": {
+    "passed": true,
+    "frontendSeconds": 15.46,
+    "totalBuildSeconds": 37,
+    "licensePackages": 70,
+    "unresolvedNotices": 0
+  },
+  "localRuntimeMatchesDeployment": true,
+  "finalReceiptCommitScope": "Documentation, sanitized recorded navigation fixture, unit regression and smoke waypoint synchronization only; no runtime assets/backend/dependencies changed after deployment.",
+  "publicGemini": {
+    "testedAt": "2026-10-20T13:19:31.822Z",
+    "realProvider": true,
+    "model": "gemini-3.5-flash-lite",
+    "completedChecks": {
+      "creation": {
+        "inertPreview": true,
+        "parts": 52,
+        "stairSteps": 16,
+        "upperFloorVoid": true,
+        "balconyParts": 8,
+        "alignedRealAccess": true,
+        "unrelatedCubePreserved": true,
+        "exactUndoRedo": true
+      },
+      "genuineConversationalEdit": {
+        "sameStructure": true,
+        "inertPreview": true,
+        "unrelatedComponentsPreserved": true,
+        "exactUndoRedo": true
+      },
+      "staircaseConversation": {
+        "material": "concrete",
+        "cancel": true,
+        "inertPreview": true,
+        "exactUndoRedo": true
+      },
+      "editableOpening": {
+        "partInspector": true,
+        "panelIdPreserved": true,
+        "realAccessRetained": true,
+        "stairAndBalconyRecipesPreserved": true,
+        "exactUndoRedo": true
+      },
+      "saveLoad": {
+        "allArchitecturalMetadata": true,
+        "exactObjects": true,
+        "undoRedoLoad": true
+      },
+      "precision": {
+        "productionUI": true,
+        "developmentBridgeUsed": false,
+        "inspectorTabs": true,
+        "roughnessMetalnessOpacity": true,
+        "partScopePreservesArchitecture": true,
+        "numericDimensions": true,
+        "centimetrePreview": true,
+        "draftAcrossTabs": true,
+        "gridControls": true,
+        "measurements": true,
+        "exactUndoRedo": true,
+        "portableSurfaceAndTransformPersistence": true,
+        "physicalDeviceTested": false
+      }
+    },
+    "provider": [
+      {
+        "event": "result",
+        "requestId": "a67e3d6f-4bc0-4a24-bf7c-687ba2a94cb9",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "create",
+        "timings": {
+          "firstTokenMs": 8212.543019999983,
+          "headerMs": 8211.675300999981,
+          "providerMs": 9111.976148999995,
+          "validationMs": 9.359224999992875,
+          "totalMs": 9669.194159000006,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      },
+      {
+        "event": "result",
+        "requestId": "78d92873-9196-4cba-bba0-68bf08484b84",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "edit",
+        "timings": {
+          "firstTokenMs": 11724.27552299999,
+          "headerMs": 11724.06865999999,
+          "providerMs": 11887.285020999989,
+          "validationMs": 2.351874999993015,
+          "totalMs": 12309.770403000002,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      }
+    ],
+    "firstCombinedRunPassed": false,
+    "firstRunFailure": {
+      "stage": "Exploration smoke waypoint control",
+      "error": "expect(received).toBeGreaterThan(expected)\n\nExpected: > -0.06\nReceived:   -2.7500000000000004\n\nCall Log:\n- Timeout 30000ms exceeded while waiting on the predicate",
+      "classification": "Harness overshot the stair center by 0.48 m; conservative body collision correctly blocked ascent into the solid slab. A recorded-template unit regression proves centered ascent and offset rejection.",
+      "applicationFix": false
+    },
+    "completion": "Same actual generated project reloaded through public JSON UI; corrected frame-sized key pulses with fresh position feedback finish navigation and remaining native editing checks without further provider calls.",
+    "streamTerminalResultsChecked": true,
+    "rawPromptsOrCredentialsIncluded": false
+  },
+  "sameScenePublicReplay": {
+    "testedAt": "2026-10-20T13:26:58.324Z",
+    "url": "https://holobuild.vercel.app",
+    "sourceCheckpoint": "2d90378a9e90e8b848e1b4848cc8697b4a508bac",
+    "recordedRealGeminiScene": true,
+    "sceneSha256": "c905134ab6ac6e2492d03c684790e8a915173fff5344d837491f60ef369dce35",
+    "providerCalls": 0,
+    "physicalDeviceTested": false,
+    "ok": true,
+    "checks": {
+      "productionUI": true,
+      "developmentBridgeUsed": false,
+      "realGeminiHost": true,
+      "doorPassage": true,
+      "connectedStairClimb": true,
+      "upperFloorVoid": true,
+      "balconyAccessAndReturn": true,
+      "pointerLockMouseLook": true,
+      "escapePause": true,
+      "walkthroughRestoresLayout": true,
+      "editorCanvasPixelsRestored": true,
+      "fourPrimaryControls": true,
+      "retiredPresentationAbsent": true,
+      "resetToInitialFeet": true,
+      "selectedGeneratedWallWindow": true,
+      "selectedManualWallWindow": true,
+      "previewCancelAndConfirmation": true,
+      "standalone270DegreeStairs": true,
+      "appearanceOnNewTreads": true,
+      "portableSaveLoad": true,
+      "exactUndoRedo": true,
+      "additionalProviderCalls": 0,
+      "physicalDeviceTested": false
+    },
+    "pageErrors": 0
+  },
+  "microphoneLifecycle": {
+    "testedAt": "2026-10-20T13:31:15.753Z",
+    "url": "https://holobuild.vercel.app",
+    "sourceCheckpoint": "2d90378a9e90e8b848e1b4848cc8697b4a508bac",
+    "syntheticRecognition": true,
+    "physicalDeviceTested": false,
+    "providerCalls": 0,
+    "ok": true,
+    "lateResultDuringWalkingIgnored": true,
+    "lateResultAfterWalkthroughExitIgnored": true,
+    "deliberateRestartWorks": true,
+    "stopPreservesActualFinalResult": true,
+    "sceneUnchanged": true,
+    "pageErrors": 0
+  },
+  "security": {
+    "checkedAt": "2026-10-20T13:22:07.427Z",
+    "url": "https://holobuild.vercel.app",
+    "aiEnabled": true,
+    "checks": [
+      {
+        "check": "HTTP redirects to HTTPS",
+        "passed": true
+      },
+      {
+        "check": "Anonymous HTTPS and security headers",
+        "passed": true
+      },
+      {
+        "check": "Public AI explicitly enabled",
+        "passed": true
+      },
+      {
+        "check": "Untrusted Origin and CORS preflight denied",
+        "passed": true
+      },
+      {
+        "check": "Private local/config/server paths not served",
+        "passed": true
+      },
+      {
+        "check": "Deployed JS matches audited local build and has no private values",
+        "passed": true,
+        "scripts": 7
+      },
+      {
+        "check": "MediaPipe assets, WASM MIME and license evidence",
+        "passed": true
+      }
+    ],
+    "geminiCalled": false,
+    "credentialsPrinted": false
+  },
+  "securityRetry": {
+    "firstAttempt": "A 15-second transfer timeout while fetching hand_landmarker.task, after prior checks passed.",
+    "unchangedRetryPassed": true,
+    "timeoutOrSecuritySettingsChanged": false,
+    "rootCauseIndependentlyEstablished": false
+  },
+  "rateLimits": {
+    "perIpPerMinute": 5,
+    "admittedPerUtcDay": 100,
+    "concurrent": 2,
+    "unchanged": true,
+    "admissionRejectionsConsumeDailyQuota": false,
+    "admittedProviderFailuresConsumeDailyQuota": true,
+    "verification": "Existing backend regression evidence and unchanged production protected-variable metadata; production quotas were not reset or saturated."
+  },
+  "redis": {
+    "checkedAt": "2026-10-20T13:32:39.443Z",
+    "productionReadOnly": true,
+    "activeLeases": 0,
+    "credentialsPrinted": false,
+    "quotaMutations": false
+  },
+  "observedLogs": {
+    "checkedAt": "2026-10-20T13:33:17.384Z",
+    "deployment": "dpl_4kLa2xBZ2ADGTLxYq18H8ZSuMf6Z",
+    "since": "2026-10-20T13:17:00Z",
+    "requestRecords": 16,
+    "httpStatusCounts": {
+      "200": 7,
+      "403": 9
+    },
+    "requests": [
+      {
+        "timestamp": "2026-10-20T13:31:18.340Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "zr6r6-1792503078340-455633c749d9"
+      },
+      {
+        "timestamp": "2026-10-20T13:27:01.997Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "ckp96-1792502821997-532665f5005c"
+      },
+      {
+        "timestamp": "2026-10-20T13:21:44.526Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "6vb5t-1792502504526-1d485aa7e215"
+      },
+      {
+        "timestamp": "2026-10-20T13:21:43.856Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "m8qrm-1792502503856-745ad121a081"
+      },
+      {
+        "timestamp": "2026-10-20T13:21:43.006Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "cm7xh-1792502503006-e26da7271ad6"
+      },
+      {
+        "timestamp": "2026-10-20T13:21:42.572Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "7qvb5-1792502502572-a42f2d2c6324"
+      },
+      {
+        "timestamp": "2026-10-20T13:19:59.237Z",
+        "path": "/api/planner/assistant",
+        "status": 200,
+        "requestId": "k8wb6-1792502399237-e641ef6f7310"
+      },
+      {
+        "timestamp": "2026-10-20T13:19:40.517Z",
+        "path": "/api/planner/assistant",
+        "status": 200,
+        "requestId": "7xdbq-1792502380517-ee64ac043c59"
+      },
+      {
+        "timestamp": "2026-10-20T13:19:38.732Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "pwsxv-1792502378732-d56d6966b9e8"
+      },
+      {
+        "timestamp": "2026-10-20T13:19:38.252Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "hfzbj-1792502378252-ab4519a8a254"
+      },
+      {
+        "timestamp": "2026-10-20T13:19:37.025Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "hfzbj-1792502377025-6cf0aacebfa6"
+      },
+      {
+        "timestamp": "2026-10-20T13:19:36.548Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "gl6gn-1792502376548-f2b8293a22fa"
+      },
+      {
+        "timestamp": "2026-10-20T13:19:35.552Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "4gzjj-1792502375552-5bd9a209adb5"
+      },
+      {
+        "timestamp": "2026-10-20T13:17:33.399Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "5dg84-1792502253399-957f75c4c3d2"
+      },
+      {
+        "timestamp": "2026-10-20T13:17:20.892Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "l2d94-1792502240892-b82f5431cd65"
+      },
+      {
+        "timestamp": "2026-10-20T13:17:20.866Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "l2d94-1792502240866-44a043ddce74"
+      }
+    ],
+    "runtime": [
+      {
+        "timestamp": "2026-10-20T13:21:44.526Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "6a62d34b-dec1-4793-8bdd-644aaac57d37",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-20T13:21:43.856Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "82c786e3-f818-4371-abe6-299a6661b671",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-20T13:21:43.006Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "4e7a9126-2633-429e-87fb-2f490bd395cd",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-20T13:19:38.732Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "c78fecf1-5925-4b14-825c-4cf173aa168b",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-20T13:19:38.252Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "7900af1f-64a8-473c-9d4c-f2fc8e4d6f20",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-20T13:19:37.025Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "307f05cd-17c6-4392-95c5-c5a3fcebd314",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-20T13:17:33.399Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "ed9cf55c-6e9b-4791-bd4d-63e72dc4e448",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-20T13:17:20.892Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "70c7b496-a0e4-4fa0-8b1d-675fc1dd4e86",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-20T13:17:20.866Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "9aeac5cd-0173-4e41-b87c-e7e2db425070",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      }
+    ],
+    "unexpected": [],
+    "server5xx": 0,
+    "rawBodiesOrPromptsIncluded": false,
+    "notes": [
+      "Expected origin403 probes are deliberate security checks.",
+      "HTTP200 stream terminal results are separately verified by UI/geometry/history smoke tests.",
+      "Observed window only; no physical-device acceptance implied.",
+      "Only the returned observation window is audited; this is not proof of absence of errors outside it."
+    ],
+    "ok": true,
+    "requestedSince": "2026-10-20T13:17:00Z",
+    "observedEarliest": "2026-10-20T13:17:20.866Z",
+    "observedLatest": "2026-10-20T13:31:18.340Z"
+  },
+  "vendorCache": {
+    "checkedAt": "2026-10-20T13:20:39.978Z",
+    "rows": [
+      {
+        "file": "react-vendor-BASvHcO8.js",
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "etagPresent": true,
+        "conditionalStatus": 304
+      },
+      {
+        "file": "three-vendor-BgX92kRx.js",
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "etagPresent": true,
+        "conditionalStatus": 304
+      }
+    ],
+    "zeroNetworkClaim": false,
+    "coldStartImprovementClaim": false
+  },
+  "paidServicesActivated": false,
+  "credentialsOrQuotaChanges": false,
+  "productionDataDeleted": false,
+  "rollbackAvailable": true,
+  "physicalDeviceTested": false,
+  "limitations": [
+    "Physical webcam, microphone, touch and friend-laptop acceptance remain pending.",
+    "Synthetic Edge/SwiftShader observations do not establish real-device FPS or motion latency.",
+    "Imported, curved and tilted geometry uses conservative solid navigation bounds; native static doors behave as portals only during walking.",
+    "Standalone stairs require actual base support and create no invented landings or floor openings; narrow stairs and floor voids require body clearance.",
+    "Gemini output and latency vary; invalid plans remain rejected. Browser pointer-lock and speech APIs depend on native support and permissions.",
+    "A full 150-case browser run had 147 pass and 3 fixture/setup failures; all 16 affected cases passed separately. This is passing evidence for all distinct cases, not one uninterrupted 150/150 execution."
+  ]
+}

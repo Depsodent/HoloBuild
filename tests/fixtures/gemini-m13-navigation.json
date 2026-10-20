@@ -1,0 +1,101 @@
+{
+  "balconies": [
+    {
+      "id": "balc-1",
+      "level": 1,
+      "facade": "front",
+      "offset": 0,
+      "width": 2.4,
+      "depth": 1.5,
+      "railHeight": 1.1,
+      "material": "concrete",
+      "color": "#cccccc",
+      "access": "upper-entry",
+      "ownsAccess": true
+    }
+  ],
+  "openings": [
+    {
+      "id": "ground-entry",
+      "kind": "door",
+      "level": 0,
+      "facade": "front",
+      "offset": 0,
+      "bottom": 0,
+      "width": 1,
+      "height": 2.1,
+      "panel": true
+    },
+    {
+      "id": "upper-entry",
+      "kind": "door",
+      "level": 1,
+      "facade": "front",
+      "offset": 0,
+      "bottom": 0,
+      "width": 1.1,
+      "height": 2.1,
+      "panel": true
+    },
+    {
+      "id": "win-left",
+      "kind": "window",
+      "level": 0,
+      "facade": "left",
+      "offset": 0,
+      "bottom": 1.1,
+      "width": 1,
+      "height": 1.2,
+      "panel": true
+    },
+    {
+      "id": "win-right",
+      "kind": "window",
+      "level": 1,
+      "facade": "right",
+      "offset": 0,
+      "bottom": 1.1,
+      "width": 1,
+      "height": 1.2,
+      "panel": true
+    }
+  ],
+  "stairs": [
+    {
+      "id": "stair-1",
+      "from": 0,
+      "to": 1,
+      "steps": 16,
+      "rise": 0.2,
+      "run": 0.2,
+      "width": 1,
+      "x": -1.5,
+      "z": 0,
+      "yaw": 0,
+      "material": "concrete",
+      "color": "#a0522d"
+    }
+  ],
+  "appearance": {
+    "wall": {
+      "color": "#b22222",
+      "material": "brick"
+    },
+    "roof": {
+      "color": "#333333",
+      "material": "concrete"
+    }
+  },
+  "kind": "house",
+  "width": 6,
+  "depth": 6,
+  "height": 3,
+  "floors": 2,
+  "thickness": 0.2,
+  "doors": 1,
+  "windows": 1,
+  "windowCounts": [1, 1],
+  "doorOffset": 0,
+  "material": "brick",
+  "roof": "flat"
+}

@@ -83,6 +83,10 @@ Choose grid increments 0.05–1 m for mouse/gesture placement and whole structur
 
 ### Simplified Walkthrough (Milestone 13)
 
+![Four-control walkthrough of a real Gemini-generated house](docs/images/walkthrough-m13.png)
+
+Automated production capture in Edge with software rendering; physical-device acceptance remains pending.
+
 The primary toolbar contains only **Look Around | Exit Walkthrough | Reset Position | Controls**. WASD/arrows and pointer lock retain native wall/floor, doorway, stair and balcony collision. Optional keyboard/touch fallback lives inside Controls help. The global Stop Camera remains accessible. Exit restores camera/layout/selection without scene edits or history. See [Walkthrough](docs/WALKTHROUGH.md), [project overview](docs/PROJECT_OVERVIEW.md) and [contributing](CONTRIBUTING.md).
 
 Current validation and deployment receipts are recorded in the Milestone 13 handoff. Older milestone receipts are historical evidence, not current UI instructions. Physical webcam/microphone/friend-device acceptance remains pending until confirmed.

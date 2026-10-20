@@ -1,5 +1,5 @@
 {
-  "validatedAt": "2026-10-20T13:15:28.770Z",
+  "validatedAt": "2026-10-20T13:34:14.915Z",
   "implementationCheckpoint": "4db535487ccab5bff1caa9091b600405335eff4c",
   "features": {
     "presentationRemoved": true,
@@ -16,14 +16,15 @@
   },
   "automated": {
     "units": {
-      "passed": 394,
-      "files": 39
+      "passed": 395,
+      "files": 39,
+      "additionalRegression": "Recorded real-public Gemini stair geometry: centered ascent to 3.4 m; 0.48 m offset safely blocked by upper slab."
     },
     "backend": {
       "passed": 66
     },
-    "typescript": "tsc -b passed including final fixtures",
-    "eslint": "passed; final fixtures/helpers passed separately",
+    "typescript": "Referenced tsc -b passed, including final recorded-geometry test.",
+    "eslint": "Full ESLint passed; replay helpers and recorded-geometry regression included.",
     "browser": {
       "inventory": 150,
       "fullRun": {
@@ -445,11 +446,15 @@
     ]
   },
   "publication": {
-    "status": "All local gates pass; ready for staged production release",
+    "status": "Published and production verified",
     "publicUrl": "https://holobuild.vercel.app",
+    "deployedSource": "2d90378a9e90e8b848e1b4848cc8697b4a508bac",
+    "deploymentId": "dpl_4kLa2xBZ2ADGTLxYq18H8ZSuMf6Z",
     "rollbackDeployment": "dpl_4498oLZWjGa9tHyXbTsYY1C1njzs",
+    "rollbackReady": true,
     "paidServices": false,
-    "quotaOrCredentialChanges": false
+    "quotaOrCredentialChanges": false,
+    "productionReceipt": "MILESTONE_13_PRODUCTION_VALIDATION.json"
   },
   "physicalAcceptance": {
     "webcam": "pending",

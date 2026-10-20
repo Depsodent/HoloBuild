@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import type { BuildingTemplate } from "../../shared/planSchema.mjs";
 import { NavigationCache } from "../../src/exploration/navigation";
 import { it, expect } from "vitest";
 import {
@@ -227,4 +229,25 @@ it("collision cache builds only on demand and reuses immutable scene identity", 
   cache.clear();
   expect(cache.read(objects)).not.toBe(w);
   expect(cache.builds).toBe(3);
+});
+
+it("recorded public stairway is climbable on center and rejects a body offset into the upper slab", () => {
+  const t = JSON.parse(
+      readFileSync("tests/fixtures/gemini-m13-navigation.json", "utf8"),
+    ) as BuildingTemplate,
+    w = navigationWorld(materializePlan(offlinePlan(t.kind, t)).objects),
+    stair = t.stairs![0];
+  const walk = (offset: number) => {
+    let b = body([
+      stair.x + offset,
+      0.2,
+      stair.z - (stair.steps * stair.run) / 2 - 0.5,
+    ]);
+    for (let i = 0; i < 90; i++) b = moveBody(w, b, 0, 0.05, 0.05);
+    return b;
+  };
+  expect(walk(0).position[1]).toBeCloseTo(3.4);
+  expect(bodyClear(w, walk(0).position)).toBe(true);
+  expect(walk(-0.48).position[1]).toBeLessThan(2);
+  expect(walk(-0.48).position[2]).toBeLessThan(0);
 });
