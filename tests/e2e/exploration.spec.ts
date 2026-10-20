@@ -392,3 +392,67 @@ test("pointer-lock mouse look changes orientation and Escape releases it without
     history,
   );
 });
+
+test("a delayed microphone permission precheck cannot start hidden capture after entering exploration", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as {
+      m12Starts: number;
+      finishM12Permission?: () => void;
+    };
+    w.m12Starts = 0;
+    Object.defineProperty(navigator, "permissions", {
+      configurable: true,
+      value: {
+        query: () =>
+          new Promise((resolve) => {
+            w.finishM12Permission = () => resolve({ state: "prompt" });
+          }),
+      },
+    });
+    class Fake {
+      onstart: (() => void) | null = null;
+      start() {
+        w.m12Starts++;
+        this.onstart?.();
+      }
+      abort() {}
+    }
+    Object.defineProperty(window, "SpeechRecognition", {
+      configurable: true,
+      value: Fake,
+    });
+  });
+  await ready(page);
+  await showTools(page, "ai");
+  await page
+    .getByRole("button", { name: "Start listening", exact: true })
+    .click();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          typeof (window as unknown as { finishM12Permission?: () => void })
+            .finishM12Permission,
+      ),
+    )
+    .toBe("function");
+  await page
+    .getByRole("button", { name: "Enter Walkthrough", exact: true })
+    .click();
+  const starts = await page.evaluate(async () => {
+    const w = window as unknown as {
+      m12Starts: number;
+      finishM12Permission: () => void;
+    };
+    w.finishM12Permission();
+    await Promise.resolve();
+    await Promise.resolve();
+    return w.m12Starts;
+  });
+  expect(starts).toBe(0);
+  await page
+    .getByRole("button", { name: "Return to editor", exact: true })
+    .click();
+});

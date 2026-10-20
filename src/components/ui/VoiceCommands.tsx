@@ -18,7 +18,8 @@ import {
 } from "../../generation/editStore";
 import { useSceneStore } from "../../scene/sceneStore";
 import { cancelGeneration } from "../../generation/generationStore";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { exploring } from "../../exploration/viewStore";
 import { Mic, MicOff } from "lucide-react";
 import type { PlannerMode } from "../../generation/planner";
 import { Accordion } from "./Accordion";
@@ -73,6 +74,11 @@ export function VoiceCommands() {
   const [interpreter] = useState(() => new CommandInterpreter(saveProject));
   const controller = useRef<SpeechController | null>(null),
     mounted = useRef(false);
+  const permissionGeneration = useRef(0);
+  const cancelCapture = useCallback((message?: string) => {
+    permissionGeneration.current++;
+    controller.current?.cancel(message);
+  }, []);
   const open = useToolsStore((s) => s.tab === "ai");
   const view = useToolsStore((s) => s.aiView);
   const [autoSubmit, setAutoSubmit] = useState(() => {
@@ -180,10 +186,10 @@ export function VoiceCommands() {
       },
     );
     const hide = () => {
-      if (document.hidden) controller.current?.cancel();
+      if (document.hidden) cancelCapture();
     };
     const explore = () =>
-      controller.current?.cancel(
+      cancelCapture(
         "Microphone paused for exploration. Finalized text is preserved; restart after exiting.",
       );
     window.addEventListener("holobuild:exploration-enter", explore);
@@ -191,15 +197,15 @@ export function VoiceCommands() {
     return () => {
       window.removeEventListener("holobuild:exploration-enter", explore);
       mounted.current = false;
-      controller.current?.cancel();
+      cancelCapture();
       cancelUnconfirmedGeneration();
       document.removeEventListener("visibilitychange", hide);
     };
-  }, [interpreter]);
+  }, [interpreter, cancelCapture]);
   const active = speech.status === "starting" || speech.status === "listening";
   useEffect(() => {
-    if (!open && active) controller.current?.cancel();
-  }, [open, active]);
+    if (!open) cancelCapture();
+  }, [open, cancelCapture]);
 
   const [slowSpeech, setSlowSpeech] = useState(false);
   useEffect(() => {
@@ -213,7 +219,7 @@ export function VoiceCommands() {
     busyRef.current = true;
     setBusy(true);
     setHeard("");
-    controller.current?.cancel();
+    cancelCapture();
     try {
       const r = await dispatch(input);
       if (mounted.current) {
@@ -247,7 +253,7 @@ export function VoiceCommands() {
         <button
           type="button"
           onClick={() => {
-            controller.current?.cancel();
+            cancelCapture();
             cancelAssistantPreview();
             newConversation();
             setDraft("");
@@ -284,24 +290,30 @@ export function VoiceCommands() {
                   : "Start microphone · audio may use your browser provider"
               }
               disabled={speech.status === "unsupported"}
-              onClick={() =>
-                active
-                  ? controller.current?.stop()
-                  : void microphonePrecheck().then((error) => {
-                      if (
-                        !mounted.current ||
-                        !useToolsStore.getState().tab.includes("ai")
-                      )
-                        return;
-                      if (error)
-                        setSpeech({
-                          status: "error",
-                          message: error,
-                          transcript: speech.transcript,
-                        });
-                      else controller.current?.start();
-                    })
-              }
+              onClick={() => {
+                if (active) {
+                  controller.current?.stop();
+                  return;
+                }
+                const attempt = ++permissionGeneration.current;
+                void microphonePrecheck().then((error) => {
+                  if (
+                    attempt !== permissionGeneration.current ||
+                    !mounted.current ||
+                    document.hidden ||
+                    exploring() ||
+                    !useToolsStore.getState().tab.includes("ai")
+                  )
+                    return;
+                  if (error)
+                    setSpeech({
+                      status: "error",
+                      message: error,
+                      transcript: speech.transcript,
+                    });
+                  else controller.current?.start();
+                });
+              }}
             >
               {active ? <MicOff size={16} /> : <Mic size={16} />}
             </button>
@@ -344,7 +356,7 @@ export function VoiceCommands() {
         {(active || heard || busy) && (
           <button
             onClick={() => {
-              controller.current?.cancel();
+              cancelCapture();
               cancelAssistantPreview();
               setHeard("");
               setResult(interpreter.cancel());
@@ -381,7 +393,7 @@ export function VoiceCommands() {
           <div className="object-actions">
             <button
               onClick={() => {
-                controller.current?.cancel();
+                cancelCapture();
                 setResult(interpreter.confirm());
               }}
             >
@@ -396,7 +408,7 @@ export function VoiceCommands() {
           <button
             type="button"
             onClick={() => {
-              controller.current?.cancel();
+              cancelCapture();
               cancelAssistantPreview();
               setDraft("");
             }}
