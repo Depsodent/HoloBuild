@@ -1,6 +1,6 @@
 # Milestone 11 — resumable release handoff
 
-Status: local implementation complete; full serial browser suite and live release verification pending. Started from clean68e6475 over production1baa4fa. Preserve all work; no reset/discard/recreation. Routine commit/push/deploy is authorized after release gates, no paid services/quota/credential changes.
+Status: local release gates passed:365unit/64backend,139distinct browser cases, types/lint/build and live production-build Gemini plus precision/library workflows. Push/staged deployment/public smoke remain. Recovery checkpoint f848699. Started from clean68e6475 over production1baa4fa. Preserve all work; no reset/discard/recreation. Routine commit/push/deploy is authorized after release gates, no paid services/quota/credential changes.
 
 ## Implementation
 - Inspector Materials / AI Edit / Advanced; shared conversation/actions, retained drafts, strict surface operations, custom colors and numeric optical controls. Numeric fields commit on Enter/blur, reject invalid transforms, clamp optics, restore on Escape/rejection.
@@ -22,3 +22,6 @@ Final remaining: inspect full browser results, fix genuine failures, run targete
 - $env:HOLO_LIVE_GEMINI='1'; $env:HOLO_PRECISION_SMOKE='1'; $env:HOLO_LIBRARY_SMOKE='1'; $env:HOLO_RELEASE_URL='http://127.0.0.1:5182'; node scripts/smoke-milestone105.mjs (requires fresh isolated production-build Gemini server .cache/production-gemini105.mjs; report retains historical m105 filenames). Repeat with public URL only after validation/promotion.
 
 Frontend5175/planner5180 run through scripts/dev-local.mjs (launcher27212); services were stopped at session resume and safely restarted. Do not print environment/auth files. Working private production Gemini profile and Vercel credentials remain ignored. Physical webcam/microphone/friend-device acceptance remains pending. No Milestone12.
+
+
+Final local validation: full139-case run133pass/6legacy Inspector test failures, all six corrected reruns pass. Real local Gemini complete smoke passes; receipt docs/MILESTONE_11_RELEASE_VALIDATION.json and .cache/m11-local-workflow.json. Smoke files now use m11-local/public filenames when HOLO_PRECISION_SMOKE=1; HOLO_SOURCE_SHA records source. No application runtime changes after full browser run/build. Remaining steps: commit/push, stage exact source, verify/promote, public security+Gemini+manual-library smoke, logs/leases, production receipt and clean tree.

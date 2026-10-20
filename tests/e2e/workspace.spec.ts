@@ -45,7 +45,9 @@ test("workspace places camera and inspector on the left and construction on the 
   await showLeft(page, "gesture");
   const camera = await box(page.getByLabel("Gesture camera"));
   await showLeft(page, "inspector");
-  const inspector = await box(page.locator(".inspector"));
+  const inspector = await box(
+    page.getByLabel("Precision Inspector", { exact: true }),
+  );
   const tools = await box(page.locator(".workspace-right .tools"));
   expect(left.x + left.width).toBeLessThanOrEqual(viewport.x + 1);
   expect(viewport.x + viewport.width).toBeLessThanOrEqual(right.x + 1);
@@ -206,17 +208,22 @@ test("collapsed rails preserve core construction controls and independently rest
   await showLeft(page, "gesture");
   await expect(page.getByLabel("Gesture camera")).toBeVisible();
   await showLeft(page, "inspector");
-  await expect(page.locator(".inspector")).toBeVisible();
+  await expect(
+    page.getByLabel("Precision Inspector", { exact: true }),
+  ).toBeVisible();
   await showLeft(page, "inspector");
   await page
     .getByRole("button", { name: "Minimize Object Inspector", exact: true })
     .click();
-  await expect(page.getByLabel("position X", { exact: true })).toBeHidden();
+  await expect(
+    page.getByLabel("Precision Inspector", { exact: true }),
+  ).toBeHidden();
   await page
     .getByRole("button", { name: "Expand Object Inspector", exact: true })
     .click();
   await showLeft(page, "collection");
   await page.locator(".scene-list button").first().click();
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await expect(page.getByLabel("position X", { exact: true })).toBeVisible();
   await page
     .getByRole("button", { name: "Expand construction tools", exact: true })

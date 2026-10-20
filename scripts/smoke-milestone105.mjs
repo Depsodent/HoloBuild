@@ -5,12 +5,17 @@ import assert from "node:assert/strict";
 if (process.env.HOLO_LIVE_GEMINI !== "1")
   throw Error("Explicit opt-in required for real Gemini release verification.");
 const base = process.env.HOLO_RELEASE_URL || "http://127.0.0.1:5182",
-  name = base.startsWith("https:") ? "public" : "local";
+  name = base.startsWith("https:") ? "public" : "local",
+  milestone = process.env.HOLO_PRECISION_SMOKE === "1" ? "m11" : "m105";
 const report = {
   testedAt: new Date().toISOString(),
   url: base,
-  baseCheckpoint: "29a7717961374efa3bc7db1da257bdea1e6e3f9f",
-  source: "Milestone 10.5 release validation",
+  baseCheckpoint:
+    process.env.HOLO_SOURCE_SHA || "29a7717961374efa3bc7db1da257bdea1e6e3f9f",
+  source:
+    milestone === "m11"
+      ? "Milestone 11 production-build release validation"
+      : "Milestone 10.5 release validation",
   physicalDeviceTested: false,
   ok: false,
   checks: {},
@@ -369,7 +374,9 @@ try {
     ).smokeLibrary(page);
   await page.locator("canvas[data-engine]").hover();
   await page.mouse.wheel(0, 500);
-  await page.screenshot({ path: ".cache/m105-" + name + "-scene.png" });
+  await page.screenshot({
+    path: ".cache/" + milestone + "-" + name + "-scene.png",
+  });
   assert.deepEqual(errors, []);
   report.checks.pageErrors = 0;
   report.ok = true;
@@ -377,7 +384,7 @@ try {
   report.error = error instanceof Error ? error.message : "Smoke failed";
   process.exitCode = 1;
   await page
-    .screenshot({ path: ".cache/m105-" + name + "-failed.png" })
+    .screenshot({ path: ".cache/" + milestone + "-" + name + "-failed.png" })
     .catch(() => {});
   report.safeNetwork = await page
     .evaluate(() =>
@@ -393,7 +400,7 @@ try {
 } finally {
   await browser.close();
   await fs.writeFile(
-    ".cache/m105-" + name + "-workflow.json",
+    ".cache/" + milestone + "-" + name + "-workflow.json",
     JSON.stringify(report, null, 2),
   );
   console.log(JSON.stringify(report, null, 2));

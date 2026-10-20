@@ -298,9 +298,22 @@ for (const format of ["glb", "gltf", "dependent"] as const)
     const o = await page.evaluate(() => window.__HOLO_TEST__!.scene()[0]);
     expect(o.type).toBe("model");
     expect(o.model!.size[1]).toBe(2);
-    await page.getByLabel("position X", { exact: true }).fill("3");
-    await page.getByLabel("rotation Y", { exact: true }).fill("45");
-    await page.getByLabel("scale X", { exact: true }).fill("1.5");
+    await page.getByRole("button", { name: "Advanced", exact: true }).click();
+    for (const [label, value] of [
+      ["position X", "3"],
+      ["rotation Y", "45"],
+      ["scale X", "1.5"],
+    ]) {
+      await page.getByLabel(label, { exact: true }).fill(value);
+      await page.getByLabel(label, { exact: true }).press("Enter");
+    }
+    const transformed = await page.evaluate(
+      () => window.__HOLO_TEST__!.scene()[0],
+    );
+    expect(transformed.position[0]).toBe(3);
+    expect(transformed.rotation[1]).toBeCloseTo(Math.PI / 4);
+    expect(transformed.scale[0]).toBe(1.5);
+    await page.getByRole("button", { name: "Materials", exact: true }).click();
     await page.getByLabel("Material", { exact: true }).selectOption("wood");
     await expect(
       page.getByLabel("Use original model materials"),

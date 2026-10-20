@@ -1,0 +1,172 @@
+{
+  "validatedAt": "2026-10-20T04:56:17.884Z",
+  "implementationCheckpoint": "f8486997ffb1146c71147d4db96b22168f7ce82e",
+  "automated": {
+    "typescript": "passed",
+    "eslint": "passed",
+    "unitTests": {
+      "passed": 365,
+      "files": 37
+    },
+    "backendTests": {
+      "passed": 64
+    },
+    "browser": {
+      "inventory": 139,
+      "fullRun": {
+        "passed": 133,
+        "failed": 6,
+        "durationMinutes": 25.7
+      },
+      "targetedRerun": {
+        "passed": 6,
+        "failed": 0,
+        "durationMinutes": 1.1
+      },
+      "distinctCasesPassing": 139,
+      "remainingFailures": 0,
+      "explanation": "Six old Inspector selector/navigation assertions were updated to Materials/Advanced and the named Precision Inspector; imported-model tests now assert actual committed transforms. No application changes followed the full run."
+    },
+    "productionBuild": {
+      "passed": true,
+      "seconds": 24.25,
+      "licenseNotices": 70,
+      "unresolvedNotices": 0,
+      "warnings": [
+        "Existing third-party annotation warning",
+        "Existing large bundle warning"
+      ]
+    },
+    "security": {
+      "unresolvedPatternMatches": 0,
+      "productionDependencyAuditAdvisories": 0,
+      "dependencyAuditReusedBecauseLockUnchanged": true
+    }
+  },
+  "live": {
+    "testedAt": "2026-10-20T04:53:27.929Z",
+    "url": "http://127.0.0.1:5182",
+    "baseCheckpoint": "f8486997ffb1146c71147d4db96b22168f7ce82e",
+    "source": "Milestone 11 production-build release validation",
+    "physicalDeviceTested": false,
+    "ok": true,
+    "checks": {
+      "creation": {
+        "inertPreview": true,
+        "parts": 44,
+        "stairSteps": 16,
+        "upperFloorVoid": true,
+        "balconyParts": 8,
+        "alignedRealAccess": true,
+        "unrelatedCubePreserved": true,
+        "exactUndoRedo": true
+      },
+      "genuineConversationalEdit": {
+        "sameStructure": true,
+        "inertPreview": true,
+        "unrelatedComponentsPreserved": true,
+        "exactUndoRedo": true
+      },
+      "staircaseConversation": {
+        "material": "concrete",
+        "cancel": true,
+        "inertPreview": true,
+        "exactUndoRedo": true
+      },
+      "editableOpening": {
+        "partInspector": true,
+        "panelIdPreserved": true,
+        "realAccessRetained": true,
+        "stairAndBalconyRecipesPreserved": true,
+        "exactUndoRedo": true
+      },
+      "saveLoad": {
+        "allArchitecturalMetadata": true,
+        "exactObjects": true,
+        "undoRedoLoad": true
+      },
+      "precision": {
+        "productionUI": true,
+        "developmentBridgeUsed": false,
+        "inspectorTabs": true,
+        "roughnessMetalnessOpacity": true,
+        "partScopePreservesArchitecture": true,
+        "numericDimensions": true,
+        "centimetrePreview": true,
+        "draftAcrossTabs": true,
+        "gridControls": true,
+        "measurements": true,
+        "exactUndoRedo": true,
+        "portableSurfaceAndTransformPersistence": true,
+        "physicalDeviceTested": false
+      },
+      "library": {
+        "manualCards": true,
+        "offlineHost": true,
+        "nativeStepsAndFloorVoids": true,
+        "configuredWidthOrientationMaterial": true,
+        "ownBalconyAccess": true,
+        "duplicateStairToFreeConnection": true,
+        "duplicateBalconyOppositeFacade": true,
+        "partOptics": true,
+        "assemblyDelete": true,
+        "inertPreviews": true,
+        "exactUndoRedo": true,
+        "unrelatedGeminiStructurePreserved": true,
+        "additionalProviderCalls": 0
+      },
+      "pageErrors": 0
+    },
+    "provider": [
+      {
+        "event": "result",
+        "requestId": "89d23e6b-195f-4d8b-9b67-10ecd545c633",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "create",
+        "timings": {
+          "firstTokenMs": 1369.0298000001349,
+          "headerMs": 1365.7253000000492,
+          "providerMs": 2005.715899999952,
+          "validationMs": 19.880999999819323,
+          "totalMs": 2448.310099999886,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      },
+      {
+        "event": "result",
+        "requestId": "99d44fc0-29c7-4ab0-9ad9-5d1388047f82",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "edit",
+        "timings": {
+          "firstTokenMs": 1330.9821999999695,
+          "headerMs": 1330.8249999999534,
+          "providerMs": 1419.7401000000536,
+          "validationMs": 2.8799000000581145,
+          "totalMs": 1428.8048000000417,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      }
+    ]
+  },
+  "limitations": [
+    "Freestanding stairs are unsupported; insertion requires a compatible multi-floor host.",
+    "One staircase void per destination floor; duplication needs an unused adjacent-floor connection.",
+    "Balcony duplication chooses the opposite facade and must pass native access/intersection validation.",
+    "Stair rise follows storey elevations; arbitrary disconnected vertical scaling is rejected.",
+    "Edge alignment supports axis-aligned standalone boxes; rotated structure dimension edits use scale.",
+    "Physical webcam, microphone and friend-device acceptance remains pending.",
+    "Static door panels and visual design dimensions provide no structural or building-code certification."
+  ],
+  "publication": {
+    "status": "Local validation passed; push and staged deployment pending",
+    "rollbackDeployment": "dpl_2BqHrrBYnkxBX75FiBU4zQwmrzCA",
+    "quotaAndSecurityChanges": false,
+    "paidServicesActivated": false
+  }
+}

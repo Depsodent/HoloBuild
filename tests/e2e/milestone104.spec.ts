@@ -216,7 +216,12 @@ test("Part-scoped natural editing coexists with mouse selection, inspector edits
     .filter({ hasText: wall.name })
     .last()
     .click();
-  await expect(page.locator(".inspector > h2")).toContainText(wall.name);
+  await page.getByRole("tab", { name: "Inspector", exact: true }).click();
+  await expect(
+    page
+      .getByLabel("Precision Inspector", { exact: true })
+      .getByRole("heading", { name: wall.name, exact: true }),
+  ).toBeVisible();
   await ask("Make this wall blue");
   await expect(
     page.getByLabel("Structure modification preview", { exact: true }),
