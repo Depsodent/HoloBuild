@@ -1,5 +1,5 @@
 {
-  "validatedAt": "2026-10-20T13:10:07.927Z",
+  "validatedAt": "2026-10-20T13:15:28.770Z",
   "implementationCheckpoint": "4db535487ccab5bff1caa9091b600405335eff4c",
   "features": {
     "presentationRemoved": true,
@@ -324,10 +324,128 @@
     "cacheBenefit": "Stable hashed core vendors support conditional ETag reuse; no zero-network or cold-start-speed claim."
   },
   "liveGemini": {
-    "status": "pending production-build verification"
+    "testedAt": "2026-10-20T13:10:21.069Z",
+    "url": "http://127.0.0.1:5182",
+    "baseCheckpoint": "5dbb6a62f731a4f656be04a4094ba885e3a92cbf",
+    "source": "Milestone 13 production-build release validation",
+    "physicalDeviceTested": false,
+    "ok": true,
+    "checks": {
+      "creation": {
+        "inertPreview": true,
+        "parts": 44,
+        "stairSteps": 16,
+        "upperFloorVoid": true,
+        "balconyParts": 8,
+        "alignedRealAccess": true,
+        "unrelatedCubePreserved": true,
+        "exactUndoRedo": true
+      },
+      "genuineConversationalEdit": {
+        "sameStructure": true,
+        "inertPreview": true,
+        "unrelatedComponentsPreserved": true,
+        "exactUndoRedo": true
+      },
+      "staircaseConversation": {
+        "material": "wood",
+        "cancel": true,
+        "inertPreview": true,
+        "exactUndoRedo": true
+      },
+      "editableOpening": {
+        "partInspector": true,
+        "panelIdPreserved": true,
+        "realAccessRetained": true,
+        "stairAndBalconyRecipesPreserved": true,
+        "exactUndoRedo": true
+      },
+      "saveLoad": {
+        "allArchitecturalMetadata": true,
+        "exactObjects": true,
+        "undoRedoLoad": true
+      },
+      "precision": {
+        "productionUI": true,
+        "developmentBridgeUsed": false,
+        "inspectorTabs": true,
+        "roughnessMetalnessOpacity": true,
+        "partScopePreservesArchitecture": true,
+        "numericDimensions": true,
+        "centimetrePreview": true,
+        "draftAcrossTabs": true,
+        "gridControls": true,
+        "measurements": true,
+        "exactUndoRedo": true,
+        "portableSurfaceAndTransformPersistence": true,
+        "physicalDeviceTested": false
+      },
+      "exploration": {
+        "productionUI": true,
+        "developmentBridgeUsed": false,
+        "realGeminiHost": true,
+        "doorPassage": true,
+        "connectedStairClimb": true,
+        "upperFloorVoid": true,
+        "balconyAccessAndReturn": true,
+        "pointerLockMouseLook": true,
+        "escapePause": true,
+        "walkthroughRestoresLayout": true,
+        "editorCanvasPixelsRestored": true,
+        "fourPrimaryControls": true,
+        "retiredPresentationAbsent": true,
+        "resetToInitialFeet": true,
+        "selectedGeneratedWallWindow": true,
+        "selectedManualWallWindow": true,
+        "previewCancelAndConfirmation": true,
+        "standalone270DegreeStairs": true,
+        "appearanceOnNewTreads": true,
+        "portableSaveLoad": true,
+        "exactUndoRedo": true,
+        "additionalProviderCalls": 0,
+        "physicalDeviceTested": false
+      },
+      "pageErrors": 0
+    },
+    "provider": [
+      {
+        "event": "result",
+        "requestId": "c865dc1f-2009-40eb-9ebd-d4e28144b3b6",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "create",
+        "timings": {
+          "firstTokenMs": 7405.313399999868,
+          "headerMs": 7404.2619999998715,
+          "providerMs": 8047.123900000006,
+          "validationMs": 21.80670000007376,
+          "totalMs": 8593.576799999923,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      },
+      {
+        "event": "result",
+        "requestId": "91e9ed28-dd96-468c-ad55-d7511bbc1a71",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "edit",
+        "timings": {
+          "firstTokenMs": 6381.084200000158,
+          "headerMs": 6380.679100000067,
+          "providerMs": 6585.020100000082,
+          "validationMs": 7.1192999999038875,
+          "totalMs": 6594.168599999975,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      }
+    ]
   },
   "publication": {
-    "status": "local gates complete; real provider gate pending",
+    "status": "All local gates pass; ready for staged production release",
     "publicUrl": "https://holobuild.vercel.app",
     "rollbackDeployment": "dpl_4498oLZWjGa9tHyXbTsYY1C1njzs",
     "paidServices": false,
@@ -338,5 +456,20 @@
     "microphone": "pending",
     "friendLaptop": "pending",
     "touch": "pending"
+  },
+  "microphoneProductionBuildSmoke": {
+    "testedAt": "2026-10-20T13:14:06.856Z",
+    "url": "http://127.0.0.1:5182",
+    "sourceCheckpoint": "5dbb6a62f731a4f656be04a4094ba885e3a92cbf",
+    "syntheticRecognition": true,
+    "physicalDeviceTested": false,
+    "providerCalls": 0,
+    "ok": true,
+    "lateResultDuringWalkingIgnored": true,
+    "lateResultAfterWalkthroughExitIgnored": true,
+    "deliberateRestartWorks": true,
+    "stopPreservesActualFinalResult": true,
+    "sceneUnchanged": true,
+    "pageErrors": 0
   }
 }
