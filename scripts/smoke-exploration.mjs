@@ -216,6 +216,12 @@ export async function smokeExploration(page) {
     Math.abs((await point())[1] - upper) < 0.04,
     "Balcony support was lost",
   );
+  await page.screenshot({
+    path:
+      ".cache/m12-" +
+      (new URL(page.url()).protocol === "https:" ? "public" : "local") +
+      "-walkthrough.png",
+  });
   await axis(bAxis, inside);
   await page.keyboard.press("Escape");
   await page
@@ -370,13 +376,11 @@ export async function smokeExploration(page) {
   await page.getByRole("tab", { name: "Build", exact: true }).click();
   await page.getByTitle("Create Cube", { exact: true }).click();
   const extra = await saved();
-  await page
-    .locator("input[type=file][accept='.json']")
-    .setInputFiles({
-      name: "milestone12.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(manual)),
-    });
+  await page.locator("input[type=file][accept='.json']").setInputFiles({
+    name: "milestone12.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(manual)),
+  });
   await expect(page.locator("footer .status")).toContainText(
     "Replace complete.",
   );

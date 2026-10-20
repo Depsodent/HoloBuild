@@ -141,7 +141,7 @@ export function standaloneFlight(
     name: "Standalone Stairs",
     type: "standalone-stairs",
     position,
-    yaw,
+    yaw: Math.atan2(Math.sin(yaw), Math.cos(yaw)),
     scale: [1, 1, 1],
     contacts: [],
     standaloneStairs: standaloneStairSchema.parse(recipe),

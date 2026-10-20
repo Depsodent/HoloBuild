@@ -26,6 +26,9 @@ test("standalone library stairs preview, configure, persist and retain exact his
   await page.getByLabel("Library Step count", { exact: true }).fill("8");
   await page.getByLabel("Library X", { exact: true }).fill("-4");
   await page
+    .getByLabel("Library orientation", { exact: true })
+    .selectOption("270");
+  await page
     .getByRole("button", { name: "Preview library stairs", exact: true })
     .click();
   await expect(
@@ -37,6 +40,10 @@ test("standalone library stairs preview, configure, persist and retain exact his
     .click();
   const after = await scene(page);
   expect(after.filter((o) => o.construction?.role === "stair")).toHaveLength(8);
+  expect(
+    after.find((o) => o.construction?.role === "stair")!.construction!
+      .structure!.yaw,
+  ).toBeCloseTo(-Math.PI / 2);
   expect(after.filter((o) => o.construction?.role === "floor")).toHaveLength(0);
   await page.getByRole("button", { name: "Undo", exact: true }).click();
   expect(await scene(page)).toEqual(base);

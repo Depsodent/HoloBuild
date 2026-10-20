@@ -276,6 +276,7 @@ test("final capture can wait for manual submission; cancel discards late audio",
   await page
     .getByRole("button", { name: "Start listening", exact: true })
     .click();
+  await expect(page.getByLabel("Listening status")).toHaveText("Listening…");
   await speak(page, "create a cylinder");
   await expect(page.getByLabel("Listening status")).toContainText(
     "Final transcript",
@@ -293,6 +294,7 @@ test("final capture can wait for manual submission; cancel discards late audio",
   await page
     .getByRole("button", { name: "Start listening", exact: true })
     .click();
+  await expect(page.getByLabel("Listening status")).toHaveText("Listening…");
   await speak(page, "create a sphere", false);
   await page
     .getByRole("button", { name: "Cancel voice request", exact: true })

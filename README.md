@@ -69,7 +69,6 @@ Public website: **[holobuild.vercel.app](https://holobuild.vercel.app)**. Reposi
 
 Original project code is **UNLICENSED**: public visibility does not grant an open-source license. Author credits remain intact. See [third-party notices](THIRD_PARTY_NOTICES.md); build-generated full dependency notices are served at `/third-party-notices/index.json`. No personal imported models, private environment files, model weights or generated build/test artifacts are committed.
 
-
 ## Precision construction (Milestone 11)
 
 Inspector sub-tabs: **Materials**, **AI Edit**, **Advanced**. Edit roughness/metalness/opacity, preset/color and precise local dimensions/world position; numeric changes commit on Enter or blur. AI Edit shares the existing conversation, validated previews and confirmation. Examples: Set roughness to 0.3; Set this window opacity to 50%; Move this object 20 centimeters to the right. Ambiguous requests retain the conversational planner path.
@@ -77,3 +76,7 @@ Inspector sub-tabs: **Materials**, **AI Edit**, **Advanced**. Edit roughness/met
 Choose grid increments 0.05–1 m for mouse/gesture placement and whole structures. Explicit numeric dimensions/positions remain exact. Optional measurement/alignment overlays are transient and not saved. Standalone, axis-aligned box faces support exact edge alignment; floor alignment uses actual supported floor surfaces or ground. Connected facades/assemblies retain their parameter controls; unsafe free edits are rejected.
 
 **Build → Stairs / Balcony** uses the existing native architectural recipes. Choose a compatible multi-floor building, destination floor and dimensions/materials, then preview and confirm. Stairs cut a real destination-floor opening and require matching elevation/landings. Balconies create or reuse an aligned static doorway. Select a Part in Collection to edit its Materials / AI Edit / Advanced controls. Duplicate stairs to an unused adjacent-floor connection; balconies duplicate to the opposite facade. Both operations validate before committing. Freestanding stairs/balconies and multiple stair voids on one destination floor remain unsupported. Geometry is a visual design model, not structural or regulatory certification.
+
+### Walkthrough and presentation (Milestone 12)
+
+Use Walkthrough or Present in the viewport. WASD and arrow controls, optional mouse lock, on-screen movement, collision-aware stairs/doors/balconies and named browser-local views share the existing scene/camera. Exploration is read-only and restores the editor view/layout. Stairs now distinguishes freestanding flights from validated floor connections. Selected-wall window requests use actual segmented openings, and microphone Stop/Cancel preserve finalized text. See [the walkthrough guide](docs/WALKTHROUGH.md) for controls, collision limitations and physical-device acceptance.

@@ -97,11 +97,9 @@ Both `generation/offline` and optional backend LLM output feed `shared/planSchem
 
 `generation/planner` routes valid quick grammar to the M8 interpreter, explicit structure intents to planning and other requests to clarification. Voice reuses unchanged final-result deduplication and explicit microphone lifecycle. `server/app.mjs` exposes only local status/connection/plan endpoints, keeps provider URL/model allowlist/key in backend environment, uses bounded fetch with abort/timeout, redacted failures, request guards and rate/concurrency limits. A small Node service shares schema/runtime instead of adding Python/dependencies. Vite forwards planner routes to loopback 5180; the frontend never receives credentials or submits provider URLs. Default Offline remains browser-only; Auto explicitly labels fallback. See AI_GENERATION.md for endpoint compatibility, exact limits and local-only deployment scope.
 
-
 ## Milestone 10.2 integration
 
 `ColorEditor` and transient `colorPreview` separate visual drafts from persistent SceneObject tint. Shared validated `color` structure operations and existing object updates own all mutations/history. Imported original PBR copies retain shared immutable maps and explicit tint metadata. `leftStore` owns only navigation; `SceneCollection` resolves existing construction metadata. Workspace keeps the existing WebcamPreview/HandTracker mounted independently of pane visibility. `graphicsInfo` reads the existing renderer context; `delegateDetector` owns GPU/CPU initialization, fallback and cleanup, with serialized factory starts. No second scene, inference loop, model asset bundle or input-specific command system was added.
-
 
 ## Milestone 11 precision integration
 
@@ -112,3 +110,13 @@ Precision math lives in scene/precision.ts. Numeric inputs commit on blur/Enter;
 Configurable 0.05/0.1/0.25/0.5/1 m grid increments are shared by ordinary placement, whole structures and gizmos; existing snap enable/disable remains. Increment, optional measurements and gesture placement guides are local preferences. The grid shader tracks the same increment. Guides are transient R3F/DOM overlays with no object IDs, ray targets, history or serialized geometry. Existing scene reference sharing prevents unrelated objects rerendering on small updates.
 
 Opening-bearing facades reject loose wall transforms; unrelated no-opening facades retain their earlier manual-edit behavior. Connected floor changes and parametric stair/balcony/opening edits retain existing recipe validation. Unsupported tilt or unsafe attachment gives an explanation rather than discarding dependencies.
+
+## Milestone 12 exploration and native extensions
+
+The existing scene store, command manager, object geometry and R3F camera remain authoritative. Native standalone-stair and single-wall recipes are bounded additive metadata; canonical steps/facade segmentation are shared with building recipes. Native shape matrices/part identities are recertified before commands, with real support and collision checks. Parameter edits use the same structure design operation and edit review. Selected-wall creation resolves ID/semantic role/facade before existing-window type matching; it never disables target validation.
+
+The view-only exploration store owns mode, paused state, bounded preferences and browser-local named viewpoints. CameraController snapshots editor/overview camera state, caches collision data by immutable scene-object reference, and advances a bounded swept body from keyboard, mouse look or touch input. Canonical static doors share one render/collision portal rule. Imported/curved/tilted shapes use conservative solid bounds. No camera movement enters object history or portable scene serialization.
+
+Read-only command/history guards and conditional manipulation controllers prevent mouse/gesture scene mutation during exploration. CSS releases sidebar width while keeping capture and Inspector components mounted; preferences are not rewritten. Entering with pending AI planning/preview is refused, preserving the proposal. Scene-reference changes rebuild collision data and relocate an obstructed body. Mode exit, blur and visibility/pointer-lock events clear held input; session exit restores camera and optional fullscreen. Webcam recognition thresholds/debounce are unchanged.
+
+SpeechController separates browser stop/finalization from cancel/abort, retains finalized transcripts and uses session generations for late-event rejection. Permission checks are read-only, and unsupported recognition has a text fallback; all real final speech and typed inputs share existing dispatch/preview/confirmation. Inspector identity uses a single-line truncation with full accessible name, separate scope/type and compact actions.
