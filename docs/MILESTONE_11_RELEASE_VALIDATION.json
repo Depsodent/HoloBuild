@@ -164,7 +164,10 @@
     "Static door panels and visual design dimensions provide no structural or building-code certification."
   ],
   "publication": {
-    "status": "Local validation passed; push and staged deployment pending",
+    "status": "Pushed, deployed and production verified",
+    "deployedCommit": "d49952e697463c908c5925f1e353dba5093a3969",
+    "deploymentId": "dpl_ENkGDZHgqYubXaakkSfWWFZCJTWp",
+    "url": "https://holobuild.vercel.app",
     "rollbackDeployment": "dpl_2BqHrrBYnkxBX75FiBU4zQwmrzCA",
     "quotaAndSecurityChanges": false,
     "paidServicesActivated": false

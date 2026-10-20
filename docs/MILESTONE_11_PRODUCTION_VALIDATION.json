@@ -1,0 +1,392 @@
+{
+  "recordedAt": "2026-10-20T05:06:39.918Z",
+  "publicUrl": "https://holobuild.vercel.app",
+  "deployedCommit": "d49952e697463c908c5925f1e353dba5093a3969",
+  "rollbackPreserved": true,
+  "deployment": {
+    "checkedAt": "2026-10-20T04:59:25.920Z",
+    "deploymentId": "dpl_ENkGDZHgqYubXaakkSfWWFZCJTWp",
+    "sourceCheckpoint": "d49952e697463c908c5925f1e353dba5093a3969",
+    "state": "READY",
+    "url": "https://holobuild-5g738c9se-aaryand616-6524.vercel.app",
+    "publicAliasDeployment": "dpl_ENkGDZHgqYubXaakkSfWWFZCJTWp",
+    "previousDeployment": "dpl_2BqHrrBYnkxBX75FiBU4zQwmrzCA",
+    "previousUrl": "holobuild-cuion75fs-aaryand616-6524.vercel.app",
+    "rollbackReady": true,
+    "accountPlan": "hobby",
+    "protectedVariableMetadataUnchanged": true,
+    "filesChecked": 278,
+    "unsafeUploadPaths": [],
+    "emptyDirectoryMarkers": [
+      "src/dist",
+      "src/docs",
+      "src/playwright-report",
+      "src/public/assets",
+      "src/public/models",
+      "src/public/textures",
+      "src/public/third-party-notices",
+      "src/public/vision/wasm",
+      "src/src/ai",
+      "src/src/hooks",
+      "src/src/utils",
+      "src/test-results"
+    ],
+    "privateValuesLogged": false
+  },
+  "remoteBuild": {
+    "passed": true,
+    "seconds": 8.67,
+    "notices": 70,
+    "unresolved": 0
+  },
+  "workflow": {
+    "testedAt": "2026-10-20T04:58:50.699Z",
+    "url": "https://holobuild.vercel.app",
+    "baseCheckpoint": "d49952e697463c908c5925f1e353dba5093a3969",
+    "source": "Milestone 11 production-build release validation",
+    "physicalDeviceTested": false,
+    "ok": true,
+    "checks": {
+      "creation": {
+        "inertPreview": true,
+        "parts": 52,
+        "stairSteps": 16,
+        "upperFloorVoid": true,
+        "balconyParts": 8,
+        "alignedRealAccess": true,
+        "unrelatedCubePreserved": true,
+        "exactUndoRedo": true
+      },
+      "genuineConversationalEdit": {
+        "sameStructure": true,
+        "inertPreview": true,
+        "unrelatedComponentsPreserved": true,
+        "exactUndoRedo": true
+      },
+      "staircaseConversation": {
+        "material": "wood",
+        "cancel": true,
+        "inertPreview": true,
+        "exactUndoRedo": true
+      },
+      "editableOpening": {
+        "partInspector": true,
+        "panelIdPreserved": true,
+        "realAccessRetained": true,
+        "stairAndBalconyRecipesPreserved": true,
+        "exactUndoRedo": true
+      },
+      "saveLoad": {
+        "allArchitecturalMetadata": true,
+        "exactObjects": true,
+        "undoRedoLoad": true
+      },
+      "precision": {
+        "productionUI": true,
+        "developmentBridgeUsed": false,
+        "inspectorTabs": true,
+        "roughnessMetalnessOpacity": true,
+        "partScopePreservesArchitecture": true,
+        "numericDimensions": true,
+        "centimetrePreview": true,
+        "draftAcrossTabs": true,
+        "gridControls": true,
+        "measurements": true,
+        "exactUndoRedo": true,
+        "portableSurfaceAndTransformPersistence": true,
+        "physicalDeviceTested": false
+      },
+      "library": {
+        "manualCards": true,
+        "offlineHost": true,
+        "nativeStepsAndFloorVoids": true,
+        "configuredWidthOrientationMaterial": true,
+        "ownBalconyAccess": true,
+        "duplicateStairToFreeConnection": true,
+        "duplicateBalconyOppositeFacade": true,
+        "partOptics": true,
+        "assemblyDelete": true,
+        "inertPreviews": true,
+        "exactUndoRedo": true,
+        "unrelatedGeminiStructurePreserved": true,
+        "additionalProviderCalls": 0
+      },
+      "pageErrors": 0
+    },
+    "provider": [
+      {
+        "event": "result",
+        "requestId": "2183335c-19cc-4cff-a10e-8c04a089a5ec",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "create",
+        "timings": {
+          "firstTokenMs": 629.0303820000117,
+          "headerMs": 628.2750690000103,
+          "providerMs": 1445.2971220000036,
+          "validationMs": 11.206034999995609,
+          "totalMs": 1998.888221000001,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      },
+      {
+        "event": "result",
+        "requestId": "ce6fb0aa-54c0-432d-a732-d478b4b70e0a",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "edit",
+        "timings": {
+          "firstTokenMs": 796.862724000006,
+          "headerMs": 796.650118000005,
+          "providerMs": 988.3143750000017,
+          "validationMs": 2.2233649999980116,
+          "totalMs": 1445.8864549999998,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      }
+    ]
+  },
+  "exactConversationalRouting": {
+    "initialAttempt": {
+      "event": "error",
+      "kind": "response-schema",
+      "requestId": "8d35371c-8358-4638-9d46-9c6d45ce5d5b",
+      "sceneApplied": false
+    },
+    "retry": {
+      "testedAt": "2026-10-20T05:04:42.568Z",
+      "url": "https://holobuild.vercel.app",
+      "baseCheckpoint": "d49952e697463c908c5925f1e353dba5093a3969",
+      "source": "Milestone 11 production-build release validation",
+      "physicalDeviceTested": false,
+      "ok": true,
+      "checks": {
+        "exactMetallicWording": true,
+        "realGemini": true,
+        "roofOnly": true,
+        "inertPreview": true,
+        "exactUndoRedo": true,
+        "pageErrors": 0
+      },
+      "provider": [
+        {
+          "event": "result",
+          "requestId": "ace7ff17-2a19-4b93-8ccc-624ddfaaddb9",
+          "provider": "Gemini",
+          "model": "gemini-3.5-flash-lite",
+          "timings": {
+            "firstTokenMs": 1126.8491809999687,
+            "headerMs": 1126.2407149999635,
+            "providerMs": 1261.363749000011,
+            "validationMs": 0.8701470000087284,
+            "totalMs": 1943.8271969999769,
+            "modelLoadMs": null,
+            "residentBefore": null,
+            "residentVramBytes": null
+          }
+        }
+      ]
+    },
+    "limitation": "A model response can fail strict schema validation; requests fail closed with diagnostics and can be retried. The deterministic parser no longer captures this phrase. The supplementary local harness initially expected the wrong endpoint envelope; its corrected public rerun verifies version1 /edit results and polished-metal."
+  },
+  "security": {
+    "checkedAt": "2026-10-20T04:59:15.162Z",
+    "url": "https://holobuild.vercel.app",
+    "aiEnabled": true,
+    "checks": [
+      {
+        "check": "HTTP redirects to HTTPS",
+        "passed": true
+      },
+      {
+        "check": "Anonymous HTTPS and security headers",
+        "passed": true
+      },
+      {
+        "check": "Public AI explicitly enabled",
+        "passed": true
+      },
+      {
+        "check": "Untrusted Origin and CORS preflight denied",
+        "passed": true
+      },
+      {
+        "check": "Private local/config/server paths not served",
+        "passed": true
+      },
+      {
+        "check": "Deployed JS matches audited local build and has no private values",
+        "passed": true,
+        "scripts": 5
+      },
+      {
+        "check": "MediaPipe assets, WASM MIME and license evidence",
+        "passed": true
+      }
+    ],
+    "geminiCalled": false,
+    "credentialsPrinted": false
+  },
+  "logs": {
+    "checkedAt": "2026-10-20T05:06:36.107Z",
+    "deployment": "dpl_ENkGDZHgqYubXaakkSfWWFZCJTWp",
+    "since": "2026-10-20T04:58:40Z",
+    "requestRecords": 12,
+    "httpStatusCounts": {
+      "200": 9,
+      "403": 3
+    },
+    "requests": [
+      {
+        "timestamp": "2026-10-20T05:04:50.346Z",
+        "path": "/api/planner/edit",
+        "status": 200,
+        "requestId": "vlj6h-1792472690346-29b0cc9c05ee"
+      },
+      {
+        "timestamp": "2026-10-20T05:04:43.846Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "542vq-1792472683846-31fb493e02df"
+      },
+      {
+        "timestamp": "2026-10-20T05:02:38.952Z",
+        "path": "/api/planner/edit",
+        "status": 200,
+        "requestId": "5tx2m-1792472558952-4250139a9e0a"
+      },
+      {
+        "timestamp": "2026-10-20T05:02:32.056Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "48k2q-1792472552056-ed7a65e755d8"
+      },
+      {
+        "timestamp": "2026-10-20T04:59:54.462Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "9dmxl-1792472394462-d13ae7e4434c"
+      },
+      {
+        "timestamp": "2026-10-20T04:59:08.439Z",
+        "path": "/api/planner/assistant",
+        "status": 200,
+        "requestId": "8tr6v-1792472348439-4735ac6deafd"
+      },
+      {
+        "timestamp": "2026-10-20T04:58:58.035Z",
+        "path": "/api/planner/assistant",
+        "status": 200,
+        "requestId": "7nscb-1792472338035-5818ec102a4f"
+      },
+      {
+        "timestamp": "2026-10-20T04:58:57.727Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "h2jlj-1792472337727-e6de8b43d37f"
+      },
+      {
+        "timestamp": "2026-10-20T04:58:57.443Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "h2jlj-1792472337443-148745f503eb"
+      },
+      {
+        "timestamp": "2026-10-20T04:58:57.126Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "7nscb-1792472337126-0e1b9b160cf6"
+      },
+      {
+        "timestamp": "2026-10-20T04:58:56.604Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "c2pgx-1792472336604-04a610b9062f"
+      },
+      {
+        "timestamp": "2026-10-20T04:58:53.721Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "zppsz-1792472333721-efd8a507884f"
+      }
+    ],
+    "runtime": [
+      {
+        "timestamp": "2026-10-20T05:02:38.952Z",
+        "path": "/api/planner/edit",
+        "level": "warn",
+        "requestId": "8d35371c-8358-4638-9d46-9c6d45ce5d5b",
+        "status": 422,
+        "kind": "response-schema",
+        "phase": "response-validation",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-20T04:58:57.727Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "d27201d0-9d48-4fc1-a629-88c5ed648d3c",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-20T04:58:57.443Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "3acc69de-9437-4311-a3d5-85d36e987807",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-20T04:58:57.126Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "d0b6f4f1-0050-43bc-9080-bac0588dfd47",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      }
+    ],
+    "modelSchemaRejections": [
+      {
+        "timestamp": "2026-10-20T05:02:38.952Z",
+        "path": "/api/planner/edit",
+        "level": "warn",
+        "requestId": "8d35371c-8358-4638-9d46-9c6d45ce5d5b",
+        "status": 422,
+        "kind": "response-schema",
+        "phase": "response-validation",
+        "structured": true
+      }
+    ],
+    "unexpected": [],
+    "server5xx": 0,
+    "rawBodiesOrPromptsIncluded": false,
+    "notes": [
+      "Three origin403 denials are deliberate security probes.",
+      "One model response failed strict validation with logical422 inside HTTP200 SSE; no scene was applied. Retry returned a valid roof-only edit with exact history.",
+      "HTTP200 alone does not establish planner success; terminal events and actual geometry/UI assertions were checked.",
+      "Observed smoke window only; future model outputs remain variable."
+    ],
+    "ok": true
+  },
+  "leases": {
+    "checkedAt": "2026-10-20T05:05:31.572Z",
+    "productionReadOnly": true,
+    "activeLeases": 0,
+    "credentialsPrinted": false,
+    "quotaMutations": false
+  },
+  "credentialsAndQuotasUnchanged": true,
+  "paidServicesActivated": false,
+  "physicalDeviceAcceptance": "Pending user testing; no physical webcam/microphone/friend-laptop claims."
+}
