@@ -192,12 +192,14 @@
     "Architectural geometry is visual design, not building-code/structural certification."
   ],
   "publication": {
-    "status": "Main M12 production gates passed; validated permission lifecycle correction ready to publish",
+    "status": "Pushed, deployed and production verified",
+    "deployedCommit": "40cd7a650d8e40e5b9b53baf9f4156aca041a982",
+    "deploymentId": "dpl_4498oLZWjGa9tHyXbTsYY1C1njzs",
     "url": "https://holobuild.vercel.app",
-    "paidServicesActivated": false,
-    "quotaOrCredentialChanges": false,
+    "previousWorkingM12Deployment": "dpl_BSCM9hc1dQx9GzpXLA4zQHGoApyo",
     "rollbackDeployment": "dpl_ENkGDZHgqYubXaakkSfWWFZCJTWp",
-    "previousWorkingM12Deployment": "dpl_BSCM9hc1dQx9GzpXLA4zQHGoApyo"
+    "quotaOrCredentialChanges": false,
+    "paidServicesActivated": false
   },
   "finalImplementationCheckpoint": "7001ada217d2cbc33142fa2637bef4100b3f6d4b",
   "microphoneRace": {
@@ -346,5 +348,21 @@
     },
     "providerGeometryAndNavigationCodeUnchangedByPermissionCorrection": true,
     "extraLiveGeminiCallsForPermissionCorrection": 0
-  }
+  },
+  "finalPublicPermissionSmoke": {
+    "testedAt": "2026-10-20T08:25:21.667Z",
+    "url": "https://holobuild.vercel.app",
+    "sourceCheckpoint": "40cd7a650d8e40e5b9b53baf9f4156aca041a982",
+    "syntheticRecognition": true,
+    "physicalDeviceTested": false,
+    "providerCalls": 0,
+    "ok": true,
+    "lateResultDuringWalkingIgnored": true,
+    "lateResultAfterPresentationExitIgnored": true,
+    "deliberateRestartWorks": true,
+    "stopPreservesActualFinalResult": true,
+    "sceneUnchanged": true,
+    "pageErrors": 0
+  },
+  "productionReceipt": "MILESTONE_12_PRODUCTION_VALIDATION.json"
 }

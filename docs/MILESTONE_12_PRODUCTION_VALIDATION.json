@@ -1,0 +1,606 @@
+{
+  "recordedAt": "2026-10-20T08:28:08.015Z",
+  "publicUrl": "https://holobuild.vercel.app",
+  "repository": "https://github.com/Depsodent/HoloBuild",
+  "deployedCommit": "40cd7a650d8e40e5b9b53baf9f4156aca041a982",
+  "deployment": {
+    "checkedAt": "2026-10-20T08:25:31.497Z",
+    "deploymentId": "dpl_4498oLZWjGa9tHyXbTsYY1C1njzs",
+    "sourceCheckpoint": "40cd7a650d8e40e5b9b53baf9f4156aca041a982",
+    "state": "READY",
+    "url": "https://holobuild-apkpq0z5g-aaryand616-6524.vercel.app",
+    "publicAliasDeployment": "dpl_4498oLZWjGa9tHyXbTsYY1C1njzs",
+    "previousDeployment": "dpl_ENkGDZHgqYubXaakkSfWWFZCJTWp",
+    "previousUrl": "holobuild-5g738c9se-aaryand616-6524.vercel.app",
+    "rollbackReady": true,
+    "accountPlan": "hobby",
+    "protectedVariableMetadataUnchanged": true,
+    "filesChecked": 294,
+    "unsafeUploadPaths": [],
+    "emptyDirectoryMarkers": [
+      "src/dist",
+      "src/docs",
+      "src/playwright-report",
+      "src/public/assets",
+      "src/public/models",
+      "src/public/textures",
+      "src/public/third-party-notices",
+      "src/public/vision/wasm",
+      "src/src/ai",
+      "src/src/hooks",
+      "src/src/utils",
+      "src/test-results"
+    ],
+    "privateValuesLogged": false
+  },
+  "rollback": {
+    "previousM12": {
+      "id": "dpl_BSCM9hc1dQx9GzpXLA4zQHGoApyo",
+      "source": "00d883247346e773abb6b98bcc260cad0a816d8f",
+      "url": "https://holobuild-m7rsl6d6u-aaryand616-6524.vercel.app",
+      "state": "READY"
+    },
+    "milestone11": {
+      "id": "dpl_ENkGDZHgqYubXaakkSfWWFZCJTWp",
+      "url": "https://holobuild-5g738c9se-aaryand616-6524.vercel.app",
+      "state": "READY"
+    },
+    "preserved": true
+  },
+  "remoteBuild": {
+    "passed": true,
+    "frontendSeconds": 13.61,
+    "overallOutputSeconds": 34,
+    "licensePackages": 70,
+    "unresolvedNotices": 0
+  },
+  "liveGeminiAndRenderedWorkflow": {
+    "verifiedSource": "00d883247346e773abb6b98bcc260cad0a816d8f",
+    "providerGeometryAndNavigationCodeUnchangedInFinalPatch": true,
+    "reuseReason": "The only runtime diff is VoiceCommands permission/cancellation lifecycle. Real provider, geometry, navigation, command/history and save/load code are unchanged; final 17-case speech/exploration gate and production permission smoke also pass.",
+    "testedAt": "2026-10-20T08:07:46.226Z",
+    "url": "https://holobuild.vercel.app",
+    "baseCheckpoint": "00d883247346e773abb6b98bcc260cad0a816d8f",
+    "source": "Milestone 12 production-build release validation",
+    "physicalDeviceTested": false,
+    "ok": true,
+    "checks": {
+      "creation": {
+        "inertPreview": true,
+        "parts": 44,
+        "stairSteps": 16,
+        "upperFloorVoid": true,
+        "balconyParts": 8,
+        "alignedRealAccess": true,
+        "unrelatedCubePreserved": true,
+        "exactUndoRedo": true
+      },
+      "genuineConversationalEdit": {
+        "sameStructure": true,
+        "inertPreview": true,
+        "unrelatedComponentsPreserved": true,
+        "exactUndoRedo": true
+      },
+      "staircaseConversation": {
+        "material": "concrete",
+        "cancel": true,
+        "inertPreview": true,
+        "exactUndoRedo": true
+      },
+      "editableOpening": {
+        "partInspector": true,
+        "panelIdPreserved": true,
+        "realAccessRetained": true,
+        "stairAndBalconyRecipesPreserved": true,
+        "exactUndoRedo": true
+      },
+      "saveLoad": {
+        "allArchitecturalMetadata": true,
+        "exactObjects": true,
+        "undoRedoLoad": true
+      },
+      "precision": {
+        "productionUI": true,
+        "developmentBridgeUsed": false,
+        "inspectorTabs": true,
+        "roughnessMetalnessOpacity": true,
+        "partScopePreservesArchitecture": true,
+        "numericDimensions": true,
+        "centimetrePreview": true,
+        "draftAcrossTabs": true,
+        "gridControls": true,
+        "measurements": true,
+        "exactUndoRedo": true,
+        "portableSurfaceAndTransformPersistence": true,
+        "physicalDeviceTested": false
+      },
+      "exploration": {
+        "productionUI": true,
+        "developmentBridgeUsed": false,
+        "realGeminiHost": true,
+        "doorPassage": true,
+        "connectedStairClimb": true,
+        "upperFloorVoid": true,
+        "balconyAccessAndReturn": true,
+        "pointerLockMouseLook": true,
+        "escapePause": true,
+        "presentationRestoresLayout": true,
+        "exactEditorCameraRestored": true,
+        "namedViewpoints": true,
+        "selectedGeneratedWallWindow": true,
+        "selectedManualWallWindow": true,
+        "previewCancelAndConfirmation": true,
+        "standalone270DegreeStairs": true,
+        "appearanceOnNewTreads": true,
+        "portableSaveLoad": true,
+        "exactUndoRedo": true,
+        "additionalProviderCalls": 0,
+        "physicalDeviceTested": false
+      },
+      "pageErrors": 0
+    },
+    "provider": [
+      {
+        "event": "result",
+        "requestId": "e465babb-e6aa-41f8-8e57-66ba64ac9b2d",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "create",
+        "timings": {
+          "firstTokenMs": 603.7154819999996,
+          "headerMs": 602.9714300000051,
+          "providerMs": 1245.03643800001,
+          "validationMs": 10.042388000001665,
+          "totalMs": 1828.9418270000024,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      },
+      {
+        "event": "result",
+        "requestId": "ecbb293c-91e6-4529-b93b-bc623fedfe18",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "edit",
+        "timings": {
+          "firstTokenMs": 1030.3833060000034,
+          "headerMs": 1030.1545130000013,
+          "providerMs": 1166.9202470000018,
+          "validationMs": 2.3101610000012442,
+          "totalMs": 1574.2684089999966,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      }
+    ]
+  },
+  "finalPublicPermissionSmoke": {
+    "testedAt": "2026-10-20T08:25:21.667Z",
+    "url": "https://holobuild.vercel.app",
+    "sourceCheckpoint": "40cd7a650d8e40e5b9b53baf9f4156aca041a982",
+    "syntheticRecognition": true,
+    "physicalDeviceTested": false,
+    "providerCalls": 0,
+    "ok": true,
+    "lateResultDuringWalkingIgnored": true,
+    "lateResultAfterPresentationExitIgnored": true,
+    "deliberateRestartWorks": true,
+    "stopPreservesActualFinalResult": true,
+    "sceneUnchanged": true,
+    "pageErrors": 0
+  },
+  "security": {
+    "mainRelease": {
+      "checkedAt": "2026-10-20T08:07:34.101Z",
+      "url": "https://holobuild.vercel.app",
+      "aiEnabled": true,
+      "checks": [
+        {
+          "check": "HTTP redirects to HTTPS",
+          "passed": true
+        },
+        {
+          "check": "Anonymous HTTPS and security headers",
+          "passed": true
+        },
+        {
+          "check": "Public AI explicitly enabled",
+          "passed": true
+        },
+        {
+          "check": "Untrusted Origin and CORS preflight denied",
+          "passed": true
+        },
+        {
+          "check": "Private local/config/server paths not served",
+          "passed": true
+        },
+        {
+          "check": "Deployed JS matches audited local build and has no private values",
+          "passed": true,
+          "scripts": 5
+        },
+        {
+          "check": "MediaPipe assets, WASM MIME and license evidence",
+          "passed": true
+        }
+      ],
+      "geminiCalled": false,
+      "credentialsPrinted": false
+    },
+    "finalRelease": {
+      "checkedAt": "2026-10-20T08:25:34.996Z",
+      "url": "https://holobuild.vercel.app",
+      "aiEnabled": true,
+      "checks": [
+        {
+          "check": "HTTP redirects to HTTPS",
+          "passed": true
+        },
+        {
+          "check": "Anonymous HTTPS and security headers",
+          "passed": true
+        },
+        {
+          "check": "Public AI explicitly enabled",
+          "passed": true
+        },
+        {
+          "check": "Untrusted Origin and CORS preflight denied",
+          "passed": true
+        },
+        {
+          "check": "Private local/config/server paths not served",
+          "passed": true
+        },
+        {
+          "check": "Deployed JS matches audited local build and has no private values",
+          "passed": true,
+          "scripts": 5
+        },
+        {
+          "check": "MediaPipe assets, WASM MIME and license evidence",
+          "passed": true
+        }
+      ],
+      "geminiCalled": false,
+      "credentialsPrinted": false
+    },
+    "credentialsServerSide": true,
+    "protectedVariableMetadataUnchanged": true,
+    "accountPlan": "hobby",
+    "quotasUnchanged": {
+      "perIpPerMinute": 5,
+      "admittedPerUtcDay": 100,
+      "globalConcurrent": 2
+    },
+    "paidServicesActivated": false
+  },
+  "logs": {
+    "mainRelease": {
+      "checkedAt": "2026-10-20T08:10:21.363Z",
+      "deployment": "dpl_BSCM9hc1dQx9GzpXLA4zQHGoApyo",
+      "since": "20-10-2026 08:06:33",
+      "requestRecords": 10,
+      "httpStatusCounts": {
+        "200": 4,
+        "403": 6
+      },
+      "requests": [
+        {
+          "timestamp": "2026-10-20T08:08:01.760Z",
+          "path": "/api/planner/assistant",
+          "status": 200,
+          "requestId": "rrlhz-1792483681760-a3306cbfaa18"
+        },
+        {
+          "timestamp": "2026-10-20T08:07:53.600Z",
+          "path": "/api/planner/assistant",
+          "status": 200,
+          "requestId": "dt49t-1792483673600-e80134cf8606"
+        },
+        {
+          "timestamp": "2026-10-20T08:07:48.720Z",
+          "path": "/api/planner/status",
+          "status": 200,
+          "requestId": "7fhwr-1792483668720-227bd8e82c85"
+        },
+        {
+          "timestamp": "2026-10-20T08:07:20.040Z",
+          "path": "/api/planner/status",
+          "status": 403,
+          "requestId": "hvk85-1792483640040-4694d4f21d5c"
+        },
+        {
+          "timestamp": "2026-10-20T08:07:19.480Z",
+          "path": "/api/planner/status",
+          "status": 403,
+          "requestId": "pv2hx-1792483639480-c4e928905931"
+        },
+        {
+          "timestamp": "2026-10-20T08:07:18.811Z",
+          "path": "/api/planner/status",
+          "status": 403,
+          "requestId": "hwn65-1792483638811-8ab95dfbfa0a"
+        },
+        {
+          "timestamp": "2026-10-20T08:07:18.088Z",
+          "path": "/api/planner/status",
+          "status": 200,
+          "requestId": "72vxl-1792483638088-75006b5f5a87"
+        },
+        {
+          "timestamp": "2026-10-20T08:06:23.841Z",
+          "path": "/api/planner/status",
+          "status": 403,
+          "requestId": "p7bhn-1792483583841-136b00906dd2"
+        },
+        {
+          "timestamp": "2026-10-20T08:06:12.333Z",
+          "path": "/api/planner/status",
+          "status": 403,
+          "requestId": "248gv-1792483572333-e1c2931ff995"
+        },
+        {
+          "timestamp": "2026-10-20T08:06:12.295Z",
+          "path": "/api/planner/status",
+          "status": 403,
+          "requestId": "g9cgt-1792483572295-4927717c6ad0"
+        }
+      ],
+      "runtime": [
+        {
+          "timestamp": "2026-10-20T08:07:20.040Z",
+          "path": "/api/planner/status",
+          "level": "warn",
+          "requestId": "63028879-0c3e-40d9-8ef9-eb3621baa900",
+          "status": 403,
+          "kind": "request",
+          "phase": "request",
+          "structured": true
+        },
+        {
+          "timestamp": "2026-10-20T08:07:19.480Z",
+          "path": "/api/planner/status",
+          "level": "warn",
+          "requestId": "c941c4e8-0ab5-4680-98b3-37e60ada15b5",
+          "status": 403,
+          "kind": "request",
+          "phase": "request",
+          "structured": true
+        },
+        {
+          "timestamp": "2026-10-20T08:07:18.811Z",
+          "path": "/api/planner/status",
+          "level": "warn",
+          "requestId": "de94e8fc-09d6-47f1-a573-de7f50f76632",
+          "status": 403,
+          "kind": "request",
+          "phase": "request",
+          "structured": true
+        },
+        {
+          "timestamp": "2026-10-20T08:06:23.841Z",
+          "path": "/api/planner/status",
+          "level": "warn",
+          "requestId": "e8b0c1f1-e12c-437a-b5c2-5091cd8ef57f",
+          "status": 403,
+          "kind": "request",
+          "phase": "request",
+          "structured": true
+        },
+        {
+          "timestamp": "2026-10-20T08:06:12.333Z",
+          "path": "/api/planner/status",
+          "level": "warn",
+          "requestId": "2c4c9651-cf2c-4b9d-b383-05c8c9907ad4",
+          "status": 403,
+          "kind": "request",
+          "phase": "request",
+          "structured": true
+        },
+        {
+          "timestamp": "2026-10-20T08:06:12.295Z",
+          "path": "/api/planner/status",
+          "level": "warn",
+          "requestId": "adbacd66-5c24-4ca4-a503-b28bb303eef0",
+          "status": 403,
+          "kind": "request",
+          "phase": "request",
+          "structured": true
+        }
+      ],
+      "unexpected": [],
+      "server5xx": 0,
+      "rawBodiesOrPromptsIncluded": false,
+      "notes": [
+        "Expected origin403 probes are deliberate security checks.",
+        "HTTP200 stream terminal results are separately verified by UI/geometry/history smoke tests.",
+        "Observed window only; no physical-device acceptance implied.",
+        "CLI also returned early deployment probes preceding requested since; observed timestamp bounds are recorded explicitly."
+      ],
+      "ok": true,
+      "observedEarliest": "2026-10-20T08:06:12.295Z",
+      "observedLatest": "2026-10-20T08:08:01.760Z"
+    },
+    "finalRelease": {
+      "checkedAt": "2026-10-20T08:26:15.527Z",
+      "deployment": "dpl_4498oLZWjGa9tHyXbTsYY1C1njzs",
+      "since": "20-10-2026 08:24:20",
+      "requestRecords": 9,
+      "httpStatusCounts": {
+        "200": 2,
+        "403": 7
+      },
+      "requests": [
+        {
+          "timestamp": "2026-10-20T08:25:26.161Z",
+          "path": "/api/planner/status",
+          "status": 403,
+          "requestId": "n9np8-1792484726161-63759399168a"
+        },
+        {
+          "timestamp": "2026-10-20T08:25:25.887Z",
+          "path": "/api/planner/status",
+          "status": 403,
+          "requestId": "4b6tz-1792484725887-b8dc3817cb6d"
+        },
+        {
+          "timestamp": "2026-10-20T08:25:25.288Z",
+          "path": "/api/planner/status",
+          "status": 403,
+          "requestId": "4b6tz-1792484725288-bc2f15c7ea7f"
+        },
+        {
+          "timestamp": "2026-10-20T08:25:24.998Z",
+          "path": "/api/planner/status",
+          "status": 200,
+          "requestId": "8chwq-1792484724998-a496b698ea99"
+        },
+        {
+          "timestamp": "2026-10-20T08:25:23.973Z",
+          "path": "/api/planner/status",
+          "status": 200,
+          "requestId": "58hhv-1792484723973-4a9353763672"
+        },
+        {
+          "timestamp": "2026-10-20T08:24:09.706Z",
+          "path": "/api/planner/status",
+          "status": 403,
+          "requestId": "9pt22-1792484649706-c9ff456701a9"
+        },
+        {
+          "timestamp": "2026-10-20T08:24:08.576Z",
+          "path": "/api/planner/status",
+          "status": 403,
+          "requestId": "wvsw4-1792484648576-cd508a25521e"
+        },
+        {
+          "timestamp": "2026-10-20T08:23:57.159Z",
+          "path": "/api/planner/status",
+          "status": 403,
+          "requestId": "shrbw-1792484637159-44e08b64c7f1"
+        },
+        {
+          "timestamp": "2026-10-20T08:23:57.151Z",
+          "path": "/api/planner/status",
+          "status": 403,
+          "requestId": "zc6xf-1792484637151-070c42e3f534"
+        }
+      ],
+      "runtime": [
+        {
+          "timestamp": "2026-10-20T08:25:26.161Z",
+          "path": "/api/planner/status",
+          "level": "warn",
+          "requestId": "6c930da0-aff7-46e9-858d-b9ba3021b282",
+          "status": 403,
+          "kind": "request",
+          "phase": "request",
+          "structured": true
+        },
+        {
+          "timestamp": "2026-10-20T08:25:25.887Z",
+          "path": "/api/planner/status",
+          "level": "warn",
+          "requestId": "0daf2209-05d2-4433-909f-cb9a7a4d73f6",
+          "status": 403,
+          "kind": "request",
+          "phase": "request",
+          "structured": true
+        },
+        {
+          "timestamp": "2026-10-20T08:25:25.288Z",
+          "path": "/api/planner/status",
+          "level": "warn",
+          "requestId": "caecd586-3716-47ce-b1b6-734b205cb5e5",
+          "status": 403,
+          "kind": "request",
+          "phase": "request",
+          "structured": true
+        },
+        {
+          "timestamp": "2026-10-20T08:24:09.706Z",
+          "path": "/api/planner/status",
+          "level": "warn",
+          "requestId": "dec0113c-e6f3-47cf-86c8-db3326a8cf0a",
+          "status": 403,
+          "kind": "request",
+          "phase": "request",
+          "structured": true
+        },
+        {
+          "timestamp": "2026-10-20T08:24:08.576Z",
+          "path": "/api/planner/status",
+          "level": "warn",
+          "requestId": "47b8ca53-e8ec-4853-b7e6-7e73682ca3b3",
+          "status": 403,
+          "kind": "request",
+          "phase": "request",
+          "structured": true
+        },
+        {
+          "timestamp": "2026-10-20T08:23:57.159Z",
+          "path": "/api/planner/status",
+          "level": "warn",
+          "requestId": "0c2c8c51-2e8d-4828-bf6c-4f63b0df184f",
+          "status": 403,
+          "kind": "request",
+          "phase": "request",
+          "structured": true
+        },
+        {
+          "timestamp": "2026-10-20T08:23:57.151Z",
+          "path": "/api/planner/status",
+          "level": "warn",
+          "requestId": "c788fee6-f07d-4120-9bd2-12d12fc3631a",
+          "status": 403,
+          "kind": "request",
+          "phase": "request",
+          "structured": true
+        }
+      ],
+      "unexpected": [],
+      "server5xx": 0,
+      "rawBodiesOrPromptsIncluded": false,
+      "notes": [
+        "Expected origin403 probes are deliberate security checks.",
+        "HTTP200 stream terminal results are separately verified by UI/geometry/history smoke tests.",
+        "Observed window only; no physical-device acceptance implied.",
+        "CLI includes earlier deployment probes; explicit observed timestamp bounds are retained."
+      ],
+      "ok": true,
+      "observedEarliest": "2026-10-20T08:23:57.151Z",
+      "observedLatest": "2026-10-20T08:25:26.161Z"
+    }
+  },
+  "leaseCleanup": {
+    "checkedAt": "2026-10-20T08:26:43.885Z",
+    "productionReadOnly": true,
+    "activeLeases": 0,
+    "credentialsPrinted": false,
+    "quotaMutations": false
+  },
+  "physicalAcceptance": {
+    "webcam": "pending",
+    "microphone": "pending",
+    "friendLaptop": "pending",
+    "touch": "pending"
+  },
+  "limitations": [
+    "Imported/curved/tilted geometry uses conservative solid collision bounds, not exact mesh interiors.",
+    "Static certified door panels are open walkthrough portals, not animated hinged doors.",
+    "Standalone stairs do not infer a destination platform or floor opening; raised support is validated.",
+    "Saved camera viewpoints remain browser-local, outside portable scene JSON.",
+    "Native speech, pointer lock and fullscreen depend on browser/service support and permission.",
+    "Software-rendered browser tests do not certify hardware frame rates or physical device usability.",
+    "Invalid model output remains rejected; visual geometry has no structural/building-code certification."
+  ],
+  "localUrls": [
+    "http://127.0.0.1:5175/",
+    "http://127.0.0.1:5182/"
+  ],
+  "milestone13Started": false
+}
