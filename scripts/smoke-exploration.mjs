@@ -1,4 +1,4 @@
-/* global document */
+/* global document, window */
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import { expect } from "@playwright/test";
@@ -45,19 +45,17 @@ export async function smokeExploration(page) {
     assert.ok(m, "Missing human navigation telemetry");
     return m.slice(1).map(Number);
   }
-  async function saveView(name) {
-    const summary = page.getByText("View settings and saved viewpoints", {
-      exact: true,
-    });
-    if (!(await page.getByLabel("Viewpoint name").isVisible()))
-      await summary.click();
-    await page.getByLabel("Viewpoint name").fill(name);
-    await page
-      .getByRole("button", { name: "Save viewpoint", exact: true })
-      .click();
-    return page.evaluate(() =>
-      JSON.parse(localStorage.getItem("holobuild.exploration.v1")).views.at(-1),
+  const canvas = page.locator("canvas[data-engine]");
+  async function canvasImage() {
+    await page.evaluate(
+      () =>
+        new Promise((resolve) =>
+          window.requestAnimationFrame(() =>
+            window.requestAnimationFrame(resolve),
+          ),
+        ),
     );
+    return canvas.screenshot();
   }
   const base = await saved(),
     seed = base.objects.find(
@@ -68,7 +66,7 @@ export async function smokeExploration(page) {
     );
   assert.ok(seed, "Expected genuine Gemini two-floor architectural host");
   await fs.writeFile(
-    ".cache/m12-" +
+    ".cache/m13-" +
       (new URL(page.url()).protocol === "https:" ? "public" : "local") +
       "-exploration-input.json",
     JSON.stringify(base),
@@ -95,35 +93,51 @@ export async function smokeExploration(page) {
   const layout = await page.evaluate(() =>
     localStorage.getItem("holobuild.workspace.v1"),
   );
+  const original = await canvasImage();
+  await expect(
+    page.getByRole("button", { name: /Enter Presentation|Save viewpoint/ }),
+  ).toHaveCount(0);
   await page
-    .getByRole("button", { name: "Enter Presentation", exact: true })
+    .getByRole("button", { name: "Enter Walkthrough", exact: true })
     .click();
   await expect(page.getByLabel("Construction tools sidebar")).toBeHidden();
-  const original = await saveView("Release editor view");
-  await page.getByRole("button", { name: "Walkthrough", exact: true }).click();
+  await expect(
+    page
+      .getByRole("toolbar", { name: "Walkthrough controls" })
+      .getByRole("button"),
+  ).toHaveText([
+    "Look Around",
+    "Exit Walkthrough",
+    "Reset Position",
+    "Controls",
+  ]);
+  await page.getByRole("button", { name: "Controls", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Forward", exact: true }),
   ).toBeDisabled();
-  const beforeLook = await saveView("Before mouse look");
-  await page.getByRole("button", { name: "Look around", exact: true }).click();
+  const initialFeet = await point(),
+    beforeLook = await canvasImage();
+  await page.getByRole("button", { name: "Look Around", exact: true }).click();
   await expect
     .poll(() => page.evaluate(() => document.pointerLockElement?.tagName))
     .toBe("CANVAS");
+  await expect(
+    page.getByRole("button", { name: "Look Around", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
   await page.mouse.move(900, 650);
   await page.keyboard.press("Escape");
   await expect
     .poll(() => page.evaluate(() => document.pointerLockElement === null))
     .toBe(true);
-  const afterLook = await saveView("After mouse look");
+  const afterLook = await canvasImage();
   assert.ok(
-    afterLook.quaternion.some(
-      (n, i) => Math.abs(n - beforeLook.quaternion[i]) > 0.01,
-    ),
+    !afterLook.equals(beforeLook),
+    "Mouse look did not change the rendered view",
   );
   await page
-    .getByRole("button", { name: "Reset position", exact: true })
+    .getByRole("button", { name: "Reset Position", exact: true })
     .click();
-  await page.getByLabel("Walking speed", { exact: true }).fill("0.8");
+  assert.deepEqual(await point(), initialFeet);
   await page
     .getByRole("button", { name: "Use keyboard / touch", exact: true })
     .click();
@@ -226,7 +240,7 @@ export async function smokeExploration(page) {
   );
   await page.screenshot({
     path:
-      ".cache/m12-" +
+      ".cache/m13-" +
       (new URL(page.url()).protocol === "https:" ? "public" : "local") +
       "-walkthrough.png",
   });
@@ -235,18 +249,11 @@ export async function smokeExploration(page) {
   await page
     .getByRole("button", { name: "Exit Walkthrough", exact: true })
     .click();
-  const restored = await saveView("Restored editor view");
-  for (const key of ["position", "target", "quaternion"])
-    assert.ok(
-      original[key].every((n, i) => Math.abs(n - restored[key][i]) < 0.001),
-      "Camera restoration mismatch",
-    );
-  await page
-    .getByRole("button", { name: "Go to Release editor view", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Exit Presentation", exact: true })
-    .click();
+  const restored = await canvasImage();
+  assert.ok(
+    original.equals(restored),
+    "Editor canvas pixels differ after returning from walkthrough",
+  );
   assert.deepEqual((await saved()).objects, base.objects);
   assert.equal(
     await page.evaluate(() => localStorage.getItem("holobuild.workspace.v1")),
@@ -404,9 +411,11 @@ export async function smokeExploration(page) {
     balconyAccessAndReturn: true,
     pointerLockMouseLook: true,
     escapePause: true,
-    presentationRestoresLayout: true,
-    exactEditorCameraRestored: true,
-    namedViewpoints: true,
+    walkthroughRestoresLayout: true,
+    editorCanvasPixelsRestored: true,
+    fourPrimaryControls: true,
+    retiredPresentationAbsent: true,
+    resetToInitialFeet: true,
     selectedGeneratedWallWindow: true,
     selectedManualWallWindow: true,
     previewCancelAndConfirmation: true,
@@ -418,3 +427,4 @@ export async function smokeExploration(page) {
     physicalDeviceTested: false,
   };
 }
+

@@ -23,6 +23,7 @@ declare global {
         quaternion: number[];
         target: number[];
         walking: boolean;
+        navigationBuilds: number;
         feet: Vec3 | null;
       };
       project?: (id: string) => { x: number; y: number } | null;

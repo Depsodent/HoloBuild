@@ -27,7 +27,7 @@ import {
 } from "./layoutStore";
 
 export function WorkspaceLayout({ children }: { children: ReactNode }) {
-  const exploration = useViewStore((s) => s.walking || s.presentation);
+  const exploration = useViewStore((s) => s.walking);
   const { tab, setTab } = useLeftStore();
   const tracking = useTrackingStore((s) => s.status);
   const root = useRef<HTMLDivElement>(null);

@@ -82,7 +82,7 @@ try {
   );
   const base = await saved();
   await page.getByRole("tab", { name: "AI", exact: true }).click();
-  for (const [i, mode] of ["Walkthrough", "Presentation"].entries()) {
+  for (const i of [0, 1]) {
     await page
       .getByRole("button", { name: "Start listening", exact: true })
       .click();
@@ -90,11 +90,11 @@ try {
       .poll(() => page.evaluate(() => window.__permissionRelease.requests))
       .toBe(i + 1);
     await page
-      .getByRole("button", { name: "Enter " + mode, exact: true })
+      .getByRole("button", { name: "Enter Walkthrough", exact: true })
       .click();
     if (i === 1)
       await page
-        .getByRole("button", { name: "Exit Presentation", exact: true })
+        .getByRole("button", { name: "Exit Walkthrough", exact: true })
         .click();
     const starts = await page.evaluate(async () => {
       window.__permissionRelease.finish();
@@ -109,7 +109,7 @@ try {
     );
     if (i === 0)
       await page
-        .getByRole("button", { name: "Return to editor", exact: true })
+        .getByRole("button", { name: "Exit Walkthrough", exact: true })
         .click();
   }
   await page
@@ -135,7 +135,7 @@ try {
   Object.assign(report, {
     ok: true,
     lateResultDuringWalkingIgnored: true,
-    lateResultAfterPresentationExitIgnored: true,
+    lateResultAfterWalkthroughExitIgnored: true,
     deliberateRestartWorks: true,
     stopPreservesActualFinalResult: true,
     sceneUnchanged: true,
@@ -147,9 +147,8 @@ try {
 } finally {
   await browser.close();
   await fs.writeFile(
-    ".cache/m12-" + (publicRun ? "public" : "local") + "-permission-smoke.json",
+    ".cache/m13-" + (publicRun ? "public" : "local") + "-permission-smoke.json",
     JSON.stringify(report, null, 2) + "\n",
   );
   console.log(JSON.stringify(report, null, 2));
 }
-

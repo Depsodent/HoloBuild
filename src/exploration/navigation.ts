@@ -34,7 +34,8 @@ export function navigationWorld(objects: SceneObject[]): NavigationWorld {
   for (const o of objects) {
     const b = bounds(o);
     whole.union(b);
-    const c = o.construction,r=c?.structure?.template??c?.structure?.architectureTemplate;
+    const c = o.construction,
+      r = c?.structure?.template ?? c?.structure?.architectureTemplate;
     if (isPassableDoor(o)) {
       passableDoors++;
       continue;
@@ -202,4 +203,26 @@ export function isPassableDoor(o: SceneObject): boolean {
         (d) => d.id === c.opening && d.kind === "door",
       ))
   );
+}
+
+/** One immutable scene snapshot, built on demand only while walking. */
+export class NavigationCache {
+  private source: SceneObject[] | null = null;
+  private world: NavigationWorld | null = null;
+  private count = 0;
+  get builds() {
+    return this.count;
+  }
+  read(objects: SceneObject[]) {
+    if (this.source !== objects || !this.world) {
+      this.world = navigationWorld(objects);
+      this.source = objects;
+      this.count++;
+    }
+    return this.world;
+  }
+  clear() {
+    this.source = null;
+    this.world = null;
+  }
 }

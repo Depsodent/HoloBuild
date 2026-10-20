@@ -100,7 +100,7 @@ export async function dispatchAssistant(
     return {
       ok: false,
       message:
-        "Exit Walkthrough or Presentation before requesting scene changes. Your transcript remains available.",
+        "Exit Walkthrough before requesting scene changes. Your transcript remains available.",
     };
   if (busy)
     return {

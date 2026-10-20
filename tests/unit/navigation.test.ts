@@ -1,3 +1,4 @@
+import { NavigationCache } from "../../src/exploration/navigation";
 import { it, expect } from "vitest";
 import {
   navigationWorld,
@@ -213,3 +214,17 @@ it.each([Math.PI / 2, Math.PI, Math.PI * 1.5])(
     expect(bodyClear(world, b.position)).toBe(true);
   },
 );
+
+it("collision cache builds only on demand and reuses immutable scene identity", () => {
+  const cache = new NavigationCache(),
+    objects = [createObject("cube")];
+  expect(cache.builds).toBe(0);
+  const w = cache.read(objects);
+  for (let i = 0; i < 100; i++) expect(cache.read(objects)).toBe(w);
+  expect(cache.builds).toBe(1);
+  expect(cache.read([...objects])).not.toBe(w);
+  expect(cache.builds).toBe(2);
+  cache.clear();
+  expect(cache.read(objects)).not.toBe(w);
+  expect(cache.builds).toBe(3);
+});

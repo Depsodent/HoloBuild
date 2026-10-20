@@ -7,6 +7,7 @@ A local-first 3D editor with webcam gestures, mouse tools, voice/text commands a
 ## Features
 
 - Cubes, spheres, cylinders, cones, walls and floors; move, rotate, scale, duplicate and delete.
+- Native standalone/connected stairs, balcony access and editable segmented door/window openings.
 - Contextual object/structure inspectors, custom colors, PBR presets, procedural textures and studio lighting.
 - Local GLB/GLTF import, portable versioned JSON projects, atomic Undo/Redo and conservative placement checks.
 - Automatic one-hand movement and two-hand scale/yaw, calibrated pinch handling, GPU/CPU fallback and measured diagnostics.
@@ -14,6 +15,7 @@ A local-first 3D editor with webcam gestures, mouse tools, voice/text commands a
 - Resizable sidebars, persistent left tabs and floating camera/diagnostics; Stop Camera remains reachable when minimized.
 - Unified Ask HoloBuild: deterministic text/voice commands, Offline templates, optional local Ollama and native server-side Gemini generation/editing.
 - AI preview → explicit confirmation → one undoable action. Invalid geometry is rejected, never silently repaired. Auto fallback is explicitly labeled Offline.
+- A compact, read-only four-control Walkthrough for doors, connected stairs and balconies; exit restores the editor view.
 
 ![HoloBuild production workspace with a Gemini-generated platform](docs/images/workspace.png)
 
@@ -28,6 +30,8 @@ npm.cmd run dev -- --port 5175
 ```
 
 Open the actual URL Vite prints. Camera/microphone require localhost or HTTPS and explicit permission. MediaPipe assets are downloaded once from Google with SHA-256 verification, then served locally. Collapsing the preview keeps tracking active; hiding the browser tab stops capture safely.
+
+Start both local services with npm.cmd run dev:local (or npm.cmd run dev:gemini for the ignored Gemini profile). These helpers reuse healthy services and preserve their existing configuration.
 
 No API key is needed for Offline editing/generation. For optional local Ollama, use a private `.env` based on `.env.example`, set the exact installed `LLM_MODEL`, and run `npm.cmd run planner` separately. No model is downloaded by the planner.
 
@@ -50,7 +54,7 @@ See [architecture](docs/ARCHITECTURE.md), [performance](docs/PERFORMANCE.md), [A
 ## Validation
 
 ```powershell
-npm.cmd run typecheck
+npx.cmd tsc -b --pretty false
 npm.cmd run lint
 npm.cmd test
 npm.cmd run test:server
@@ -75,8 +79,10 @@ Inspector sub-tabs: **Materials**, **AI Edit**, **Advanced**. Edit roughness/met
 
 Choose grid increments 0.05–1 m for mouse/gesture placement and whole structures. Explicit numeric dimensions/positions remain exact. Optional measurement/alignment overlays are transient and not saved. Standalone, axis-aligned box faces support exact edge alignment; floor alignment uses actual supported floor surfaces or ground. Connected facades/assemblies retain their parameter controls; unsafe free edits are rejected.
 
-**Build → Stairs / Balcony** uses the existing native architectural recipes. Choose a compatible multi-floor building, destination floor and dimensions/materials, then preview and confirm. Stairs cut a real destination-floor opening and require matching elevation/landings. Balconies create or reuse an aligned static doorway. Select a Part in Collection to edit its Materials / AI Edit / Advanced controls. Duplicate stairs to an unused adjacent-floor connection; balconies duplicate to the opposite facade. Both operations validate before committing. Freestanding stairs/balconies and multiple stair voids on one destination floor remain unsupported. Geometry is a visual design model, not structural or regulatory certification.
+**Build → Stairs / Balcony** uses the existing native architectural recipes. Choose a compatible multi-floor building, destination floor and dimensions/materials, then preview and confirm. Stairs cut a real destination-floor opening and require matching elevation/landings. Balconies create or reuse an aligned static doorway. Select a Part in Collection to edit its Materials / AI Edit / Advanced controls. Duplicate stairs to an unused adjacent-floor connection; balconies duplicate to the opposite facade. Both operations validate before committing. Standalone Stairs is also available without a host: configure real step dimensions and supported base elevation. It creates no inferred landing or slab opening. Balconies require a host; multiple connected stair voids on one destination floor remain unsupported. Geometry is a visual design model, not structural or regulatory certification.
 
-### Walkthrough and presentation (Milestone 12)
+### Simplified Walkthrough (Milestone 13)
 
-Use Walkthrough or Present in the viewport. WASD and arrow controls, optional mouse lock, on-screen movement, collision-aware stairs/doors/balconies and named browser-local views share the existing scene/camera. Exploration is read-only and restores the editor view/layout. Stairs now distinguishes freestanding flights from validated floor connections. Selected-wall window requests use actual segmented openings, and microphone Stop/Cancel preserve finalized text. See [the walkthrough guide](docs/WALKTHROUGH.md) for controls, collision limitations and physical-device acceptance.
+The primary toolbar contains only **Look Around | Exit Walkthrough | Reset Position | Controls**. WASD/arrows and pointer lock retain native wall/floor, doorway, stair and balcony collision. Optional keyboard/touch fallback lives inside Controls help. The global Stop Camera remains accessible. Exit restores camera/layout/selection without scene edits or history. See [Walkthrough](docs/WALKTHROUGH.md), [project overview](docs/PROJECT_OVERVIEW.md) and [contributing](CONTRIBUTING.md).
+
+Current validation and deployment receipts are recorded in the Milestone 13 handoff. Older milestone receipts are historical evidence, not current UI instructions. Physical webcam/microphone/friend-device acceptance remains pending until confirmed.

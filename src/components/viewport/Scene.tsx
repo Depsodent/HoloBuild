@@ -19,6 +19,7 @@ import { GenerationPreview } from "./GenerationPreview";
 function ShadowCache() {
   const gl = useThree((s) => s.gl),
     objects = useSceneStore((s) => s.objects),
+    walking = useViewStore((s) => s.walking),
     lighting = useLightingStore((s) => s.lighting),
     preview = useSceneStore((s) => !!s.preview);
   useEffect(() => {
@@ -27,7 +28,7 @@ function ShadowCache() {
     return () => {
       gl.shadowMap.autoUpdate = true;
     };
-  }, [gl, objects, lighting, preview]);
+  }, [gl, objects, lighting, preview, walking]);
   return null;
 }
 function Metrics() {
@@ -67,7 +68,7 @@ function Metrics() {
 }
 export const Scene = memo(function Scene() {
   const objects = useSceneStore((s) => s.objects);
-  const readOnly = useViewStore((s) => s.walking || s.presentation);
+  const readOnly = useViewStore((s) => s.walking);
   return (
     <ViewportBoundary>
       <Canvas

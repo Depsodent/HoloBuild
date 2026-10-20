@@ -77,6 +77,19 @@ const plannerProxy: ProxyOptions = {
 export default defineConfig({
   plugins: [react(), distributionNotices()],
   worker: { format: "es" },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          const path = id.replaceAll("\\", "/");
+          if (/\/node_modules\/three\/(?:build|src)\//.test(path))
+            return "three-vendor";
+          if (/\/node_modules\/(?:react|react-dom|scheduler)\//.test(path))
+            return "react-vendor";
+        },
+      },
+    },
+  },
   server: {
     proxy: {
       "/api/planner": plannerProxy,

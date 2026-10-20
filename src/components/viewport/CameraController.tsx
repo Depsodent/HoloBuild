@@ -8,7 +8,7 @@ import { useSceneStore } from "../../scene/sceneStore";
 import type { Vec3 } from "../../scene/objectTypes";
 import { bounds } from "../../interaction/placement";
 import {
-  navigationWorld,
+  NavigationCache,
   moveBody,
   safeSpawn,
   bodyClear,
@@ -16,8 +16,8 @@ import {
 } from "../../exploration/navigation";
 import {
   useViewStore,
-  viewPreferences,
-  cameraViewSchema,
+  WALK_SPEED,
+  EYE_HEIGHT,
 } from "../../exploration/viewStore";
 interface Pose {
   position: Vector3;
@@ -25,6 +25,7 @@ interface Pose {
   target: Vector3;
   fov: number;
   near: number;
+  maxDistance: number;
 }
 export function CameraController() {
   const { camera, gl } = useThree(),
@@ -36,21 +37,20 @@ export function CameraController() {
     lastPublish = useRef(0);
   const objects = useSceneStore((s) => s.objects),
     walking = useViewStore((s) => s.walking),
-    presentation = useViewStore((s) => s.presentation),
     dragging = useInteractionStore(
       (s) => s.phase === "dragging" || s.phase === "invalid",
-    ),
-    world = useMemo(() => navigationWorld(objects), [objects]),
-    worldRef = useRef(world);
-  worldRef.current = world;
-  const previousEye = useRef(useViewStore.getState().eyeHeight);
-  const state = useRef({
+    );
+  const cache = useMemo(() => new NavigationCache(), []),
+    lookEuler = useMemo(() => new Euler(0, 0, 0, "YXZ"), []);
+  const start = useRef<{ position: Vec3; yaw: number } | null>(null);
+  const session = useRef({
     editor: null as Pose | null,
-    overview: null as Pose | null,
     walking: false,
-    active: false,
-    lastRequest: 0,
+    lastReset: 0,
   });
+  function world() {
+    return cache.read(useSceneStore.getState().objects);
+  }
   function capture(): Pose {
     return {
       position: camera.position.clone(),
@@ -58,6 +58,7 @@ export function CameraController() {
       target: orbit.current?.target.clone() ?? new Vector3(),
       fov: camera instanceof PerspectiveCamera ? camera.fov : 45,
       near: camera.near,
+      maxDistance: orbit.current?.maxDistance ?? 45,
     };
   }
   function restore(p: Pose) {
@@ -66,6 +67,7 @@ export function CameraController() {
       orbit.current.update();
       orbit.current.enableDamping = true;
       orbit.current.target.copy(p.target);
+      orbit.current.maxDistance = p.maxDistance;
     }
     camera.position.copy(p.position);
     camera.quaternion.copy(p.quaternion);
@@ -76,96 +78,97 @@ export function CameraController() {
     }
     orbit.current?.update();
   }
-  function spawn() {
-    const s = useSceneStore.getState(),
-      part = s.objects.find((o) => o.id === s.selectedId),
-      group = s.selectedStructureId ?? part?.construction?.structureId,
-      parts = group
-        ? s.objects.filter((o) => o.construction?.structureId === group)
-        : s.objects;
-    const info = parts.find((o) => o.construction?.structure)?.construction
-        ?.structure,
-      door = parts.find(
-        (o) =>
-          o.construction?.role === "door" &&
-          o.construction.level === 0 &&
-          worldRef.current.passableDoors > 0,
-      );
-    let anchor: Vec3 = info ? [...info.position] : [0, 0, 0],
-      look: Vector3 | null = null;
-    if (door) {
-      const face = door.construction?.facade ?? "front",
-        normal = new Vector3(
-          face === "left" ? -1 : face === "right" ? 1 : 0,
-          0,
-          face === "back" ? -1 : face === "front" ? 1 : 0,
-        ).applyAxisAngle(new Vector3(0, 1, 0), info?.yaw ?? 0);
-      anchor = [
-        door.position[0] + normal.x * 0.9,
-        Math.max(0, bounds(door).min.y),
-        door.position[2] + normal.z * 0.9,
-      ];
-      look = new Vector3(door.position[0], 0, door.position[2]);
+  function spawn(reuse = false) {
+    const w = world();
+    let found: Body | null = null,
+      heading = 0;
+    if (
+      reuse &&
+      start.current &&
+      bodyClear(w, start.current.position, EYE_HEIGHT + 0.15)
+    ) {
+      found = {
+        position: [...start.current.position],
+        velocity: 0,
+        grounded: false,
+      };
+      heading = start.current.yaw;
+    } else {
+      const s = useSceneStore.getState(),
+        part = s.objects.find((o) => o.id === s.selectedId),
+        group = s.selectedStructureId ?? part?.construction?.structureId,
+        parts = group
+          ? s.objects.filter((o) => o.construction?.structureId === group)
+          : s.objects;
+      const info = parts.find((o) => o.construction?.structure)?.construction
+          ?.structure,
+        door = parts.find(
+          (o) =>
+            o.construction?.role === "door" &&
+            o.construction.level === 0 &&
+            w.passableDoors > 0,
+        );
+      let anchor: Vec3 = info ? [...info.position] : [0, 0, 0],
+        look: Vector3 | null = null;
+      if (door) {
+        const face = door.construction?.facade ?? "front",
+          normal = new Vector3(
+            face === "left" ? -1 : face === "right" ? 1 : 0,
+            0,
+            face === "back" ? -1 : face === "front" ? 1 : 0,
+          ).applyAxisAngle(new Vector3(0, 1, 0), info?.yaw ?? 0);
+        anchor = [
+          door.position[0] + normal.x * 0.9,
+          Math.max(0, bounds(door).min.y),
+          door.position[2] + normal.z * 0.9,
+        ];
+        look = new Vector3(door.position[0], 0, door.position[2]);
+      }
+      found = safeSpawn(w, anchor, EYE_HEIGHT + 0.15);
+      if (found) {
+        const d = look?.sub(
+          new Vector3(found.position[0], 0, found.position[2]),
+        );
+        heading = d ? Math.atan2(-d.x, -d.z) : 0;
+      }
     }
-    const found = safeSpawn(
-      worldRef.current,
-      anchor,
-      useViewStore.getState().eyeHeight + 0.15,
-    );
     if (!found) {
       useViewStore.setState({
         walking: false,
         paused: true,
+        looking: false,
         message:
-          "No clear human-sized entry position was found. Use Overview or adjust the scene.",
+          "No clear human-sized entry was found. Adjust the scene in the editor and try again.",
       });
       return false;
     }
     body.current = found;
-    const d = look?.sub(new Vector3(found.position[0], 0, found.position[2]));
-    yaw.current = d ? Math.atan2(-d.x, -d.z) : 0;
+    yaw.current = heading;
     pitch.current = 0;
     keys.current.clear();
+    start.current = { position: [...found.position], yaw: heading };
     useViewStore.setState({
-      feet: found.position,
+      feet: [...found.position],
       paused: true,
-      message: s.objects.length
-        ? "Choose mouse look or keyboard/touch to begin. Escape pauses."
-        : "Empty scene: walk on the workspace ground; Exit restores the editor view.",
+      looking: false,
+      virtual: { forward: 0, right: 0, turn: 0 },
+      approximate: w.approximate,
+      doors: w.passableDoors,
+      message: useSceneStore.getState().objects.length
+        ? "Paused · Look Around to begin; keyboard/touch in Controls."
+        : "Empty scene: walk on the workspace ground. Exit Walkthrough restores the editor.",
     });
     return true;
   }
   useEffect(() => {
+    const held = keys.current;
     const changed = () => {
-      const current = useViewStore.getState();
-      if (
-        current.walking &&
-        body.current &&
-        current.eyeHeight !== previousEye.current &&
-        !bodyClear(
-          worldRef.current,
-          body.current.position,
-          current.eyeHeight + 0.15,
-        )
-      ) {
-        viewPreferences({ eyeHeight: previousEye.current });
-        useViewStore.setState({
-          message:
-            "That eye height cannot fit the current ceiling. Move to a clear space before changing it.",
-        });
-        return;
-      }
-      previousEye.current = current.eyeHeight;
       const s = useViewStore.getState(),
-        r = state.current,
-        active = s.walking || s.presentation,
-        wasActive = r.active,
-        wasWalking = r.walking;
-      r.active = active;
+        r = session.current,
+        was = r.walking;
       r.walking = s.walking;
-      if (active && !wasActive) r.editor = capture();
-      if (s.walking && !wasWalking) {
-        r.overview = capture();
+      if (s.walking && !was) {
+        r.editor = capture();
         if (camera instanceof PerspectiveCamera) {
           camera.fov = 65;
           camera.near = 0.05;
@@ -173,123 +176,83 @@ export function CameraController() {
         }
         spawn();
       }
-      if (!s.walking && wasWalking) {
-        document.exitPointerLock?.();
+      if (!s.walking && was) {
+        if (document.pointerLockElement === gl.domElement)
+          document.exitPointerLock?.();
         keys.current.clear();
         body.current = null;
-        if (r.overview) restore(r.overview);
-      }
-      if (!active && wasActive) {
-        document.exitPointerLock?.();
-        keys.current.clear();
-        body.current = null;
+        start.current = null;
+        cache.clear();
         if (r.editor) restore(r.editor);
-        r.editor = r.overview = null;
+        r.editor = null;
       }
-      if (s.request.seq !== r.lastRequest) {
-        r.lastRequest = s.request.seq;
-        const q = s.request;
-        if (q.type === "reset" && s.walking) spawn();
-        if (q.type === "fit" && !s.walking) {
-          const b = worldRef.current.bounds;
-          const center = b.isEmpty()
-              ? new Vector3(0, 0.5, 0)
-              : b.getCenter(new Vector3()),
-            size = b.isEmpty() ? 3 : b.getSize(new Vector3()).length(),
-            distance = Math.max(4, Math.min(180, size * 1.3));
-          camera.position
-            .copy(center)
-            .add(new Vector3(distance * 0.65, distance * 0.5, distance * 0.75));
-          orbit.current?.target.copy(center);
-          camera.lookAt(center);
-          orbit.current?.update();
-        }
-        if (q.type === "save") {
-          const name = q.name.trim();
-          if (name && s.views.length < 12) {
-            const direction = camera.getWorldDirection(new Vector3()),
-              view = cameraViewSchema.parse({
-                id: crypto.randomUUID(),
-                name,
-                position: camera.position.toArray(),
-                target: s.walking
-                  ? camera.position
-                      .clone()
-                      .add(direction.multiplyScalar(5))
-                      .toArray()
-                  : (orbit.current?.target.toArray() ?? [0, 0, 0]),
-                quaternion: camera.quaternion.toArray(),
-                walking: s.walking,
-                eyeHeight: s.eyeHeight,
-              });
-            viewPreferences({ views: [...s.views, view] });
-            useViewStore.setState({
-              message:
-                "Viewpoint saved in this browser; scene geometry and history are unchanged.",
-            });
-          }
-        }
-        if (q.type === "recall") {
-          const v = s.views.find((v) => v.id === q.id);
-          if (v) {
-            if (v.walking) {
-              const p: Vec3 = [
-                v.position[0],
-                v.position[1] - v.eyeHeight,
-                v.position[2],
-              ];
-              if (bodyClear(worldRef.current, p, v.eyeHeight + 0.15)) {
-                body.current = { position: p, velocity: 0, grounded: false };
-                const e = new Euler().setFromQuaternion(
-                  new Quaternion(...v.quaternion),
-                  "YXZ",
-                );
-                yaw.current = e.y;
-                pitch.current = e.x;
-                useViewStore.setState({
-                  feet: p,
-                  paused: true,
-                  message: "Viewpoint restored. Choose controls to resume.",
-                });
-              } else
-                useViewStore.setState({
-                  message:
-                    "That viewpoint is obstructed by the current scene. Reset position or choose another view.",
-                });
-            } else
-              restore({
-                position: new Vector3(...v.position),
-                quaternion: new Quaternion(...v.quaternion),
-                target: new Vector3(...v.target),
-                fov: r.editor?.fov ?? 45,
-                near: r.editor?.near ?? 0.1,
-              });
-          }
-        }
+      if (s.resetSeq !== r.lastReset) {
+        r.lastReset = s.resetSeq;
+        if (s.walking) spawn(true);
       }
     };
     const off = useViewStore.subscribe(changed);
     changed();
+    return () => {
+      off();
+      held.clear();
+      body.current = null;
+      cache.clear();
+      if (session.current.editor) restore(session.current.editor);
+      session.current = { editor: null, walking: false, lastReset: 0 };
+    };
+    // Read immutable scene snapshots/current refs without recreating sessions on telemetry updates.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [camera, gl]);
+  useEffect(() => {
+    if (!walking) return;
+    const w = world();
+    useViewStore.setState({
+      approximate: w.approximate,
+      doors: w.passableDoors,
+    });
+    if (
+      body.current &&
+      !bodyClear(w, body.current.position, EYE_HEIGHT + 0.15)
+    ) {
+      spawn();
+      useViewStore.setState({
+        message:
+          "Scene changed around the camera; moved to a safe entry position.",
+      });
+    }
+    // Scene identity, not render frames or cursor samples, invalidates collision data.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [objects, walking]);
+  useEffect(() => {
+    if (!walking) return;
+    const held = keys.current;
+    const pause = () => {
+      keys.current.clear();
+      if (document.pointerLockElement === gl.domElement)
+        document.exitPointerLock?.();
+      if (useViewStore.getState().walking)
+        useViewStore.setState({
+          paused: true,
+          looking: false,
+          message: "Paused · Look Around or Controls to resume.",
+          virtual: { forward: 0, right: 0, turn: 0 },
+        });
+    };
     const down = (e: KeyboardEvent) => {
       if (!useViewStore.getState().walking) return;
       if (e.key === "Escape") {
-        document.exitPointerLock?.();
-        keys.current.clear();
-        useViewStore.setState({
-          paused: true,
-          message: "Paused. Choose mouse look or keyboard/touch to resume.",
-          virtual: { forward: 0, right: 0, turn: 0 },
-        });
+        pause();
         return;
       }
       if (
-        (e.target as HTMLElement)?.closest?.("input,select,textarea") ||
+        (e.target as HTMLElement)?.closest?.("input,select,textarea,button") ||
         e.ctrlKey ||
         e.metaKey ||
         e.altKey
       )
         return;
-      const key = e.key.toLowerCase();
+      const k = e.key.toLowerCase();
       if (
         [
           "w",
@@ -300,42 +263,36 @@ export function CameraController() {
           "arrowdown",
           "arrowleft",
           "arrowright",
-        ].includes(key)
+        ].includes(k)
       ) {
         e.preventDefault();
-        if (!useViewStore.getState().paused) keys.current.add(key);
+        if (!useViewStore.getState().paused) keys.current.add(k);
       }
     };
-    const up = (e: KeyboardEvent) => keys.current.delete(e.key.toLowerCase());
-    const pause = () => {
-      keys.current.clear();
-      if (useViewStore.getState().walking)
-        useViewStore.setState({
-          paused: true,
-          virtual: { forward: 0, right: 0, turn: 0 },
-        });
-    };
-    const hidden = () => {
-      if (document.hidden) pause();
-    };
+    const up = (e: KeyboardEvent) => keys.current.delete(e.key.toLowerCase()),
+      hidden = () => {
+        if (document.hidden) pause();
+      };
     const locked = () => {
-      if (useViewStore.getState().walking) {
-        keys.current.clear();
-        useViewStore.setState({
-          paused: document.pointerLockElement !== gl.domElement,
-          message:
-            document.pointerLockElement === gl.domElement
-              ? "Mouse look active · WASD move · Escape pauses."
-              : "Paused. Choose controls to resume.",
-        });
-      }
+      if (!useViewStore.getState().walking) return;
+      keys.current.clear();
+      const looking = document.pointerLockElement === gl.domElement;
+      useViewStore.setState({
+        looking,
+        paused: !looking,
+        message: looking
+          ? "Mouse look active · WASD move · Escape pauses."
+          : "Paused · Look Around or Controls to resume.",
+      });
     };
     const lockError = () => {
       if (useViewStore.getState().walking)
         useViewStore.setState({
           paused: true,
+          looking: false,
+          guide: true,
           message:
-            "Mouse lock unavailable or declined. Keyboard/touch movement is available.",
+            "Mouse lock unavailable or declined. Use keyboard/touch in Controls.",
         });
     };
     const mouse = (e: MouseEvent) => {
@@ -360,7 +317,7 @@ export function CameraController() {
     document.addEventListener("pointerlockerror", lockError);
     document.addEventListener("mousemove", mouse);
     return () => {
-      off();
+      held.clear();
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
       window.removeEventListener("blur", pause);
@@ -368,39 +325,10 @@ export function CameraController() {
       document.removeEventListener("pointerlockchange", locked);
       document.removeEventListener("pointerlockerror", lockError);
       document.removeEventListener("mousemove", mouse);
-      if (state.current.editor) restore(state.current.editor);
-      state.current = {
-        editor: null,
-        overview: null,
-        active: false,
-        walking: false,
-        lastRequest: 0,
-      };
+      if (document.pointerLockElement === gl.domElement)
+        document.exitPointerLock?.();
     };
-    // The subscription reads current stores/refs; it must not recreate the camera session on every frame.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [camera, gl]);
-  useEffect(() => {
-    useViewStore.setState({
-      approximate: world.approximate,
-      doors: world.passableDoors,
-    });
-    if (
-      useViewStore.getState().walking &&
-      body.current &&
-      !bodyClear(
-        world,
-        body.current.position,
-        useViewStore.getState().eyeHeight + 0.15,
-      )
-    ) {
-      spawn();
-      useViewStore.setState({
-        message:
-          "Scene changed around the camera; moved to a safe entry position.",
-      });
-    }
-  }, [world]);
+  }, [walking, gl]);
   useFrame((_, delta) => {
     const s = useViewStore.getState();
     if (s.walking && body.current) {
@@ -422,27 +350,30 @@ export function CameraController() {
           dt *
           1.5;
         body.current = moveBody(
-          worldRef.current,
+          world(),
           body.current,
           (-Math.sin(yaw.current) * f + Math.cos(yaw.current) * r) *
-            s.speed *
+            WALK_SPEED *
             dt,
           (-Math.cos(yaw.current) * f - Math.sin(yaw.current) * r) *
-            s.speed *
+            WALK_SPEED *
             dt,
           dt,
-          s.eyeHeight + 0.15,
+          EYE_HEIGHT + 0.15,
         );
       }
       camera.position.set(
         body.current.position[0],
-        body.current.position[1] + s.eyeHeight,
+        body.current.position[1] + EYE_HEIGHT,
         body.current.position[2],
       );
       camera.quaternion.setFromEuler(
-        new Euler(pitch.current, yaw.current, 0, "YXZ"),
+        lookEuler.set(pitch.current, yaw.current, 0),
       );
-      if (performance.now() - lastPublish.current > 250) {
+      if (
+        performance.now() - lastPublish.current > 250 &&
+        body.current.position.some((v, i) => Math.abs(v - s.feet[i]) > 1e-5)
+      ) {
         lastPublish.current = performance.now();
         useViewStore.setState({ feet: [...body.current.position] as Vec3 });
       }
@@ -458,6 +389,7 @@ export function CameraController() {
         target: orbit.current?.target.toArray() ?? [0, 0, 0],
         walking: useViewStore.getState().walking,
         feet: body.current?.position ?? null,
+        navigationBuilds: cache.builds,
       });
   });
   return (
@@ -466,7 +398,7 @@ export function CameraController() {
       makeDefault
       enabled={!walking && !dragging}
       minDistance={3}
-      maxDistance={presentation ? 250 : 45}
+      maxDistance={45}
       maxPolarAngle={Math.PI / 2 - 0.03}
       target={[0, 0.5, 0]}
     />

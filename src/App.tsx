@@ -34,7 +34,7 @@ import { CompactHint } from "./workspace/CompactHint";
 import { useWorkspaceLayout } from "./workspace/layoutStore";
 import { useTrackingStore } from "./vision/trackingStore";
 export default function App() {
-  const readOnly = useViewStore((s) => s.walking || s.presentation);
+  const readOnly = useViewStore((s) => s.walking);
   const cameraActive = useTrackingStore(
     (s) => s.status === "running" || s.status === "starting",
   );

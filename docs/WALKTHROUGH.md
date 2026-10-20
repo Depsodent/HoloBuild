@@ -1,34 +1,30 @@
-# Walkthrough and presentation
+# Walkthrough
 
-Use Walkthrough or Present at the lower left of the viewport. Webcam tracking is optional. Confirm or cancel pending AI previews before entering. Exploration is read-only: object dragging, transform handles, scene commands and Undo/Redo resume after exiting. Save project remains available.
+Choose Walkthrough at the lower left of the viewport. Confirm or cancel pending AI previews first. Webcam tracking is optional. Walking is read-only: mouse/gesture manipulation and scene Undo/Redo resume after exiting; Save remains available.
 
-## Walkthrough
+## Four primary controls
 
-- Look around requests mouse pointer lock from a deliberate click. Move with WASD. Escape unlocks and pauses.
-- Use keyboard / touch works without pointer lock. Arrow Up/Down move; Arrow Left/Right turn. The on-screen movement buttons support pointer/touch holds.
-- Pause and window/tab interruptions clear movement. Choose controls to resume. Reset position finds a clear entry near the selected building. Return to editor restores the previous camera and leaves selection/tool settings intact.
-- View settings offers 0.5–6 m/s movement and 1.2–1.9 m eye height. Increasing eye height is rejected if the current ceiling cannot accommodate it.
+- **Look Around** requests pointer lock from your click. Its active state reflects actual mouse lock. Use WASD to move and the mouse to look. Escape releases the mouse and pauses.
+- **Exit Walkthrough** releases pointer lock and restores the editor camera, panels, selection context and layout. It changes no geometry or history.
+- **Reset Position** returns to the initial safe entry position and orientation, including after climbing floors. If geometry has changed around the start, a clear entry is checked again. Reset pauses movement.
+- **Controls** opens a short, dismissible help region. Keyboard/touch fallback and on-screen movement buttons are here, outside the primary toolbar. Use keyboard / touch resumes without pointer lock; Arrow Up/Down move and Left/Right turn. Close controls or Escape within help dismisses it.
 
-The body has a 0.22 m horizontal radius and eye-height plus 0.15 m clearance. Bounded movement sweeps, wall sliding, gravity and real floor/tread support prevent ordinary wall/floor tunneling. Native floor voids and connected stairs remain actual geometry. Existing certified static door panels are hidden and treated as open portals only while walking; they reappear on exit. No hinged-door animation is implied. Windows and railings remain solid.
+Movement uses 2.2 m/s and 1.6 m eye height. Extra view settings and saved viewpoints are removed. Old browser-local view preferences are retired without touching workspace preferences or saved projects. Use the normal editor's orbit/zoom for demonstrations.
 
-Imported models, curved primitives and pitched/rolled geometry use conservative solid bounds. Their internal cavities and exact curved/tilted surfaces are not navigable. This is bounded architectural navigation, not a general physics engine or a building-safety assessment. Reset or Exit is always available. Empty scenes use the workspace ground.
+The existing global **Stop Camera** action remains in the top bar while capture is active. Hiding panels does not unmount or stop webcam tracking. Mode entry pauses speech capture, invalidates delayed permission checks and preserves finalized transcript text. Exit before starting another voice edit.
 
-## Presentation and saved viewpoints
+## Navigation and safety
 
-Presentation hides editing panels without unmounting webcam capture or rewriting sidebar preferences. Orbit by dragging; scroll to zoom. Fit scene provides an overall view. Walkthrough and Overview switch within the same presentation session; Exit Presentation restores the editor camera/layout. Camera Stop remains available while panels are hidden, including inside fullscreen. Fullscreen is optional and depends on browser permission/support.
+The swept body has a 0.22 m horizontal radius and 1.75 m vertical clearance. Wall sliding, gravity and actual floor/tread support handle native walls, connected stairs, floor voids and balconies. Compatible static door panels are hidden and passable only while walking; they reappear on exit. Windows and rails remain solid. This does not animate hinged doors. Empty scenes use the workspace ground. No clear entry produces an explanation rather than placing the camera inside an obstruction.
 
-Save named camera viewpoints under View settings. Up to twelve viewpoints and speed/eye-height preferences persist in this browser's Local Storage. They are view preferences, outside scene history and outside portable scene JSON. A walking viewpoint is checked against the current collision geometry before use; an obstructed viewpoint needs a reset or a different view.
+Imported meshes, curved primitives and pitched/rolled shapes use conservative solid bounds; their internal cavities and precise curved surfaces are not navigable. Reset or Exit provides recovery. Navigation is not a general physics simulation or a building-safety assessment.
 
-## Native construction fixes
+## Construction and microphone checks
 
-Stairs offers Standalone Stairs and Connect Floors. Standalone flights use the same native treads with explicit step count, overall rise, run, width, position, orientation and appearance. They create no hidden floor or automatic opening. Ground or compatible supporting floors are required; use an actual aligned platform for raised access. A destination/landing is not inferred. Connect Floors retains adjacent-floor elevation, opening and landing validation inside compatible multi-floor structures.
+Build → Stairs offers Standalone Stairs and Connect Floors. Standalone flights use real steps with width/rise/run/count/position/orientation/material controls, creating no hidden floor or inferred landing. Raised placement requires real supporting geometry. Connect Floors retains actual adjacent-floor elevations, cut-outs and landing checks. Balconies require a compatible host and aligned doorway.
 
-Select a native wall in Part mode, then type or submit a finalized transcript: Add a window to the selected wall. An ordinary manual wall becomes a native single-face assembly with real segmented geometry. A generated building wall resolves its stable facade/floor relationship. Existing openings are preserved and invalid/overlapping layouts rejected. Preview and Cancel do not change the confirmed scene; confirmation is one undoable action. Select an existing window to resize/move its opening. Imported meshes and uncertified walls explain why they cannot be cut. In Structure mode specify a facade/floor, or choose Part for a particular wall.
+In Part mode, select a native manual wall or generated building wall and request Add a window to the selected wall. The existing preview/confirmation/history path creates a real segmented opening and retains unaffected openings. Cancel changes nothing. Select an existing window for opening edits. Imported/non-editable walls explain their limitation.
 
-## Microphone acceptance
+Native speech requires a compatible browser, microphone permission and localhost/HTTPS. Stop requests finalization; Cancel aborts but retains finalized text. Only actual final recognition events fill the composer. Unsupported or failed recognition keeps typed input available. Check site/OS permissions and the displayed support/status/error before retrying. No paid transcription service is introduced.
 
-Native browser recognition is feature-detected; unsupported browsers retain normal text entry. Permission/security checks run where available. Stop asks the browser to finish captured speech; Cancel aborts the current capture. Only actual final recognition results fill the composer, and finalized text survives interruptions. Auto-submit remains opt-in and uses the same validated request pipeline as typed input. Pause/exit exploration before starting another voice edit.
-
-A browser speech service can still reject microphone access, fail to find a device or report network/no-speech errors. Follow the displayed instruction, check the site's microphone permission and OS input device, then restart deliberately or type the same request. The implementation cannot establish another laptop's speech-service compatibility. Physical webcam, microphone, touch and friend-device acceptance remain pending until the user tests them.
-
-API references: [SpeechRecognition.stop](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/stop) and [requestPointerLock](https://developer.mozilla.org/en-US/docs/Web/API/Element/requestPointerLock). Both features depend on actual browser support; fallback controls remain available.
+Physical webcam, microphone, touch and friend-laptop acceptance remain pending until users actually test them. See MANUAL_TESTS.md and the current milestone handoff.

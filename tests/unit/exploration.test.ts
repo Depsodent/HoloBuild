@@ -1,8 +1,9 @@
 import { it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   useViewStore,
-  cameraViewSchema,
-  viewPreferences,
+  resetWalkthrough,
+  WALK_SPEED,
+  EYE_HEIGHT,
 } from "../../src/exploration/viewStore";
 import { useSceneStore } from "../../src/scene/sceneStore";
 import { execute, undo, redo } from "../../src/scene/commandManager";
@@ -20,9 +21,10 @@ import { createCube } from "../../src/scene/objectFactory";
 beforeEach(() => {
   useViewStore.setState({
     walking: false,
-    presentation: false,
     paused: true,
-    views: [],
+    looking: false,
+    guide: false,
+    resetSeq: 0,
   });
   cancelEdit();
   useGenerationStore.setState({ prepared: null, status: "idle" });
@@ -37,28 +39,28 @@ beforeEach(() => {
     tool: "translate",
   });
   vi.stubGlobal("window", { dispatchEvent: vi.fn() });
-  vi.stubGlobal("document", { exitPointerLock: vi.fn() });
-  vi.stubGlobal("localStorage", { setItem: vi.fn() });
+  vi.stubGlobal("document", {
+    exitPointerLock: vi.fn(),
+    pointerLockElement: {},
+  });
 });
 afterEach(() => {
-  useViewStore.setState({ walking: false, presentation: false });
+  useViewStore.setState({ walking: false });
   vi.unstubAllGlobals();
 });
-it("walkthrough and presentation reject edits and undo/redo while preserving exact scene and history", () => {
+it("walkthrough rejects commands and history while preserving exact scene snapshots", () => {
   execute({ type: "create" });
-  const state = useSceneStore.getState();
-  useViewStore.setState({ walking: true });
-  expect(execute({ type: "delete", id: state.objects[0].id })).toBe(false);
+  const s = useSceneStore.getState();
+  enterExploration();
+  expect(execute({ type: "delete", id: s.objects[0].id })).toBe(false);
   undo();
   redo();
-  expect(useSceneStore.getState().objects).toBe(state.objects);
-  expect(useSceneStore.getState().past).toBe(state.past);
-  useViewStore.setState({ walking: false, presentation: true });
-  expect(execute({ type: "reset" })).toBe(false);
+  expect(useSceneStore.getState().objects).toBe(s.objects);
+  expect(useSceneStore.getState().past).toBe(s.past);
   exitExploration();
   expect(execute({ type: "create" })).toBe(true);
 });
-it("pending AI edits prevent entry and remain unchanged instead of being discarded", () => {
+it("pending previews prevent entry without discarding geometry or proposal", () => {
   const s = useSceneStore.getState(),
     next = [...s.objects, createCube([3, 0.5, 0])];
   prepareComponentCommand(
@@ -68,38 +70,45 @@ it("pending AI edits prevent entry and remain unchanged instead of being discard
     "preview",
   );
   const p = useEditStore.getState().prepared;
-  expect(enterExploration(true)).toBe(false);
+  expect(enterExploration()).toBe(false);
   expect(useEditStore.getState().prepared).toBe(p);
   expect(useSceneStore.getState().objects).toBe(s.objects);
   expect(useViewStore.getState().walking).toBe(false);
 });
-it("view modes are independent from tool selection and scene geometry", () => {
+it("entry is idempotent and preserves tool and selection context", () => {
   const s = useSceneStore.getState();
-  expect(enterExploration(false)).toBe(true);
-  expect(useViewStore.getState().presentation).toBe(true);
-  expect(enterExploration(true)).toBe(true);
-  expect(useSceneStore.getState().tool).toBe("translate");
+  expect(enterExploration()).toBe(true);
+  expect(enterExploration()).toBe(true);
+  expect(window.dispatchEvent).toHaveBeenCalledOnce();
   exitExploration();
   expect(useSceneStore.getState().objects).toBe(s.objects);
   expect(useSceneStore.getState().selectedId).toBe(s.selectedId);
-  expect(window.dispatchEvent).toHaveBeenCalledTimes(2);
+  expect(useSceneStore.getState().tool).toBe("translate");
+  expect(document.exitPointerLock).toHaveBeenCalledOnce();
 });
-it("saved views and preferences are bounded and do not enter scene history", () => {
+it("reset is view-only, clears held input and does not issue scene history", () => {
   const s = useSceneStore.getState();
-  expect(() => viewPreferences({ speed: NaN })).toThrow();
-  expect(() =>
-    cameraViewSchema.parse({
-      id: "bad",
-      name: "Bad",
-      position: [0, 0, 0],
-      target: [0, 0, 0],
-      quaternion: [0, 0, 0, 0],
-      walking: true,
-      eyeHeight: 1.6,
-    }),
-  ).toThrow();
-  viewPreferences({ speed: 1.8, eyeHeight: 1.7 });
-  expect(localStorage.setItem).toHaveBeenCalledOnce();
+  resetWalkthrough();
+  expect(useViewStore.getState().resetSeq).toBe(0);
+  enterExploration();
+  useViewStore.setState({
+    paused: false,
+    looking: true,
+    virtual: { forward: 1, right: 1, turn: 1 },
+  });
+  resetWalkthrough();
+  expect(useViewStore.getState()).toMatchObject({
+    resetSeq: 1,
+    paused: true,
+    looking: false,
+    virtual: { forward: 0, right: 0, turn: 0 },
+  });
   expect(useSceneStore.getState().objects).toBe(s.objects);
-  expect(useSceneStore.getState().past).toHaveLength(0);
+  expect(useSceneStore.getState().past).toBe(s.past);
+});
+it("walk settings are fixed and removed preferences are absent from view state", () => {
+  expect(WALK_SPEED).toBe(2.2);
+  expect(EYE_HEIGHT).toBe(1.6);
+  for (const k of ["presentation", "views", "speed", "eyeHeight", "request"])
+    expect(useViewStore.getState()).not.toHaveProperty(k);
 });

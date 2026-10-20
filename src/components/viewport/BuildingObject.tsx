@@ -21,13 +21,51 @@ export const BuildingObject = memo(function BuildingObject({
   object: SceneObject;
 }) {
   const walking = useViewStore((s) => s.walking);
-  const readOnly = useViewStore((s) => s.walking || s.presentation);
+  const readOnly = useViewStore((s) => s.walking);
   const gridStep = usePrecisionSettings((s) => s.gridStep);
   const gl = useThree((s) => s.gl);
   const ref = useRef<Mesh>(null);
   const dragBase = useRef<SceneObject[] | null>(null);
   const cancelled = useRef(false);
+  const [hover, setHover] = useState(false);
+  const selected =
+    useSceneStore((s) => s.selectedId === object.id) && !readOnly;
   useEffect(() => {
+    if (!selected && dragBase.current) {
+      cancelled.current = true;
+      dragBase.current = null;
+      const mesh = ref.current;
+      if (mesh) {
+        mesh.position.fromArray(object.position);
+        mesh.rotation.set(...object.rotation);
+        mesh.scale.fromArray(object.scale);
+      }
+    }
+  }, [selected, object]);
+  const group = useSceneStore(
+    (s) => s.selectedId === object.id && !!s.selectedStructureId,
+  );
+  const groupSelected =
+    useSceneStore(
+      (s) =>
+        !!s.selectedStructureId &&
+        object.construction?.structureId === s.selectedStructureId,
+    ) && !readOnly;
+  const tool = useSceneStore((s) =>
+    s.selectedId === object.id ? s.tool : "select",
+  );
+  const snap = useSceneStore((s) => s.selectedId === object.id && s.snap);
+  const gestureHover = useInteractionStore((s) => s.hoveredId === object.id);
+  const grabbed = useSceneStore((s) => s.preview?.id === object.id);
+  useEffect(() => {
+    if (
+      !selected ||
+      group ||
+      grabbed ||
+      isArchitecturalPart(object) ||
+      tool === "select"
+    )
+      return;
     const cancel = (e: Event) => {
       if (
         !dragBase.current ||
@@ -54,29 +92,7 @@ export const BuildingObject = memo(function BuildingObject({
       window.removeEventListener("blur", cancel);
       clearMouseGuide(object.id);
     };
-  }, [object.id]);
-  const [hover, setHover] = useState(false);
-  const selected =
-    useSceneStore((s) => s.selectedId === object.id) && !readOnly;
-  useEffect(() => {
-    if (!selected && dragBase.current) {
-      cancelled.current = true;
-      dragBase.current = null;
-      const mesh = ref.current;
-      if (mesh) {
-        mesh.position.fromArray(object.position);
-        mesh.rotation.set(...object.rotation);
-        mesh.scale.fromArray(object.scale);
-      }
-    }
-  }, [selected, object]);
-  const group = useSceneStore((s) => s.selectedStructureId);
-  const groupSelected =
-    !readOnly && !!group && object.construction?.structureId === group;
-  const tool = useSceneStore((s) => s.tool);
-  const snap = useSceneStore((s) => s.snap);
-  const gestureHover = useInteractionStore((s) => s.hoveredId === object.id);
-  const grabbed = useSceneStore((s) => s.preview?.id === object.id);
+  }, [object, selected, group, grabbed, tool]);
   function commit() {
     clearMouseGuide(object.id);
     const mesh = ref.current;

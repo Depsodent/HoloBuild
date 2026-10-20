@@ -1,0 +1,124 @@
+{
+  "capturedAt": "2026-10-20T12:22:34.102Z",
+  "label": "before",
+  "url": "http://127.0.0.1:5175",
+  "renderer": "Headless Edge SwiftShader; not physical laptop/GPU performance",
+  "samples": {
+    "oneCube": {
+      "listeners": {
+        "window:mousemove": 1,
+        "document:visibilitychange": 3,
+        "window:keydown": 5,
+        "window:keyup": 1,
+        "window:blur": 3,
+        "document:pointerlockchange": 1,
+        "document:pointerlockerror": 1,
+        "document:mousemove": 1,
+        "document:keydown": 1
+      },
+      "resources": {
+        "buffers": 20,
+        "textures": 7
+      },
+      "renderFrames": {
+        "frames": 55,
+        "seconds": 3.0368000000005595,
+        "medianMs": 48.80000000000291
+      }
+    },
+    "hundredCubes": {
+      "listeners": {
+        "window:mousemove": 1,
+        "document:visibilitychange": 3,
+        "window:keydown": 104,
+        "window:keyup": 1,
+        "window:blur": 102,
+        "document:pointerlockchange": 1,
+        "document:pointerlockerror": 1,
+        "document:mousemove": 1,
+        "document:keydown": 1
+      },
+      "resources": {
+        "buffers": 736,
+        "textures": 7
+      },
+      "renderFrames": {
+        "frames": 16,
+        "seconds": 3.004900000000187,
+        "medianMs": 201.90000000000146
+      }
+    },
+    "afterFiveTransitions": {
+      "listeners": {
+        "window:mousemove": 1,
+        "document:visibilitychange": 3,
+        "window:keydown": 104,
+        "window:keyup": 1,
+        "window:blur": 102,
+        "document:pointerlockchange": 1,
+        "document:pointerlockerror": 1,
+        "document:mousemove": 1,
+        "document:keydown": 1
+      },
+      "resources": {
+        "buffers": 856,
+        "textures": 7
+      },
+      "renderFrames": {
+        "frames": 15,
+        "seconds": 3.1859000000005615,
+        "medianMs": 195
+      }
+    },
+    "restoredOneCube": {
+      "listeners": {
+        "window:mousemove": 1,
+        "document:visibilitychange": 3,
+        "window:keydown": 5,
+        "window:keyup": 1,
+        "window:blur": 3,
+        "document:pointerlockchange": 1,
+        "document:pointerlockerror": 1,
+        "document:mousemove": 1,
+        "document:keydown": 1
+      },
+      "resources": {
+        "buffers": 20,
+        "textures": 7
+      },
+      "renderFrames": {
+        "frames": 59,
+        "seconds": 3.0549000000005617,
+        "medianMs": 48.80000000000291
+      }
+    }
+  },
+  "sceneRestored": true,
+  "bundles": [
+    {
+      "file": "GLTFLoader-BFWcUmS4.js",
+      "bytes": 44799,
+      "gzipBytes": 13219
+    },
+    {
+      "file": "index-Db3c7KzL.js",
+      "bytes": 1650631,
+      "gzipBytes": 474529
+    },
+    {
+      "file": "trackingWorker-BNBieSSy.js",
+      "bytes": 144788,
+      "gzipBytes": 43974
+    },
+    {
+      "file": "vision_bundle-BJqyx4FW.js",
+      "bytes": 144265,
+      "gzipBytes": 43719
+    },
+    {
+      "file": "workerDetector-BMIPTz81.js",
+      "bytes": 1725,
+      "gzipBytes": 815
+    }
+  ]
+}

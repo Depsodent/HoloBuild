@@ -3,7 +3,8 @@ import { useSceneStore } from "../scene/sceneStore";
 import { useGenerationStore } from "../generation/generationStore";
 import { useEditStore } from "../generation/editStore";
 import { useInteractionStore } from "../interaction/interactionStore";
-export function enterExploration(walking: boolean) {
+export function enterExploration() {
+  if (useViewStore.getState().walking) return true;
   const g = useGenerationStore.getState(),
     e = useEditStore.getState();
   if (
@@ -21,22 +22,20 @@ export function enterExploration(walking: boolean) {
   useSceneStore.setState({ preview: null });
   useInteractionStore.setState({ menuOpen: false });
   useViewStore.setState({
-    walking,
-    presentation: walking ? useViewStore.getState().presentation : true,
+    walking: true,
+    looking: false,
     paused: true,
-    guide: true,
+    guide: false,
     message: "",
   });
   window.dispatchEvent(new Event("holobuild:exploration-enter"));
   return true;
 }
 export function exitExploration() {
-  document.exitPointerLock?.();
-  if (document.fullscreenElement?.matches(".viewport"))
-    void document.exitFullscreen().catch(() => {});
+  if (document.pointerLockElement) document.exitPointerLock?.();
   useViewStore.setState({
     walking: false,
-    presentation: false,
+    looking: false,
     paused: true,
     virtual: { forward: 0, right: 0, turn: 0 },
     message: "",
