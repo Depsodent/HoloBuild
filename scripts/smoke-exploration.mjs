@@ -238,12 +238,19 @@ export async function smokeExploration(page) {
     Math.abs((await point())[1] - upper) < 0.04,
     "Balcony support was lost",
   );
+  await page
+    .getByRole("button", { name: "Close controls", exact: true })
+    .click();
   await page.screenshot({
     path:
       ".cache/m13-" +
       (new URL(page.url()).protocol === "https:" ? "public" : "local") +
       "-walkthrough.png",
   });
+  await page.getByRole("button", { name: "Controls", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Use keyboard / touch", exact: true })
+    .click();
   await axis(bAxis, inside);
   await page.keyboard.press("Escape");
   await page
@@ -427,4 +434,3 @@ export async function smokeExploration(page) {
     physicalDeviceTested: false,
   };
 }
-

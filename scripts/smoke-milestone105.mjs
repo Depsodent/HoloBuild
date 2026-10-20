@@ -258,6 +258,8 @@ try {
       .every((o) => o.construction.structureId === group),
   );
   await exactHistory(built, edited);
+  if (milestone === "m13")
+    await page.screenshot({ path: ".cache/m13-" + name + "-generated.png" });
   report.checks.genuineConversationalEdit = {
     sameStructure: true,
     inertPreview: true,

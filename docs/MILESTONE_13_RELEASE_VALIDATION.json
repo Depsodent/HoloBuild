@@ -1,0 +1,342 @@
+{
+  "validatedAt": "2026-10-20T13:10:07.927Z",
+  "implementationCheckpoint": "4db535487ccab5bff1caa9091b600405335eff4c",
+  "features": {
+    "presentationRemoved": true,
+    "viewpointUiAndStorageRemoved": true,
+    "primaryWalkthroughControls": [
+      "Look Around",
+      "Exit Walkthrough",
+      "Reset Position",
+      "Controls"
+    ],
+    "sharedCollisionSolverPreserved": true,
+    "globalCameraStopPreserved": true,
+    "microphonePipelinePreserved": true
+  },
+  "automated": {
+    "units": {
+      "passed": 394,
+      "files": 39
+    },
+    "backend": {
+      "passed": 66
+    },
+    "typescript": "tsc -b passed including final fixtures",
+    "eslint": "passed; final fixtures/helpers passed separately",
+    "browser": {
+      "inventory": 150,
+      "fullRun": {
+        "passed": 147,
+        "failed": 3,
+        "minutes": 26.1
+      },
+      "failureClassifications": [
+        "One Playwright context creation timeout before application code",
+        "Two legacy speech fixtures injected errors before asynchronous recognizers existed"
+      ],
+      "targetedRerun": {
+        "passed": 16,
+        "failed": 0,
+        "minutes": 2.3
+      },
+      "allDistinctCasesHavePassingEvidence": true,
+      "singleUninterruptedFullPass": false,
+      "runtimeUnchangedAfterBroadRun": true
+    },
+    "build": {
+      "passed": true,
+      "seconds": 11.99,
+      "licensePackages": 70,
+      "unresolvedNotices": 0,
+      "warnings": [
+        "Existing third-party annotation warnings",
+        "Large app/Three chunks remain"
+      ]
+    },
+    "productionDependencyAudit": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    }
+  },
+  "performance": {
+    "before": {
+      "capturedAt": "2026-10-20T12:22:34.102Z",
+      "label": "before",
+      "url": "http://127.0.0.1:5175",
+      "renderer": "Headless Edge SwiftShader; not physical laptop/GPU performance",
+      "samples": {
+        "oneCube": {
+          "listeners": {
+            "window:mousemove": 1,
+            "document:visibilitychange": 3,
+            "window:keydown": 5,
+            "window:keyup": 1,
+            "window:blur": 3,
+            "document:pointerlockchange": 1,
+            "document:pointerlockerror": 1,
+            "document:mousemove": 1,
+            "document:keydown": 1
+          },
+          "resources": {
+            "buffers": 20,
+            "textures": 7
+          },
+          "renderFrames": {
+            "frames": 55,
+            "seconds": 3.0368000000005595,
+            "medianMs": 48.80000000000291
+          }
+        },
+        "hundredCubes": {
+          "listeners": {
+            "window:mousemove": 1,
+            "document:visibilitychange": 3,
+            "window:keydown": 104,
+            "window:keyup": 1,
+            "window:blur": 102,
+            "document:pointerlockchange": 1,
+            "document:pointerlockerror": 1,
+            "document:mousemove": 1,
+            "document:keydown": 1
+          },
+          "resources": {
+            "buffers": 736,
+            "textures": 7
+          },
+          "renderFrames": {
+            "frames": 16,
+            "seconds": 3.004900000000187,
+            "medianMs": 201.90000000000146
+          }
+        },
+        "afterFiveTransitions": {
+          "listeners": {
+            "window:mousemove": 1,
+            "document:visibilitychange": 3,
+            "window:keydown": 104,
+            "window:keyup": 1,
+            "window:blur": 102,
+            "document:pointerlockchange": 1,
+            "document:pointerlockerror": 1,
+            "document:mousemove": 1,
+            "document:keydown": 1
+          },
+          "resources": {
+            "buffers": 856,
+            "textures": 7
+          },
+          "renderFrames": {
+            "frames": 15,
+            "seconds": 3.1859000000005615,
+            "medianMs": 195
+          }
+        },
+        "restoredOneCube": {
+          "listeners": {
+            "window:mousemove": 1,
+            "document:visibilitychange": 3,
+            "window:keydown": 5,
+            "window:keyup": 1,
+            "window:blur": 3,
+            "document:pointerlockchange": 1,
+            "document:pointerlockerror": 1,
+            "document:mousemove": 1,
+            "document:keydown": 1
+          },
+          "resources": {
+            "buffers": 20,
+            "textures": 7
+          },
+          "renderFrames": {
+            "frames": 59,
+            "seconds": 3.0549000000005617,
+            "medianMs": 48.80000000000291
+          }
+        }
+      },
+      "sceneRestored": true,
+      "bundles": [
+        {
+          "file": "GLTFLoader-BFWcUmS4.js",
+          "bytes": 44799,
+          "gzipBytes": 13219
+        },
+        {
+          "file": "index-Db3c7KzL.js",
+          "bytes": 1650631,
+          "gzipBytes": 474529
+        },
+        {
+          "file": "trackingWorker-BNBieSSy.js",
+          "bytes": 144788,
+          "gzipBytes": 43974
+        },
+        {
+          "file": "vision_bundle-BJqyx4FW.js",
+          "bytes": 144265,
+          "gzipBytes": 43719
+        },
+        {
+          "file": "workerDetector-BMIPTz81.js",
+          "bytes": 1725,
+          "gzipBytes": 815
+        }
+      ]
+    },
+    "after": {
+      "capturedAt": "2026-10-20T12:39:30.381Z",
+      "label": "after",
+      "url": "http://127.0.0.1:5175",
+      "renderer": "Headless Edge SwiftShader; not physical laptop/GPU performance",
+      "samples": {
+        "oneCube": {
+          "listeners": {
+            "window:mousemove": 1,
+            "document:visibilitychange": 2,
+            "window:keydown": 3,
+            "document:keydown": 1,
+            "window:blur": 1
+          },
+          "resources": {
+            "buffers": 20,
+            "textures": 7
+          },
+          "navigationBuilds": 0,
+          "renderFrames": {
+            "frames": 54,
+            "seconds": 3.0017000000007448,
+            "medianMs": 48.70000000000073
+          }
+        },
+        "hundredCubes": {
+          "listeners": {
+            "window:mousemove": 1,
+            "document:visibilitychange": 2,
+            "window:keydown": 3,
+            "document:keydown": 1,
+            "window:blur": 1
+          },
+          "resources": {
+            "buffers": 736,
+            "textures": 7
+          },
+          "navigationBuilds": 0,
+          "renderFrames": {
+            "frames": 16,
+            "seconds": 3.0214000000007455,
+            "medianMs": 195
+          }
+        },
+        "afterFiveTransitions": {
+          "listeners": {
+            "window:mousemove": 1,
+            "document:visibilitychange": 2,
+            "window:keydown": 3,
+            "document:keydown": 1,
+            "window:blur": 1,
+            "window:keyup": 0,
+            "document:pointerlockchange": 0,
+            "document:pointerlockerror": 0,
+            "document:mousemove": 0
+          },
+          "resources": {
+            "buffers": 856,
+            "textures": 7
+          },
+          "navigationBuilds": 5,
+          "renderFrames": {
+            "frames": 17,
+            "seconds": 3.1347000000007466,
+            "medianMs": 188
+          }
+        },
+        "restoredOneCube": {
+          "listeners": {
+            "window:mousemove": 1,
+            "document:visibilitychange": 2,
+            "window:keydown": 3,
+            "document:keydown": 1,
+            "window:blur": 1,
+            "window:keyup": 0,
+            "document:pointerlockchange": 0,
+            "document:pointerlockerror": 0,
+            "document:mousemove": 0
+          },
+          "resources": {
+            "buffers": 20,
+            "textures": 7
+          },
+          "navigationBuilds": 5,
+          "renderFrames": {
+            "frames": 65,
+            "seconds": 3.0265,
+            "medianMs": 48.70000000000073
+          }
+        }
+      },
+      "sceneRestored": true,
+      "bundles": [
+        {
+          "file": "GLTFLoader-DkkwFoda.js",
+          "bytes": 44840,
+          "gzipBytes": 13245
+        },
+        {
+          "file": "index-_Y0dL-RA.js",
+          "bytes": 714410,
+          "gzipBytes": 220919
+        },
+        {
+          "file": "react-vendor-BASvHcO8.js",
+          "bytes": 221884,
+          "gzipBytes": 69054
+        },
+        {
+          "file": "three-vendor-BgX92kRx.js",
+          "bytes": 704462,
+          "gzipBytes": 181578
+        },
+        {
+          "file": "trackingWorker-BNBieSSy.js",
+          "bytes": 144788,
+          "gzipBytes": 43974
+        },
+        {
+          "file": "vision_bundle-BJqyx4FW.js",
+          "bytes": 144265,
+          "gzipBytes": 43719
+        },
+        {
+          "file": "workerDetector-BMIPTz81.js",
+          "bytes": 1725,
+          "gzipBytes": 815
+        }
+      ]
+    },
+    "physicalHardware": false,
+    "generalFpsImprovementClaimed": false,
+    "existingAssetCacheControl": "public, max-age=0, must-revalidate",
+    "cacheBenefit": "Stable hashed core vendors support conditional ETag reuse; no zero-network or cold-start-speed claim."
+  },
+  "liveGemini": {
+    "status": "pending production-build verification"
+  },
+  "publication": {
+    "status": "local gates complete; real provider gate pending",
+    "publicUrl": "https://holobuild.vercel.app",
+    "rollbackDeployment": "dpl_4498oLZWjGa9tHyXbTsYY1C1njzs",
+    "paidServices": false,
+    "quotaOrCredentialChanges": false
+  },
+  "physicalAcceptance": {
+    "webcam": "pending",
+    "microphone": "pending",
+    "friendLaptop": "pending",
+    "touch": "pending"
+  }
+}

@@ -17,7 +17,7 @@ The listener reduction is deterministic: inactive objects no longer attach drag 
 
 Temporary100-cube transition samples retain856buffers versus736before transition in both runs; restoring the original scene returns20. These counts include deferred disposal and are observations, not driver memory bytes or proof against every possible leak. The tiny timing differences do not justify a general FPS/speed claim. Large scenes, complex imported meshes, transmission and software rendering can remain slow. No inference threshold, debounce, delegate or provider contract changed.
 
-App entry gzip changed from474529 to220919bytes. React/Three core vendor chunks total250632gzip bytes, so initial entry+vendors is471551bytes versus474529previously. Total initial transfer is only slightly smaller. The main benefit is cache isolation: unchanged vendor hashes survive app-only edits, reducing re-download size on updates, not proving faster cold startup. GLTFLoader, vision and optional worker remain separate lazy chunks. Native model/WASM assets are additional.
+App entry gzip changed from474529 to220919bytes. React/Three core vendor chunks total250632gzip bytes, so initial entry+vendors is471551bytes versus474529previously. Total initial transfer is only slightly smaller. Existing Vercel asset headers were observed as public,max-age=0,must-revalidate with ETags: requests still revalidate. The main benefit is cache isolation: unchanged vendor hashes survive app-only edits, reducing re-download size on updates, not proving faster cold startup. GLTFLoader, vision and optional worker remain separate lazy chunks. Native model/WASM assets are additional.
 
 Historical observations below retain their original dates and do not supersede current measurements.
 

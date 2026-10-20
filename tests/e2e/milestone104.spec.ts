@@ -159,6 +159,7 @@ test("manual voice transcript remains editable and speech failures preserve type
   await page
     .getByRole("button", { name: "Start listening", exact: true })
     .click();
+  await expect(page.getByLabel("Listening status")).toHaveText("Listening…");
   await page.evaluate(() =>
     (
       window as unknown as {
@@ -173,6 +174,7 @@ test("manual voice transcript remains editable and speech failures preserve type
   await page
     .getByRole("button", { name: "Start listening", exact: true })
     .click();
+  await expect(page.getByLabel("Listening status")).toHaveText("Listening…");
   await page.evaluate(() =>
     (
       window as unknown as { voice104: { onresult: (e: unknown) => void } }
