@@ -14,7 +14,7 @@ Listeners stay at **3 keydown / 1 blur** for every size and after five Walkthrou
 
 Live buffer/texture observations: one cube20/7;100furniture243/8; after visits319/8; restored cube68/8. Visited preset geometry stays in a bounded shared cache (the48additional buffers) and the shared wood texture remains resident. Instance buffers are released, but this does not prove absence of every leak or quantify driver memory bytes. Enclosed furnishings use a single conservative navigation box, open/slender items part boxes, all cached by scene identity. No per-triangle collision or per-object global keyboard handlers.
 
-Production app entry is751,893bytes/232,883gzip bytes (build11.89s; use raw receipt for exact gzip values). Shared React and Three vendor chunks are69,054/181,579gzip bytes; extra furniture functionality adds bytes rather than proving faster cold load. No dependencies were added. Raw reproducible recipe and observations: scripts/benchmark-furniture131.mjs and benchmarks/2026-10-21-m131-furniture.json. Existing hardware/device limitations below still apply.
+The benchmark build app entry was 751,893 bytes / 232,883 gzip bytes (11.89s build). The final punctuation-only release build is 751,895 bytes / 232,882 gzip bytes (23.20s local build; 11.83s remote). Shared React and Three vendor chunks are69,054/181,579gzip bytes; extra furniture functionality adds bytes rather than proving faster cold load. No dependencies were added. Raw reproducible recipe and observations: scripts/benchmark-furniture131.mjs and benchmarks/2026-10-21-m131-furniture.json. Existing hardware/device limitations below still apply.
 
 ## Milestone 13 historical measurements — 20 October 2026
 

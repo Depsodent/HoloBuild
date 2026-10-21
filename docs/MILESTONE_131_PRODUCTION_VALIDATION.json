@@ -1,0 +1,696 @@
+{
+  "verifiedAt": "2026-10-21T06:17:51.534Z",
+  "url": "https://holobuild.vercel.app",
+  "sourceCheckpoint": "a1d9edc426f440e8862f0e9a606c6d143dff8695",
+  "deploymentId": "dpl_f9ro39ExXkYoZeiHDmiFzjgq2yKF",
+  "state": "READY",
+  "githubPush": "master confirmed a1d9edc after a normal retry of an initial HTTP408",
+  "metadata": {
+    "checkedAt": "2026-10-21T06:16:53.584Z",
+    "deploymentId": "dpl_f9ro39ExXkYoZeiHDmiFzjgq2yKF",
+    "sourceCheckpoint": "a1d9edc426f440e8862f0e9a606c6d143dff8695",
+    "state": "READY",
+    "url": "https://holobuild-2ocbipwpv-aaryand616-6524.vercel.app",
+    "publicAliasDeployment": "dpl_f9ro39ExXkYoZeiHDmiFzjgq2yKF",
+    "previousDeployment": "dpl_4kLa2xBZ2ADGTLxYq18H8ZSuMf6Z",
+    "previousUrl": "holobuild-4icyst1vk-aaryand616-6524.vercel.app",
+    "rollbackReady": true,
+    "accountPlan": "hobby",
+    "protectedVariableMetadataUnchanged": true,
+    "filesChecked": 315,
+    "unsafeUploadPaths": [],
+    "emptyDirectoryMarkers": [
+      "src/dist",
+      "src/docs",
+      "src/playwright-report",
+      "src/public/assets",
+      "src/public/models",
+      "src/public/textures",
+      "src/public/third-party-notices",
+      "src/public/vision/wasm",
+      "src/src/ai",
+      "src/src/hooks",
+      "src/src/utils",
+      "src/test-results"
+    ],
+    "privateValuesLogged": false
+  },
+  "workflow": {
+    "testedAt": "2026-10-21T06:09:45.753Z",
+    "url": "https://holobuild.vercel.app",
+    "baseCheckpoint": "a1d9edc426f440e8862f0e9a606c6d143dff8695",
+    "source": "Milestone 13.1 production-build release validation",
+    "physicalDeviceTested": false,
+    "ok": true,
+    "checks": {
+      "creation": {
+        "inertPreview": true,
+        "parts": 44,
+        "stairSteps": 16,
+        "upperFloorVoid": true,
+        "balconyParts": 8,
+        "alignedRealAccess": true,
+        "unrelatedCubePreserved": true,
+        "exactUndoRedo": true
+      },
+      "genuineConversationalEdit": {
+        "sameStructure": true,
+        "inertPreview": true,
+        "unrelatedComponentsPreserved": true,
+        "exactUndoRedo": true
+      },
+      "staircaseConversation": {
+        "material": "wood",
+        "cancel": true,
+        "inertPreview": true,
+        "exactUndoRedo": true
+      },
+      "editableOpening": {
+        "partInspector": true,
+        "panelIdPreserved": true,
+        "realAccessRetained": true,
+        "stairAndBalconyRecipesPreserved": true,
+        "exactUndoRedo": true
+      },
+      "saveLoad": {
+        "allArchitecturalMetadata": true,
+        "exactObjects": true,
+        "undoRedoLoad": true
+      },
+      "precision": {
+        "productionUI": true,
+        "developmentBridgeUsed": false,
+        "inspectorTabs": true,
+        "roughnessMetalnessOpacity": true,
+        "partScopePreservesArchitecture": true,
+        "numericDimensions": true,
+        "centimetrePreview": true,
+        "draftAcrossTabs": true,
+        "gridControls": true,
+        "measurements": true,
+        "exactUndoRedo": true,
+        "portableSurfaceAndTransformPersistence": true,
+        "physicalDeviceTested": false
+      },
+      "exploration": {
+        "productionUI": true,
+        "developmentBridgeUsed": false,
+        "realGeminiHost": true,
+        "doorPassage": true,
+        "connectedStairClimb": true,
+        "upperFloorVoid": true,
+        "balconyAccessAndReturn": true,
+        "pointerLockMouseLook": true,
+        "escapePause": true,
+        "walkthroughRestoresLayout": true,
+        "editorCanvasPixelsRestored": true,
+        "fourPrimaryControls": true,
+        "retiredPresentationAbsent": true,
+        "resetToInitialFeet": true,
+        "selectedGeneratedWallWindow": true,
+        "selectedManualWallWindow": true,
+        "previewCancelAndConfirmation": true,
+        "standalone270DegreeStairs": true,
+        "appearanceOnNewTreads": true,
+        "portableSaveLoad": true,
+        "exactUndoRedo": true,
+        "additionalProviderCalls": 0,
+        "physicalDeviceTested": false
+      },
+      "furniture": {
+        "productionUI": true,
+        "developmentBridgeUsed": false,
+        "realGeminiFurnitureCreation": true,
+        "realGeminiSelectedFurnitureEdit": true,
+        "realGeneratedHouseInteriorPlacement": true,
+        "nativeEntryWithFurniture": true,
+        "unrelatedArchitecturePreserved": true,
+        "inertPreview": true,
+        "cancelAndConfirmation": true,
+        "jumpGravityLanding": true,
+        "sprintAndReset": true,
+        "fourPrimaryControls": true,
+        "catalogSearch": true,
+        "narrowCatalogAndKeyboard": true,
+        "rayAimedGhostPlacement": true,
+        "rotation": true,
+        "repeatedEnterCreatesOneObject": true,
+        "keyboardCancel": true,
+        "inspectorColor": true,
+        "duplicate": true,
+        "portableSaveLoad": true,
+        "exactUndoRedo": true,
+        "isolatedGroundPlacementAfterRealArchitectureWorkflow": true,
+        "geometryAndScopeValidated": true,
+        "physicalDeviceTested": false
+      },
+      "pageErrors": 0
+    },
+    "provider": [
+      {
+        "event": "result",
+        "requestId": "5f126796-75f8-46e6-9b81-6fab8560184a",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "create",
+        "timings": {
+          "firstTokenMs": 647.5136060000077,
+          "headerMs": 646.7013620000071,
+          "providerMs": 1311.159706999999,
+          "validationMs": 9.495011000006343,
+          "totalMs": 2236.7059790000058,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      },
+      {
+        "event": "result",
+        "requestId": "b718f72b-c476-44d7-bc64-58c08d054b20",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "edit",
+        "timings": {
+          "firstTokenMs": 632.3092909999978,
+          "headerMs": 632.0086710000032,
+          "providerMs": 800.5607790000067,
+          "validationMs": 2.274340999996639,
+          "totalMs": 1350.5501430000004,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      },
+      {
+        "event": "result",
+        "requestId": "299cdc2d-70d1-4b02-9872-1deabecf1825",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "furnish",
+        "timings": {
+          "firstTokenMs": 821.7533420000109,
+          "headerMs": 821.546073000005,
+          "providerMs": 930.7340600000462,
+          "validationMs": 0.8859410000150092,
+          "totalMs": 1322.9986370000406,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      },
+      {
+        "event": "result",
+        "requestId": "6ce522a7-f6a2-44f9-82be-6ea60aa66177",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "edit",
+        "timings": {
+          "firstTokenMs": 846.3735570000135,
+          "headerMs": 846.16880699998,
+          "providerMs": 988.12182999996,
+          "validationMs": 0.24733000004198402,
+          "totalMs": 1379.5630169999786,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      }
+    ]
+  },
+  "security": {
+    "checkedAt": "2026-10-21T06:11:41.920Z",
+    "url": "https://holobuild.vercel.app",
+    "aiEnabled": true,
+    "checks": [
+      {
+        "check": "HTTP redirects to HTTPS",
+        "passed": true
+      },
+      {
+        "check": "Anonymous HTTPS and security headers",
+        "passed": true
+      },
+      {
+        "check": "Public AI explicitly enabled",
+        "passed": true
+      },
+      {
+        "check": "Untrusted Origin and CORS preflight denied",
+        "passed": true
+      },
+      {
+        "check": "Private local/config/server paths not served",
+        "passed": true
+      },
+      {
+        "check": "Deployed JS matches audited local build and has no private values",
+        "passed": true,
+        "scripts": 7
+      },
+      {
+        "check": "MediaPipe assets, WASM MIME and license evidence",
+        "passed": true
+      }
+    ],
+    "geminiCalled": false,
+    "credentialsPrinted": false
+  },
+  "logs": {
+    "checkedAt": "2026-10-21T06:16:00.670Z",
+    "deployment": "dpl_f9ro39ExXkYoZeiHDmiFzjgq2yKF",
+    "since": "2026-10-21T06:09:25Z",
+    "requestRecords": 53,
+    "httpStatusCounts": {
+      "200": 35,
+      "403": 6,
+      "404": 12
+    },
+    "requests": [
+      {
+        "timestamp": "2026-10-21T06:14:16.031Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "jvkmv-1792563256031-e2ec6fdbe336"
+      },
+      {
+        "timestamp": "2026-10-21T06:13:12.787Z",
+        "path": "/api/planner/assistant",
+        "status": 200,
+        "requestId": "wljqb-1792563192787-011e5fd77062"
+      },
+      {
+        "timestamp": "2026-10-21T06:13:03.262Z",
+        "path": "/api/planner/assistant",
+        "status": 200,
+        "requestId": "6pp29-1792563183262-5ec3b4e3b496"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:41.771Z",
+        "path": "/third-party-notices/distribution.json",
+        "status": 200,
+        "requestId": "8qvbr-1792563101771-86e3188ccd0b"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:41.344Z",
+        "path": "/third-party-notices/index.json",
+        "status": 200,
+        "requestId": "kfr8w-1792563101344-905c6e1538d1"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:39.161Z",
+        "path": "/vision/wasm/vision_wasm_internal.wasm",
+        "status": 200,
+        "requestId": "jvkmv-1792563099161-cd565fe5c20d"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:35.487Z",
+        "path": "/vision/hand_landmarker.task",
+        "status": 200,
+        "requestId": "pvbmg-1792563095487-dc2791b62ae3"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:35.429Z",
+        "path": "/assets/workerDetector-BMIPTz81.js",
+        "status": 200,
+        "requestId": "kfr8w-1792563095429-34c822a13626"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:35.366Z",
+        "path": "/assets/vision_bundle-BJqyx4FW.js",
+        "status": 200,
+        "requestId": "xzw8v-1792563095366-d0e75336023c"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:35.227Z",
+        "path": "/assets/trackingWorker-BNBieSSy.js",
+        "status": 200,
+        "requestId": "8qvbr-1792563095227-06f810b289cf"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:34.611Z",
+        "path": "/assets/three-vendor-C3XL4jGW.js",
+        "status": 200,
+        "requestId": "xzw8v-1792563094611-db3d82016476"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:34.495Z",
+        "path": "/assets/react-vendor-BASvHcO8.js",
+        "status": 200,
+        "requestId": "5jmxs-1792563094495-9c82e415bd87"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:34.202Z",
+        "path": "/assets/index-BmlORxzi.js",
+        "status": 200,
+        "requestId": "8qvbr-1792563094202-e77567acc002"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:34.027Z",
+        "path": "/assets/GLTFLoader-6Tm_fpMl.js",
+        "status": 200,
+        "requestId": "kfr8w-1792563094027-c1ffbf4f7d28"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:33.917Z",
+        "path": "/server/app.mjs",
+        "status": 404,
+        "requestId": "pchrp-1792563093917-93b6f01fa598"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:33.662Z",
+        "path": "/.cache/vercel-auth/auth.json",
+        "status": 404,
+        "requestId": "ltwql-1792563093662-396661f16db6"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:33.606Z",
+        "path": "/.git/config",
+        "status": 404,
+        "requestId": "8qvbr-1792563093606-6d6054752063"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:33.553Z",
+        "path": "/.env.hosted.local",
+        "status": 404,
+        "requestId": "pvbmg-1792563093553-902205478901"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:33.522Z",
+        "path": "/.env.gemini.local",
+        "status": 404,
+        "requestId": "clghq-1792563093522-198365e81aa9"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:33.115Z",
+        "path": "/.env",
+        "status": 404,
+        "requestId": "s8lnr-1792563093115-baa065f0fe08"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:32.732Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "cw8hk-1792563092732-5bd338290884"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:32.291Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "8qvbr-1792563092291-687897de62d1"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:31.572Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "cnb7m-1792563091572-b9d949b52517"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:31.143Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "w2t94-1792563091143-c88afbe9cc42"
+      },
+      {
+        "timestamp": "2026-10-21T06:11:30.391Z",
+        "path": "/",
+        "status": 200,
+        "requestId": "glps5-1792563090391-8fc8ef15da01"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:12.362Z",
+        "path": "/vision/hand_landmarker.task",
+        "status": 200,
+        "requestId": "wltxr-1792563012362-911939a4e458"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:12.001Z",
+        "path": "/assets/workerDetector-BMIPTz81.js",
+        "status": 200,
+        "requestId": "vx9g9-1792563012001-c566334cd186"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:11.232Z",
+        "path": "/assets/vision_bundle-BJqyx4FW.js",
+        "status": 200,
+        "requestId": "xs7w6-1792563011232-e305c4d75405"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:10.142Z",
+        "path": "/assets/trackingWorker-BNBieSSy.js",
+        "status": 200,
+        "requestId": "pfvq4-1792563010142-8830c4d79816"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:09.151Z",
+        "path": "/assets/three-vendor-C3XL4jGW.js",
+        "status": 200,
+        "requestId": "ptxdp-1792563009151-23dc75ddaa3b"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:08.688Z",
+        "path": "/assets/react-vendor-BASvHcO8.js",
+        "status": 200,
+        "requestId": "8qvbr-1792563008688-73cf8eeaa902"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:07.813Z",
+        "path": "/api/planner/assistant",
+        "status": 200,
+        "requestId": "fjntr-1792563007813-c980a7877115"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:07.477Z",
+        "path": "/assets/index-BmlORxzi.js",
+        "status": 200,
+        "requestId": "tfv6h-1792563007477-5b0ed21e4a0f"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:07.071Z",
+        "path": "/assets/GLTFLoader-6Tm_fpMl.js",
+        "status": 200,
+        "requestId": "kkkvs-1792563007071-a023e60978cf"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:06.917Z",
+        "path": "/server/app.mjs",
+        "status": 404,
+        "requestId": "fjntr-1792563006917-d4319e392268"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:06.737Z",
+        "path": "/.cache/vercel-auth/auth.json",
+        "status": 404,
+        "requestId": "bskff-1792563006737-1cd869047451"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:06.427Z",
+        "path": "/.git/config",
+        "status": 404,
+        "requestId": "v6dnp-1792563006427-ba022291a603"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:05.801Z",
+        "path": "/.env.hosted.local",
+        "status": 404,
+        "requestId": "bskff-1792563005801-0cdfa8c98a56"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:05.482Z",
+        "path": "/.env.gemini.local",
+        "status": 404,
+        "requestId": "fjbjh-1792563005482-7ca264d1d39a"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:05.300Z",
+        "path": "/.env",
+        "status": 404,
+        "requestId": "84bfq-1792563005300-7aeb341f4ecb"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:04.572Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "xzw8v-1792563004572-952e1954f2e4"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:03.861Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "2s2td-1792563003861-cf5037a98638"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:03.432Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "2s2td-1792563003432-edb7f337f0e9"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:02.981Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "hgk54-1792563002981-e6ba74ad669f"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:00.986Z",
+        "path": "/",
+        "status": 200,
+        "requestId": "ptxdp-1792563000986-21fa2e84a36b"
+      },
+      {
+        "timestamp": "2026-10-21T06:10:00.003Z",
+        "path": "/api/planner/assistant",
+        "status": 200,
+        "requestId": "glps5-1792563000003-dec7e4a89c0f"
+      },
+      {
+        "timestamp": "2026-10-21T06:09:55.001Z",
+        "path": "/favicon.svg",
+        "status": 200,
+        "requestId": "dvsvp-1792562995001-092a30ba5eb9"
+      },
+      {
+        "timestamp": "2026-10-21T06:09:54.997Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "54j75-1792562994997-98434dc02bd8"
+      },
+      {
+        "timestamp": "2026-10-21T06:09:48.472Z",
+        "path": "/assets/react-vendor-BASvHcO8.js",
+        "status": 200,
+        "requestId": "pfvq4-1792562988472-1c9373a1f467"
+      },
+      {
+        "timestamp": "2026-10-21T06:09:48.472Z",
+        "path": "/assets/index-BmlORxzi.js",
+        "status": 200,
+        "requestId": "kkkvs-1792562988472-482c7c519345"
+      },
+      {
+        "timestamp": "2026-10-21T06:09:48.472Z",
+        "path": "/assets/index-BnZRuF1X.css",
+        "status": 200,
+        "requestId": "fjntr-1792562988472-53e04515bb80"
+      },
+      {
+        "timestamp": "2026-10-21T06:09:48.472Z",
+        "path": "/assets/three-vendor-C3XL4jGW.js",
+        "status": 200,
+        "requestId": "bhs8v-1792562988472-a056089299f3"
+      },
+      {
+        "timestamp": "2026-10-21T06:09:47.177Z",
+        "path": "/",
+        "status": 200,
+        "requestId": "pchrp-1792562987177-0c3d42f8024f"
+      }
+    ],
+    "runtime": [
+      {
+        "timestamp": "2026-10-21T06:11:32.845Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "a3d66fc4-a42c-44a8-92bf-e66585667318",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-21T06:11:32.412Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "5aa2d96e-6a4c-4d3e-a2a8-04026fc824f7",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-21T06:11:31.724Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "62976b15-2a59-4c61-b085-22bfa72a510d",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-21T06:10:04.689Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "bf627c32-8d7e-45f9-9719-4e0f2d7c5085",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-21T06:10:03.975Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "45dec8ef-0828-41a2-8138-081617aecc4c",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-21T06:10:03.554Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "3e441b40-b1a9-4626-94e8-18ec35c05e6f",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      }
+    ],
+    "unexpected": [],
+    "server5xx": 0,
+    "rawBodiesPromptsIpsOrUserAgentsIncluded": false,
+    "notes": [
+      "Expected origin403 security probes are intentional.",
+      "HTTP200 stream terminal results separately passed actual UI/geometry/history smoke.",
+      "Observed release window only, not physical-device acceptance."
+    ],
+    "ok": true
+  },
+  "leases": {
+    "checkedAt": "2026-10-21T06:15:07.210Z",
+    "productionReadOnly": true,
+    "activeLeases": 0,
+    "credentialsPrinted": false,
+    "quotaMutations": false
+  },
+  "syntheticPermissionLifecycle": {
+    "testedAt": "2026-10-21T06:16:33.613Z",
+    "url": "https://holobuild.vercel.app",
+    "sourceCheckpoint": "a1d9edc426f440e8862f0e9a606c6d143dff8695",
+    "syntheticRecognition": true,
+    "physicalDeviceTested": false,
+    "providerCalls": 0,
+    "ok": true,
+    "lateResultDuringWalkingIgnored": true,
+    "lateResultAfterWalkthroughExitIgnored": true,
+    "deliberateRestartWorks": true,
+    "stopPreservesActualFinalResult": true,
+    "sceneUnchanged": true,
+    "pageErrors": 0
+  },
+  "releaseNetworkNotes": [
+    "Initial Git push HTTP408; remote checked and unchanged before successful normal retry.",
+    "Two Vercel network fetch failures before candidate build; unchanged subsequent upload succeeded. No public alias changed during failed uploads.",
+    "Security asset fetch reached15s timeout at hand_landmarker.task; unchanged retry passed all checks."
+  ],
+  "physicalAcceptance": {
+    "webcam": "pending",
+    "microphone": "pending",
+    "touch": "pending",
+    "friendLaptop": "pending"
+  },
+  "paidServicesActivated": false,
+  "quotasOrCredentialsChanged": false,
+  "runtimeChangedAfterDeployment": false
+}
