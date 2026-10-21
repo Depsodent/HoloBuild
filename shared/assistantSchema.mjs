@@ -1,7 +1,22 @@
 import { z } from "zod";
+import { FURNITURE_IDS } from "./furnitureCatalog.mjs";
 import { templateSchema, planSchema } from "./planSchema.mjs";
 import { operationSchema } from "./editSchema.mjs";
 export const assistantPlanSchema = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("furnish"),
+      preset: z.enum(FURNITURE_IDS),
+      position: z
+        .tuple([
+          z.number().finite().min(-49).max(49),
+          z.number().finite().min(0).max(45),
+          z.number().finite().min(-49).max(49),
+        ])
+        .optional(),
+      message: z.string().min(1).max(240),
+    })
+    .strict(),
   z
     .object({
       kind: z.literal("compose"),

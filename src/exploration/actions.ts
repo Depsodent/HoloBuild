@@ -35,6 +35,7 @@ export function exitExploration() {
   if (document.pointerLockElement) document.exitPointerLock?.();
   useViewStore.setState({
     walking: false,
+    furnishing: false,
     looking: false,
     paused: true,
     virtual: { forward: 0, right: 0, turn: 0 },

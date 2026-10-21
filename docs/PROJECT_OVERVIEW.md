@@ -8,7 +8,8 @@ HoloBuild is a browser-based 3D construction editor made by Aaryan (Depsodent). 
 2. Generate a two-floor house with connected stairs and balcony using Gemini, inspect its real steps, floor void and aligned access, preview before confirming, then undo/redo exactly.
 3. Select a wall in Part mode and add a real window opening without replacing unrelated components. Use Structure mode for whole-building changes.
 4. Enter Walkthrough with four primary controls, pass through a native door, climb stairs, visit the balcony and restore the editor view on exit.
-5. Save portable JSON, including supported imported GLB/GLTF assets, and load it back. Show mouse/gesture/Inspector edits sharing the same history.
+5. Jump/sprint in Walkthrough, furnish supported interior surfaces from 45 native presets, then use the same Inspector, AI, gestures and exact history. Unknown room labels require clarification.
+6. Save portable JSON, including supported imported GLB/GLTF assets, and load it back. Show mouse/gesture/Inspector edits sharing the same history.
 
 AI availability and model output vary; invalid designs are rejected, and complex prompts may need clarification. Offline supports bounded templates and explicit edits, not arbitrary equivalent LLM generation. Camera and speech demonstrations require actual supported hardware/browser permissions and must be described as pending until tested.
 

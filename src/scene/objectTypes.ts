@@ -3,6 +3,7 @@ import {
   nativeWallSchema,
 } from "../../shared/nativeSchema.mjs";
 import { z } from "zod";
+import { FURNITURE_IDS } from "../../shared/furnitureCatalog.mjs";
 import { templateSchema, contactsSchema } from "../../shared/planSchema.mjs";
 import { MATERIAL_IDS } from "./materialPresets";
 export const vectorSchema = z.tuple([
@@ -54,6 +55,7 @@ export const objectSchema = z
       "wall",
       "floor",
       "model",
+      "furniture",
     ]),
     position: vectorSchema,
     rotation: vectorSchema,
@@ -93,6 +95,10 @@ export const objectSchema = z
       })
       .strict()
       .optional(),
+    furniture: z
+      .object({ preset: z.enum(FURNITURE_IDS as [string, ...string[]]) })
+      .strict()
+      .optional(),
     model: z
       .object({
         assetId: z.string().regex(/^[a-f0-9]{64}$/),
@@ -118,8 +124,14 @@ export const objectSchema = z
   .refine(
     (o) => (o.type === "model") === !!o.model,
     "Model objects require model metadata; primitives cannot reference models.",
+  )
+  .refine(
+    (o) =>
+      (o.type === "furniture") === !!o.furniture &&
+      !(o.furniture && o.construction),
+    "Furniture requires a registered preset and independent object identity.",
   );
 export type SceneObject = z.infer<typeof objectSchema>;
 export type Tool = "select" | "translate" | "rotate" | "scale";
 
-export type ObjectType = Exclude<SceneObject["type"], "model">;
+export type ObjectType = Exclude<SceneObject["type"], "model" | "furniture">;

@@ -1,5 +1,6 @@
 import { create } from "zustand";
-export const WALK_SPEED = 2.2,
+export const SPRINT_SPEED = 4.4,
+  WALK_SPEED = 2.2,
   EYE_HEIGHT = 1.6;
 // Retire only the removed view preferences. Portable scenes and workspace layout are untouched.
 try {
@@ -9,6 +10,7 @@ try {
 }
 export const useViewStore = create(() => ({
   walking: false,
+  furnishing: false,
   paused: true,
   looking: false,
   guide: false,
@@ -25,8 +27,18 @@ export function resetWalkthrough() {
   if (document.pointerLockElement) document.exitPointerLock?.();
   useViewStore.setState((s) => ({
     resetSeq: s.resetSeq + 1,
+    furnishing: false,
     paused: true,
     looking: false,
     virtual: { forward: 0, right: 0, turn: 0 },
   }));
+}
+
+// Exact transient camera feet for placement safety; React telemetry stays throttled.
+let currentFeet: [number, number, number] | null = null;
+export function publishCameraFeet(feet: [number, number, number] | null) {
+  currentFeet = feet;
+}
+export function walkingFeet() {
+  return currentFeet;
 }

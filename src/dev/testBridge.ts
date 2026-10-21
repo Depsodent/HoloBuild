@@ -27,6 +27,12 @@ declare global {
         feet: Vec3 | null;
       };
       project?: (id: string) => { x: number; y: number } | null;
+      furnitureRendered?: () => {
+        id: string;
+        preset: string;
+        drawMeshes: number;
+        triangles: number;
+      }[];
       rendered?: () => {
         id: string;
         roughness: number;

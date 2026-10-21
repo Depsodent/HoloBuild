@@ -1,6 +1,22 @@
 # Performance record
 
-## Milestone 13 current measurements — 20 October 2026
+## Milestone 13.1 furniture observations — 21 October 2026
+
+One serial 1440×960 headless Edge/SwiftShader run loaded six repeating native presets in non-overlapping ground placements; no camera, model call, build or other browser suite ran concurrently. These are short software-renderer observations, not physical hardware acceptance or a before/after FPS claim.
+
+| Furniture items | Window keydown / blur listeners | Sampled RAF median ms | Load + mount ms | Scene mesh instances / triangles |
+| --- | --- | ---: | ---: | ---: |
+| 30 | 3 / 1 | 76.5 | 387 | 80 / 3180 |
+| 50 | 3 / 1 | 111.1 | 483 | 133 / 5268 |
+| 100 | 3 / 1 | 166.8 | 648 | 267 / 10572 |
+
+Listeners stay at **3 keydown / 1 blur** for every size and after five Walkthrough visits. Collision builds remain0 during editor-only loads and reach5 after five visits. The scene restores exactly. RAF one-cube baseline48.6ms and restored48.7ms are short observations, not statistically established equivalence. Load/mount includes automation, JSON and rendering, not isolated UI CPU cost; mesh/triangle counts describe scene instances, not actual GPU draw calls after culling.
+
+Live buffer/texture observations: one cube20/7;100furniture243/8; after visits319/8; restored cube68/8. Visited preset geometry stays in a bounded shared cache (the48additional buffers) and the shared wood texture remains resident. Instance buffers are released, but this does not prove absence of every leak or quantify driver memory bytes. Enclosed furnishings use a single conservative navigation box, open/slender items part boxes, all cached by scene identity. No per-triangle collision or per-object global keyboard handlers.
+
+Production app entry is751,893bytes/232,883gzip bytes (build11.89s; use raw receipt for exact gzip values). Shared React and Three vendor chunks are69,054/181,579gzip bytes; extra furniture functionality adds bytes rather than proving faster cold load. No dependencies were added. Raw reproducible recipe and observations: scripts/benchmark-furniture131.mjs and benchmarks/2026-10-21-m131-furniture.json. Existing hardware/device limitations below still apply.
+
+## Milestone 13 historical measurements — 20 October 2026
 
 Before/after use the same1440×960 headless Edge/SwiftShader session recipe, a fresh context, one then100 cubes, five walkthrough entry/exits and a restored one-cube scene. These are software-rendered, short observations, not physical GPU/camera tests or controlled FPS claims. Raw receipts: benchmarks/2026-10-20-m13-before.json and benchmarks/2026-10-20-m13-after.json.
 

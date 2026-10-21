@@ -30,10 +30,12 @@ export function SurfaceMaterial({
   object,
   grabbed,
   highlight,
+  manualDispose = false,
 }: {
   object: SceneObject;
   grabbed: boolean;
   highlight: boolean;
+  manualDispose?: boolean;
 }) {
   const color = usePreviewColor(object.id) ?? object.color;
   const resources = useContext(Resources);
@@ -43,6 +45,17 @@ export function SurfaceMaterial({
   const values = surfaceValues(object);
   const texture = preset.texture ? resources?.[preset.texture] : undefined;
   const dimensions = object.scale.join(",");
+  useEffect(() => {
+    if (manualDispose) {
+      const material = ref.current;
+      return () => material?.dispose();
+    }
+  }, [
+    manualDispose,
+    object.material,
+    dimensions,
+    object.surface?.textureScale,
+  ]);
   const configure = useMemo(
     () =>
       (

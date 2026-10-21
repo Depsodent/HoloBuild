@@ -1,4 +1,5 @@
 import { useViewStore, exploring } from "./exploration/viewStore";
+import { FurnishControls } from "./components/ui/FurnishControls";
 import { ExplorationControls } from "./components/ui/ExplorationControls";
 import { SelectionMode } from "./components/ui/StructureInspector";
 import { useEffect, useRef, useState } from "react";
@@ -228,6 +229,7 @@ export default function App() {
             <span>Drag to orbit · Scroll to zoom · Right-drag to pan</span>
           </div>
           <ExplorationControls />
+          <FurnishControls />
           {!readOnly && (
             <>
               <GestureCursor />

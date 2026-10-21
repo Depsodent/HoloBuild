@@ -15,7 +15,8 @@ A local-first 3D editor with webcam gestures, mouse tools, voice/text commands a
 - Resizable sidebars, persistent left tabs and floating camera/diagnostics; Stop Camera remains reachable when minimized.
 - Unified Ask HoloBuild: deterministic text/voice commands, Offline templates, optional local Ollama and native server-side Gemini generation/editing.
 - AI preview → explicit confirmation → one undoable action. Invalid geometry is rejected, never silently repaired. Auto fallback is explicitly labeled Offline.
-- A compact, read-only four-control Walkthrough for doors, connected stairs and balconies; exit restores the editor view.
+- Four-control Walkthrough with grounded Jump, held Sprint and contextual Furnish; exit restores the editor view.
+- 45 native furniture/interior presets across six categories, validated floor/tabletop/wall/ceiling attachment, Inspector/gesture/AI edits and portable exact history.
 
 ![HoloBuild production workspace with a Gemini-generated platform](docs/images/workspace.png)
 
@@ -87,6 +88,6 @@ Choose grid increments 0.05–1 m for mouse/gesture placement and whole structur
 
 Automated production capture in Edge with software rendering; physical-device acceptance remains pending.
 
-The primary toolbar contains only **Look Around | Exit Walkthrough | Reset Position | Controls**. WASD/arrows and pointer lock retain native wall/floor, doorway, stair and balcony collision. Optional keyboard/touch fallback lives inside Controls help. The global Stop Camera remains accessible. Exit restores camera/layout/selection without scene edits or history. See [Walkthrough](docs/WALKTHROUGH.md), [project overview](docs/PROJECT_OVERVIEW.md) and [contributing](CONTRIBUTING.md).
+The primary toolbar contains only **Look Around | Exit Walkthrough | Reset Position | Controls**. WASD/arrows and pointer lock retain native wall/floor, doorway, stair and balcony collision. Optional keyboard/touch fallback lives inside Controls help. The global Stop Camera remains accessible. Exit restores camera/layout/selection without changing history; explicitly confirmed furnishing persists. See [Walkthrough](docs/WALKTHROUGH.md), [project overview](docs/PROJECT_OVERVIEW.md) and [contributing](CONTRIBUTING.md).
 
-Current validation and deployment receipts are recorded in the Milestone 13 handoff. Older milestone receipts are historical evidence, not current UI instructions. Physical webcam/microphone/friend-device acceptance remains pending until confirmed.
+For Jump/Sprint and furniture placement, see [Furnishing](docs/FURNISHING.md). Current validation/deployment receipts are recorded in the Milestone 13.1 handoff. Older milestone receipts are historical evidence, not current UI instructions. Physical webcam/microphone/friend-device acceptance remains pending until confirmed.

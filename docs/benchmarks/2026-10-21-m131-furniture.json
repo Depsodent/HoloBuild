@@ -1,0 +1,192 @@
+{
+  "capturedAt": "2026-10-20T19:36:35.094Z",
+  "label": "native",
+  "url": "http://127.0.0.1:5175",
+  "renderer": "Headless Edge SwiftShader; not physical laptop/GPU performance",
+  "samples": {
+    "oneCube": {
+      "listeners": {
+        "window:mousemove": 1,
+        "document:visibilitychange": 2,
+        "window:keydown": 3,
+        "document:keydown": 1,
+        "window:blur": 1
+      },
+      "resources": {
+        "buffers": 20,
+        "textures": 7
+      },
+      "navigationBuilds": 0,
+      "renderFrames": {
+        "frames": 60,
+        "seconds": 3.00190000000298,
+        "medianMs": 48.600000000000364
+      }
+    },
+    "furniture30": {
+      "listeners": {
+        "window:mousemove": 1,
+        "document:visibilitychange": 2,
+        "window:keydown": 3,
+        "document:keydown": 1,
+        "window:blur": 1
+      },
+      "resources": {
+        "buffers": 135,
+        "textures": 8
+      },
+      "navigationBuilds": 0,
+      "renderFrames": {
+        "frames": 38,
+        "seconds": 3.04360000000447,
+        "medianMs": 76.5
+      },
+      "loadAndMountMs": 386.6820000000007,
+      "geometry": {
+        "objects": 30,
+        "drawMeshes": 80,
+        "triangles": 3180
+      }
+    },
+    "furniture50": {
+      "listeners": {
+        "window:mousemove": 1,
+        "document:visibilitychange": 2,
+        "window:keydown": 3,
+        "document:keydown": 1,
+        "window:blur": 1
+      },
+      "resources": {
+        "buffers": 191,
+        "textures": 8
+      },
+      "navigationBuilds": 0,
+      "renderFrames": {
+        "frames": 26,
+        "seconds": 3.002600000005961,
+        "medianMs": 111.10000000000036
+      },
+      "loadAndMountMs": 483.2499000000007,
+      "geometry": {
+        "objects": 50,
+        "drawMeshes": 133,
+        "triangles": 5268
+      }
+    },
+    "furniture100": {
+      "listeners": {
+        "window:mousemove": 1,
+        "document:visibilitychange": 2,
+        "window:keydown": 3,
+        "document:keydown": 1,
+        "window:blur": 1
+      },
+      "resources": {
+        "buffers": 243,
+        "textures": 8
+      },
+      "navigationBuilds": 0,
+      "renderFrames": {
+        "frames": 16,
+        "seconds": 3.025400000002981,
+        "medianMs": 166.8000000000029
+      },
+      "loadAndMountMs": 648.4861999999994,
+      "geometry": {
+        "objects": 100,
+        "drawMeshes": 267,
+        "triangles": 10572
+      }
+    },
+    "afterFiveTransitions": {
+      "listeners": {
+        "window:mousemove": 1,
+        "document:visibilitychange": 2,
+        "window:keydown": 3,
+        "document:keydown": 1,
+        "window:blur": 1,
+        "window:keyup": 0,
+        "document:pointerlockchange": 0,
+        "document:pointerlockerror": 0,
+        "document:mousemove": 0
+      },
+      "resources": {
+        "buffers": 319,
+        "textures": 8
+      },
+      "navigationBuilds": 5,
+      "renderFrames": {
+        "frames": 20,
+        "seconds": 3.0105000000014916,
+        "medianMs": 166.70000000000073
+      }
+    },
+    "restoredOneCube": {
+      "listeners": {
+        "window:mousemove": 1,
+        "document:visibilitychange": 2,
+        "window:keydown": 3,
+        "document:keydown": 1,
+        "window:blur": 1,
+        "window:keyup": 0,
+        "document:pointerlockchange": 0,
+        "document:pointerlockerror": 0,
+        "document:mousemove": 0
+      },
+      "resources": {
+        "buffers": 68,
+        "textures": 8
+      },
+      "navigationBuilds": 5,
+      "renderFrames": {
+        "frames": 59,
+        "seconds": 3.0170000000014916,
+        "medianMs": 48.69999999999709
+      }
+    }
+  },
+  "sceneRestored": true,
+  "limitations": [
+    "Single short Edge/SwiftShader sample per scene; not physical laptop/GPU or camera throughput.",
+    "Load-and-mount includes browser automation and rendering latency, not an isolated catalog CPU benchmark.",
+    "Visited preset geometry remains in a bounded shared cache; retained buffers after clearing instances are not all leaks.",
+    "No before/after FPS, zero-leak, physical device or memory-byte claim."
+  ],
+  "bundles": [
+    {
+      "file": "GLTFLoader-DKwM6Gdt.js",
+      "bytes": 43908,
+      "gzipBytes": 12935
+    },
+    {
+      "file": "index-DWnRQ7FM.js",
+      "bytes": 751893,
+      "gzipBytes": 232883
+    },
+    {
+      "file": "react-vendor-BASvHcO8.js",
+      "bytes": 221884,
+      "gzipBytes": 69054
+    },
+    {
+      "file": "three-vendor-C3XL4jGW.js",
+      "bytes": 704462,
+      "gzipBytes": 181579
+    },
+    {
+      "file": "trackingWorker-BNBieSSy.js",
+      "bytes": 144788,
+      "gzipBytes": 43974
+    },
+    {
+      "file": "vision_bundle-BJqyx4FW.js",
+      "bytes": 144265,
+      "gzipBytes": 43719
+    },
+    {
+      "file": "workerDetector-BMIPTz81.js",
+      "bytes": 1725,
+      "gzipBytes": 815
+    }
+  ]
+}

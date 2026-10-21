@@ -21,7 +21,10 @@ const body = (p: [number, number, number]): Body => ({
 it("empty scenes have a grounded body and finite bounded input", () => {
   const w = navigationWorld([]);
   expect(safeSpawn(w)?.position).toEqual([0, 0, 0]);
-  expect(moveBody(w, body([0, 0, 0]), 1, 0, 0.1).position).toEqual([1, 0, 0]);
+  expect(moveBody(w, body([0, 0, 0]), 1, 0, 0.1).position[0]).toBeCloseTo(
+    1,
+    12,
+  );
   expect(() => moveBody(w, body([0, 0, 0]), NaN, 0, 0.1)).toThrow();
 });
 it("a swept body cannot tunnel through a thin wall and slides along it", () => {

@@ -1,3 +1,4 @@
+import { furnitureVolumes } from "../furniture/placement";
 import { openingDefinitions } from "../generation/openings";
 import { Box3, Quaternion, Euler, Vector3 } from "three";
 import type { SceneObject, Vec3 } from "../scene/objectTypes";
@@ -15,6 +16,7 @@ export interface Collider {
   yaw: number;
   stair: boolean;
   approximate: boolean;
+  furniture?: boolean;
 }
 export interface NavigationWorld {
   colliders: Collider[];
@@ -34,6 +36,23 @@ export function navigationWorld(objects: SceneObject[]): NavigationWorld {
   for (const o of objects) {
     const b = bounds(o);
     whole.union(b);
+    if (o.furniture) {
+      furnitureVolumes(o).forEach((box, i) =>
+        colliders.push({
+          id: o.id + ":" + i,
+          box,
+          cx: (box.min.x + box.max.x) / 2,
+          cz: (box.min.z + box.max.z) / 2,
+          hx: (box.max.x - box.min.x) / 2,
+          hz: (box.max.z - box.min.z) / 2,
+          yaw: 0,
+          stair: false,
+          approximate: true,
+          furniture: true,
+        }),
+      );
+      continue;
+    }
     const c = o.construction,
       r = c?.structure?.template ?? c?.structure?.architectureTemplate;
     if (isPassableDoor(o)) {
@@ -115,7 +134,27 @@ function support(world: NavigationWorld, x: number, z: number, max: number) {
       top = c.box.max.y;
   return top;
 }
-/** Bounded swept horizontal steps, wall sliding, gravity and real tread/slab support. */
+export const GRAVITY = 9.8,
+  JUMP_VELOCITY = 4.2;
+/** A rising body cannot be re-armed until actual floor contact. */
+export function jumpBody(
+  world: NavigationWorld,
+  body: Body,
+  height = 1.75,
+): Body {
+  const floor = support(
+    world,
+    body.position[0],
+    body.position[2],
+    body.position[1] + 0.01,
+  );
+  return body.grounded &&
+    Math.abs(body.position[1] - floor) < 0.02 &&
+    bodyClear(world, body.position, height)
+    ? { position: [...body.position], velocity: JUMP_VELOCITY, grounded: false }
+    : body;
+}
+/** Swept horizontal AND vertical substeps preserve thin walls, ceilings and landings. */
 export function moveBody(
   world: NavigationWorld,
   body: Body,
@@ -133,31 +172,62 @@ export function moveBody(
   )
     throw Error("Invalid walkthrough body state.");
   const p = [...body.position] as Vec3,
-    n = Math.min(96, Math.max(1, Math.ceil(Math.hypot(dx, dz) / 0.06)));
-  for (let i = 0; i < n; i++)
+    t = Math.max(0, Math.min(dt, 0.1));
+  const n = Math.max(
+    1,
+    Math.ceil(
+      Math.max(
+        Math.hypot(dx, dz) / 0.04,
+        ((Math.abs(body.velocity) + GRAVITY * t) * t) / 0.04,
+        t / 0.012,
+      ),
+    ),
+  );
+  // Inputs come from bounded camera movement. Reject pathological external displacements rather than tunnel.
+  if (n > 1024)
+    throw Error("Walkthrough displacement exceeds the safe sweep budget.");
+  let v = body.velocity,
+    grounded = body.grounded;
+  for (let i = 0; i < n; i++) {
+    const step = t / n;
     for (const axis of [0, 2] as const) {
       const next = [...p] as Vec3;
       next[axis] += (axis === 0 ? dx : dz) / n;
       const top = support(world, next[0], next[2], p[1] + STEP_HEIGHT);
-      next[1] = Math.max(p[1], top);
+      if (grounded && v <= 0) next[1] = Math.max(p[1], top);
       if (bodyClear(world, next, height)) {
         p[0] = next[0];
         p[1] = next[1];
         p[2] = next[2];
       }
     }
-  const top = support(world, p[0], p[2], p[1] + 0.001),
-    t = Math.max(0, Math.min(dt, 0.1));
-  let v = body.velocity;
-  if (p[1] <= top + 0.015) {
-    p[1] = top;
-    v = 0;
-  } else {
-    v = Math.max(-15, v - 9.8 * t);
-    p[1] = Math.max(top, p[1] + v * t);
-    if (p[1] === top) v = 0;
+    const floor = support(world, p[0], p[2], p[1] + 0.001);
+    if (v <= 0 && p[1] <= floor + 0.015) {
+      p[1] = floor;
+      v = 0;
+      grounded = true;
+      continue;
+    }
+    grounded = false;
+    const nextV = Math.max(-15, v - GRAVITY * step),
+      target = p[1] + (v + nextV) * 0.5 * step;
+    v = nextV;
+    if (target > p[1]) {
+      let ceiling = 100;
+      for (const c of world.colliders)
+        if (horizontal(c, p[0], p[2]) && c.box.min.y >= p[1] + height - 0.015)
+          ceiling = Math.min(ceiling, c.box.min.y);
+      p[1] = Math.min(target, ceiling - height);
+      if (p[1] < target) v = 0;
+    } else {
+      p[1] = Math.max(floor, target);
+      if (p[1] <= floor + 0.000001) {
+        v = 0;
+        grounded = true;
+      }
+    }
   }
-  return { position: p, velocity: v, grounded: Math.abs(p[1] - top) < 0.015 };
+  return { position: p, velocity: v, grounded };
 }
 export function safeSpawn(
   world: NavigationWorld,
@@ -174,7 +244,7 @@ export function safeSpawn(
     const tops = [
       0,
       ...world.colliders
-        .filter((c) => horizontal(c, p[0], p[2], 0.035))
+        .filter((c) => !c.furniture && horizontal(c, p[0], p[2], 0.035))
         .map((c) => c.box.max.y),
     ]
       .filter((n) => n >= 0 && n <= Math.max(anchor[1] + 0.5, 1))

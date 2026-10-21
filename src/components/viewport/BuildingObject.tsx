@@ -1,3 +1,6 @@
+import { useFurnishStore } from "../../furniture/furnishStore";
+import { objectSize } from "../../scene/objectFactory";
+import { FurnitureVisual } from "./FurnitureVisual";
 import { isPassableDoor } from "../../exploration/navigation";
 import { useViewStore } from "../../exploration/viewStore";
 import { updateMouseGuide, clearMouseGuide } from "../../scene/precisionGuide";
@@ -130,13 +133,26 @@ export const BuildingObject = memo(function BuildingObject({
         position={object.position}
         rotation={object.rotation}
         scale={object.scale}
-        castShadow={object.type !== "model"}
+        castShadow={object.type !== "model" && !object.furniture}
         receiveShadow
         visible={!(walking && isPassableDoor(object))}
         userData={{ objectId: object.id }}
         onClick={(e) => {
           e.stopPropagation();
-          if (readOnly) return;
+          if (readOnly) {
+            if (
+              useViewStore.getState().furnishing &&
+              object.furniture &&
+              !useFurnishStore.getState().draft
+            )
+              useFurnishStore.setState({
+                selected: object.id,
+                reason:
+                  object.name +
+                  " selected. Reposition or remove it here; Inspector is available after Exit.",
+              });
+            return;
+          }
           useSceneStore.getState().select(object.id);
           if (useSceneStore.getState().selectedStructureId)
             useLeftStore.getState().setTab("inspector");
@@ -147,8 +163,8 @@ export const BuildingObject = memo(function BuildingObject({
         }}
         onPointerOut={() => setHover(false)}
       >
-        <ObjectGeometry type={object.type} size={object.model?.size} />
-        {object.type === "model" ? (
+        <ObjectGeometry type={object.type} size={objectSize(object)} />
+        {object.type === "model" || object.furniture ? (
           <>
             <meshBasicMaterial
               transparent
@@ -156,11 +172,19 @@ export const BuildingObject = memo(function BuildingObject({
               depthWrite={false}
               colorWrite={false}
             />
-            <ImportedModel
-              object={object}
-              grabbed={grabbed}
-              highlight={!readOnly && (hover || gestureHover)}
-            />
+            {object.furniture ? (
+              <FurnitureVisual
+                object={object}
+                grabbed={grabbed}
+                highlight={!readOnly && (hover || gestureHover)}
+              />
+            ) : (
+              <ImportedModel
+                object={object}
+                grabbed={grabbed}
+                highlight={!readOnly && (hover || gestureHover)}
+              />
+            )}
           </>
         ) : (
           <SurfaceMaterial
@@ -169,26 +193,28 @@ export const BuildingObject = memo(function BuildingObject({
             highlight={hover || gestureHover}
           />
         )}
-        <Edges
-          color={
-            groupSelected
-              ? "#ffd782"
-              : selected
-                ? "#b8fff5"
-                : hover || gestureHover
-                  ? "#64f7e6"
-                  : object.material === "holographic"
-                    ? "#00dfff"
-                    : "#267f85"
-          }
-          lineWidth={
-            selected || groupSelected
-              ? 2
-              : object.material === "holographic"
-                ? 1.5
-                : 1
-          }
-        />
+        {(!object.furniture || selected || hover || gestureHover) && (
+          <Edges
+            color={
+              groupSelected
+                ? "#ffd782"
+                : selected
+                  ? "#b8fff5"
+                  : hover || gestureHover
+                    ? "#64f7e6"
+                    : object.material === "holographic"
+                      ? "#00dfff"
+                      : "#267f85"
+            }
+            lineWidth={
+              selected || groupSelected
+                ? 2
+                : object.material === "holographic"
+                  ? 1.5
+                  : 1
+            }
+          />
+        )}
       </mesh>
       {selected &&
         !group &&

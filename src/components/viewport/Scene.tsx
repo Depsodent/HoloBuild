@@ -1,4 +1,6 @@
 import { useViewStore, exploring } from "../../exploration/viewStore";
+import { useFurnishStore } from "../../furniture/furnishStore";
+import { FurnishInteraction } from "./FurnishInteraction";
 import { PrecisionOverlay } from "./PrecisionOverlay";
 import { recordGraphics } from "../../vision/graphicsInfo";
 import { useLightingStore } from "../../scene/lightingStore";
@@ -69,6 +71,7 @@ function Metrics() {
 export const Scene = memo(function Scene() {
   const objects = useSceneStore((s) => s.objects);
   const readOnly = useViewStore((s) => s.walking);
+  const furniturePreview = useFurnishStore((s) => !!s.draft);
   return (
     <ViewportBoundary>
       <Canvas
@@ -93,9 +96,10 @@ export const Scene = memo(function Scene() {
         <Grid />
         <CameraController />
         <Metrics />
+        <FurnishInteraction />
         {!readOnly && (
           <>
-            <GestureInteraction />
+            {!furniturePreview && <GestureInteraction />}
             <PlacementPreview />
             <StructureControls />
             <PrecisionOverlay />

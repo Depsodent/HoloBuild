@@ -1,0 +1,247 @@
+{
+  "validatedAt": "2026-10-21T05:54:32.337Z",
+  "baseline": "73d622a0178f053a85ddedc1a812f4896dda4eb8",
+  "furniturePresets": 45,
+  "automated": {
+    "units": {
+      "passed": 477,
+      "files": 41
+    },
+    "backend": {
+      "passed": 70,
+      "reusedUnchangedResult": true
+    },
+    "typescript": "Referenced tsc -b passed",
+    "eslint": "Full ESLint and final smoke helper lint passed",
+    "browser": {
+      "fullSerialPassed": 158,
+      "minutes": 25.1,
+      "afterwardRuntimeChange": "Question-mark punctuation on explicit furniture coordinates only",
+      "focusedUnits": 82,
+      "affectedBrowserPassed": 1,
+      "fullSuiteNotNeedlesslyRepeated": true
+    },
+    "build": {
+      "passed": true,
+      "seconds": 23.2,
+      "notices": 70,
+      "unresolvedNotices": 0,
+      "entry": "index-BmlORxzi.js",
+      "entryBytes": 751895,
+      "entryGzipBytes": 232882,
+      "warnings": [
+        "Existing third-party annotations",
+        "Large app/Three chunks"
+      ]
+    },
+    "productionDependencyVulnerabilities": 0
+  },
+  "localGemini": {
+    "provider": [
+      {
+        "event": "result",
+        "requestId": "aeae2e70-1e76-4548-b651-b39f6430b885",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "create",
+        "timings": {
+          "firstTokenMs": 20744.6826,
+          "headerMs": 20744.341400000005,
+          "providerMs": 26513.30350000001,
+          "validationMs": 13.687300000005052,
+          "totalMs": 26528.517900000006,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      },
+      {
+        "event": "result",
+        "requestId": "c395e936-d521-4748-9bb2-b165fb27b133",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "edit",
+        "timings": {
+          "firstTokenMs": 8550.296000000002,
+          "headerMs": 8550.052599999995,
+          "providerMs": 8585.561799999996,
+          "validationMs": 7.677400000015041,
+          "totalMs": 8597.444400000008,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      },
+      {
+        "event": "result",
+        "requestId": "f13df41e-6976-4e64-aeec-38d56546ea35",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "furnish",
+        "timings": {
+          "firstTokenMs": 17355.955200000026,
+          "headerMs": 17355.713300000003,
+          "providerMs": 17356.626900000032,
+          "validationMs": 0.7862000000313856,
+          "totalMs": 17358.36579999997,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      },
+      {
+        "event": "result",
+        "requestId": "0a3f242d-c04e-49d1-ab84-b52747dba27b",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "edit",
+        "timings": {
+          "firstTokenMs": 1615.2693999999901,
+          "headerMs": 1615.098100000003,
+          "providerMs": 2821.170600000012,
+          "validationMs": 0.5720999999903142,
+          "totalMs": 6692.369800000044,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      }
+    ],
+    "checks": {
+      "creation": {
+        "inertPreview": true,
+        "parts": 44,
+        "stairSteps": 16,
+        "upperFloorVoid": true,
+        "balconyParts": 8,
+        "alignedRealAccess": true,
+        "unrelatedCubePreserved": true,
+        "exactUndoRedo": true
+      },
+      "genuineConversationalEdit": {
+        "sameStructure": true,
+        "inertPreview": true,
+        "unrelatedComponentsPreserved": true,
+        "exactUndoRedo": true
+      },
+      "staircaseConversation": {
+        "material": "wood",
+        "cancel": true,
+        "inertPreview": true,
+        "exactUndoRedo": true
+      },
+      "editableOpening": {
+        "partInspector": true,
+        "panelIdPreserved": true,
+        "realAccessRetained": true,
+        "stairAndBalconyRecipesPreserved": true,
+        "exactUndoRedo": true
+      },
+      "saveLoad": {
+        "allArchitecturalMetadata": true,
+        "exactObjects": true,
+        "undoRedoLoad": true
+      },
+      "precision": {
+        "productionUI": true,
+        "developmentBridgeUsed": false,
+        "inspectorTabs": true,
+        "roughnessMetalnessOpacity": true,
+        "partScopePreservesArchitecture": true,
+        "numericDimensions": true,
+        "centimetrePreview": true,
+        "draftAcrossTabs": true,
+        "gridControls": true,
+        "measurements": true,
+        "exactUndoRedo": true,
+        "portableSurfaceAndTransformPersistence": true,
+        "physicalDeviceTested": false
+      },
+      "exploration": {
+        "productionUI": true,
+        "developmentBridgeUsed": false,
+        "realGeminiHost": true,
+        "doorPassage": true,
+        "connectedStairClimb": true,
+        "upperFloorVoid": true,
+        "balconyAccessAndReturn": true,
+        "pointerLockMouseLook": true,
+        "escapePause": true,
+        "walkthroughRestoresLayout": true,
+        "editorCanvasPixelsRestored": true,
+        "fourPrimaryControls": true,
+        "retiredPresentationAbsent": true,
+        "resetToInitialFeet": true,
+        "selectedGeneratedWallWindow": true,
+        "selectedManualWallWindow": true,
+        "previewCancelAndConfirmation": true,
+        "standalone270DegreeStairs": true,
+        "appearanceOnNewTreads": true,
+        "portableSaveLoad": true,
+        "exactUndoRedo": true,
+        "additionalProviderCalls": 0,
+        "physicalDeviceTested": false
+      }
+    },
+    "initialFailure": {
+      "kind": "provider-timeout",
+      "requestId": "20400f7d-fed8-4d1b-860e-630c2c3033b1",
+      "timeoutBudgetChanged": false
+    },
+    "combinedRunPassed": false,
+    "helperFailure": "After successful provider/architecture/furniture work, duplication attempted with cleared history selection; helper now reselects",
+    "providerFreeReplay": {
+      "testedAt": "2026-10-21T05:51:46.601Z",
+      "url": "http://127.0.0.1:5182",
+      "sourceCheckpoint": "73d622a0178f053a85ddedc1a812f4896dda4eb8",
+      "providerCalls": 0,
+      "physicalDeviceTested": false,
+      "ok": true,
+      "checks": {
+        "productionUI": true,
+        "developmentBridgeUsed": false,
+        "realGeminiFurnitureCreation": false,
+        "realGeminiSelectedFurnitureEdit": false,
+        "realGeneratedHouseInteriorPlacement": true,
+        "nativeEntryWithFurniture": true,
+        "unrelatedArchitecturePreserved": true,
+        "inertPreview": true,
+        "cancelAndConfirmation": true,
+        "jumpGravityLanding": true,
+        "sprintAndReset": true,
+        "fourPrimaryControls": true,
+        "catalogSearch": true,
+        "narrowCatalogAndKeyboard": true,
+        "rayAimedGhostPlacement": true,
+        "rotation": true,
+        "repeatedEnterCreatesOneObject": true,
+        "keyboardCancel": true,
+        "inspectorColor": true,
+        "duplicate": true,
+        "portableSaveLoad": true,
+        "exactUndoRedo": true,
+        "isolatedGroundPlacementAfterRealArchitectureWorkflow": true,
+        "geometryAndScopeValidated": true,
+        "physicalDeviceTested": false
+      },
+      "pageErrors": 0
+    },
+    "successfulFurnitureProviderAssertionsBeforeHelperFailure": [
+      "native sofa preset",
+      "inert preview",
+      "confirmation",
+      "unrelated architecture preserved",
+      "selected tint",
+      "exact Undo/Redo",
+      "wood preview cancellation"
+    ]
+  },
+  "benchmark": "benchmarks/2026-10-21-m131-furniture.json",
+  "physicalAcceptance": {
+    "webcam": "pending",
+    "microphone": "pending",
+    "touch": "pending",
+    "friendLaptop": "pending"
+  },
+  "security": "No credential, hosted quota or infrastructure changes; final publication and public receipts recorded separately"
+}

@@ -7,26 +7,30 @@ if (process.env.HOLO_LIVE_GEMINI !== "1")
 const base = process.env.HOLO_RELEASE_URL || "http://127.0.0.1:5182",
   name = base.startsWith("https:") ? "public" : "local",
   milestone =
-    process.env.HOLO_MILESTONE === "13"
-      ? "m13"
-      : process.env.HOLO_EXPLORATION_SMOKE === "1"
-        ? "m12"
-        : process.env.HOLO_PRECISION_SMOKE === "1"
-          ? "m11"
-          : "m105";
+    process.env.HOLO_MILESTONE === "13.1"
+      ? "m131"
+      : process.env.HOLO_MILESTONE === "13"
+        ? "m13"
+        : process.env.HOLO_EXPLORATION_SMOKE === "1"
+          ? "m12"
+          : process.env.HOLO_PRECISION_SMOKE === "1"
+            ? "m11"
+            : "m105";
 const report = {
   testedAt: new Date().toISOString(),
   url: base,
   baseCheckpoint:
     process.env.HOLO_SOURCE_SHA || "29a7717961374efa3bc7db1da257bdea1e6e3f9f",
   source:
-    milestone === "m13"
-      ? "Milestone 13 production-build release validation"
-      : milestone === "m12"
-        ? "Milestone 12 production-build release validation"
-        : milestone === "m11"
-          ? "Milestone 11 production-build release validation"
-          : "Milestone 10.5 release validation",
+    milestone === "m131"
+      ? "Milestone 13.1 production-build release validation"
+      : milestone === "m13"
+        ? "Milestone 13 production-build release validation"
+        : milestone === "m12"
+          ? "Milestone 12 production-build release validation"
+          : milestone === "m11"
+            ? "Milestone 11 production-build release validation"
+            : "Milestone 10.5 release validation",
   physicalDeviceTested: false,
   ok: false,
   checks: {},
@@ -389,6 +393,10 @@ try {
     report.checks.exploration = await (
       await import("./smoke-exploration.mjs")
     ).smokeExploration(page);
+  if (process.env.HOLO_FURNITURE_SMOKE === "1")
+    report.checks.furniture = await (
+      await import("./smoke-furniture131.mjs")
+    ).smokeFurniture131(page, modelAsk);
   await page.locator("canvas[data-engine]").hover();
   await page.mouse.wheel(0, 500);
   await page.screenshot({

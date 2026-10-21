@@ -144,10 +144,10 @@ export function ExplorationControls() {
           }}
         >
           <p>
-            WASD move. Arrow Up/Down move; Left/Right turn. Look Around locks
-            the mouse; Escape unlocks and pauses. Tab to Exit Walkthrough to
-            return to the editor. Reset Position restores the safe starting
-            position.
+            WASD move. Space jumps when grounded; hold Shift to sprint. Arrow
+            Up/Down move; Left/Right turn. Look Around locks the mouse; Escape
+            unlocks and pauses. Tab to Exit Walkthrough to return to the editor.
+            Reset Position restores the safe starting position.
           </p>
           <p>
             Native doors act as open portals; windows and rails stay solid.

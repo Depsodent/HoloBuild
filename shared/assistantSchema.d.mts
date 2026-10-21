@@ -2,6 +2,12 @@ import type { z } from "zod";
 import type { BuildingTemplate, ConstructionPlan } from "./planSchema.mjs";
 import type { StructureOperation } from "./editSchema.mjs";
 export type AssistantPlan =
+  | {
+      kind: "furnish";
+      preset: string;
+      position?: [number, number, number];
+      message: string;
+    }
   | { kind: "compose"; plan: ConstructionPlan; message: string }
   | { kind: "create"; design: BuildingTemplate; message: string }
   | {

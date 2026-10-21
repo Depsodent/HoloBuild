@@ -10,13 +10,16 @@ import { bounds } from "../../interaction/placement";
 import {
   NavigationCache,
   moveBody,
+  jumpBody,
   safeSpawn,
   bodyClear,
   type Body,
 } from "../../exploration/navigation";
 import {
   useViewStore,
+  publishCameraFeet,
   WALK_SPEED,
+  SPRINT_SPEED,
   EYE_HEIGHT,
 } from "../../exploration/viewStore";
 interface Pose {
@@ -34,6 +37,7 @@ export function CameraController() {
     yaw = useRef(0),
     pitch = useRef(0),
     keys = useRef(new Set<string>()),
+    jumpQueued = useRef(false),
     lastPublish = useRef(0);
   const objects = useSceneStore((s) => s.objects),
     walking = useViewStore((s) => s.walking),
@@ -146,6 +150,7 @@ export function CameraController() {
     yaw.current = heading;
     pitch.current = 0;
     keys.current.clear();
+    jumpQueued.current = false;
     start.current = { position: [...found.position], yaw: heading };
     useViewStore.setState({
       feet: [...found.position],
@@ -167,6 +172,10 @@ export function CameraController() {
         r = session.current,
         was = r.walking;
       r.walking = s.walking;
+      if (s.paused) {
+        keys.current.clear();
+        jumpQueued.current = false;
+      }
       if (s.walking && !was) {
         r.editor = capture();
         if (camera instanceof PerspectiveCamera) {
@@ -181,6 +190,7 @@ export function CameraController() {
           document.exitPointerLock?.();
         keys.current.clear();
         body.current = null;
+        publishCameraFeet(null);
         start.current = null;
         cache.clear();
         if (r.editor) restore(r.editor);
@@ -229,6 +239,7 @@ export function CameraController() {
     const held = keys.current;
     const pause = () => {
       keys.current.clear();
+      jumpQueued.current = false;
       if (document.pointerLockElement === gl.domElement)
         document.exitPointerLock?.();
       if (useViewStore.getState().walking)
@@ -246,15 +257,24 @@ export function CameraController() {
         return;
       }
       if (
-        (e.target as HTMLElement)?.closest?.("input,select,textarea,button") ||
+        (e.target as HTMLElement)?.closest?.(
+          "input,select,textarea,button,[contenteditable=true]",
+        ) ||
         e.ctrlKey ||
         e.metaKey ||
         e.altKey
       )
         return;
       const k = e.key.toLowerCase();
+      if (k === " ") {
+        e.preventDefault();
+        if (!e.repeat && !useViewStore.getState().paused)
+          jumpQueued.current = true;
+        return;
+      }
       if (
         [
+          "shift",
           "w",
           "a",
           "s",
@@ -276,6 +296,7 @@ export function CameraController() {
     const locked = () => {
       if (!useViewStore.getState().walking) return;
       keys.current.clear();
+      jumpQueued.current = false;
       const looking = document.pointerLockElement === gl.domElement;
       useViewStore.setState({
         looking,
@@ -284,6 +305,14 @@ export function CameraController() {
           ? "Mouse look active · WASD move · Escape pauses."
           : "Paused · Look Around or Controls to resume.",
       });
+    };
+    const typing = (e: FocusEvent) => {
+      if (
+        (e.target as HTMLElement)?.closest?.(
+          "input,select,textarea,[contenteditable=true]",
+        )
+      )
+        pause();
     };
     const lockError = () => {
       if (useViewStore.getState().walking)
@@ -316,6 +345,7 @@ export function CameraController() {
     document.addEventListener("pointerlockchange", locked);
     document.addEventListener("pointerlockerror", lockError);
     document.addEventListener("mousemove", mouse);
+    document.addEventListener("focusin", typing);
     return () => {
       held.clear();
       window.removeEventListener("keydown", down);
@@ -325,6 +355,7 @@ export function CameraController() {
       document.removeEventListener("pointerlockchange", locked);
       document.removeEventListener("pointerlockerror", lockError);
       document.removeEventListener("mousemove", mouse);
+      document.removeEventListener("focusin", typing);
       if (document.pointerLockElement === gl.domElement)
         document.exitPointerLock?.();
     };
@@ -349,19 +380,21 @@ export function CameraController() {
             s.virtual.turn) *
           dt *
           1.5;
+        if (jumpQueued.current) {
+          body.current = jumpBody(world(), body.current, EYE_HEIGHT + 0.15);
+          jumpQueued.current = false;
+        }
+        const speed = k.has("shift") ? SPRINT_SPEED : WALK_SPEED;
         body.current = moveBody(
           world(),
           body.current,
-          (-Math.sin(yaw.current) * f + Math.cos(yaw.current) * r) *
-            WALK_SPEED *
-            dt,
-          (-Math.cos(yaw.current) * f - Math.sin(yaw.current) * r) *
-            WALK_SPEED *
-            dt,
+          (-Math.sin(yaw.current) * f + Math.cos(yaw.current) * r) * speed * dt,
+          (-Math.cos(yaw.current) * f - Math.sin(yaw.current) * r) * speed * dt,
           dt,
           EYE_HEIGHT + 0.15,
         );
       }
+      publishCameraFeet(body.current.position);
       camera.position.set(
         body.current.position[0],
         body.current.position[1] + EYE_HEIGHT,

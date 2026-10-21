@@ -1,3 +1,4 @@
+import { FurnitureVisual } from "./FurnitureVisual";
 import { useEditStore } from "../../generation/editStore";
 import { useMemo, useEffect } from "react";
 import {
@@ -86,18 +87,29 @@ export function GenerationPreview() {
   if (!parts || !visible) return null;
   return (
     <group>
-      {parts.map((o) => (
-        <mesh
-          key={o.id}
-          position={o.position}
-          rotation={o.rotation}
-          scale={o.scale}
-          geometry={pool[o.type as keyof typeof pool]}
-          material={material}
-          raycast={() => {}}
-          dispose={null}
-        />
-      ))}
+      {parts.map((o) =>
+        o.furniture ? (
+          <group
+            key={o.id}
+            position={o.position}
+            rotation={o.rotation}
+            scale={o.scale}
+          >
+            <FurnitureVisual object={{ ...o, color: "#59ead6" }} ghost />
+          </group>
+        ) : (
+          <mesh
+            key={o.id}
+            position={o.position}
+            rotation={o.rotation}
+            scale={o.scale}
+            geometry={pool[o.type as keyof typeof pool]}
+            material={material}
+            raycast={() => {}}
+            dispose={null}
+          />
+        ),
+      )}
     </group>
   );
 }

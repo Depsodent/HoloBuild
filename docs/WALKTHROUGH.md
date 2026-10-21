@@ -1,6 +1,6 @@
 # Walkthrough
 
-Choose Walkthrough at the lower left of the viewport. Confirm or cancel pending AI previews first. Webcam tracking is optional. Walking is read-only: mouse/gesture manipulation and scene Undo/Redo resume after exiting; Save remains available.
+Choose Walkthrough at the lower left of the viewport. Confirm or cancel pending AI previews first. Webcam tracking is optional. Normal walking is read-only. The separate Furnish action explicitly permits validated furniture commands; ordinary mouse/gesture manipulation and Undo/Redo resume after exiting. Save remains available.
 
 ## Four primary controls
 
@@ -9,9 +9,13 @@ Choose Walkthrough at the lower left of the viewport. Confirm or cancel pending 
 - **Reset Position** returns to the initial safe entry position and orientation, including after climbing floors. If geometry has changed around the start, a clear entry is checked again. Reset pauses movement.
 - **Controls** opens a short, dismissible help region. Keyboard/touch fallback and on-screen movement buttons are here, outside the primary toolbar. Use keyboard / touch resumes without pointer lock; Arrow Up/Down move and Left/Right turn. Close controls or Escape within help dismisses it.
 
-Movement uses 2.2 m/s and 1.6 m eye height. Extra view settings and saved viewpoints are removed. Old browser-local view preferences are retired without touching workspace preferences or saved projects. Use the normal editor's orbit/zoom for demonstrations.
+Movement uses 2.2 m/s (hold Shift: 4.4 m/s) and 1.6 m eye height. Space jumps from actual support, with gravity, ceiling clearance and stable landing; midair re-jumping is disabled. Extra view settings and saved viewpoints are removed. Old browser-local view preferences are retired without touching workspace preferences or saved projects. Use the normal editor's orbit/zoom for demonstrations.
 
 The existing global **Stop Camera** action remains in the top bar while capture is active. Hiding panels does not unmount or stop webcam tracking. Mode entry pauses speech capture, invalidates delayed permission checks and preserves finalized transcript text. Exit before starting another voice edit.
+
+## Furnish
+
+Use the separate Furnish action to browse 45 native interior presets and aim a non-destructive placement preview. Q/E rotates free-standing items; click canvas or Enter places once; Escape cancels. Catalog clicks never place objects. Normal walking stays read-only outside Furnish; exit for Inspector/history/gestures. Full support, access and collision checks still apply. See FURNISHING.md for attachments, AI limits and persistence.
 
 ## Navigation and safety
 

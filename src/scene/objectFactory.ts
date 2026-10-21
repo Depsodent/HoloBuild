@@ -1,3 +1,4 @@
+import { FURNITURE } from "../../shared/furnitureCatalog.mjs";
 import type { ObjectType, SceneObject, Vec3 } from "./objectTypes";
 export const SHAPES: Record<
   ObjectType,
@@ -26,6 +27,8 @@ export function createCube(position?: Vec3): SceneObject {
   return createObject("cube", position);
 }
 export function objectSize(object: SceneObject): Vec3 {
+  if (object.type === "furniture")
+    return FURNITURE[object.furniture!.preset].size;
   return object.type === "model"
     ? object.model!.size
     : SHAPES[object.type].size;

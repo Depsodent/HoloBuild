@@ -1,3 +1,4 @@
+import { anchorFurnitureTransform } from "../furniture/placement";
 import { Euler, Quaternion, Vector3 } from "three";
 import type { RecognizedHand } from "../vision/handRecognizer";
 import type { SceneObject, Vec3 } from "../scene/objectTypes";
@@ -29,13 +30,15 @@ export function transformedPlacement(
   objects: SceneObject[],
   snap = false,
 ) {
-  const candidate = {
+  let candidate = {
     ...original,
     position: [...original.position] as Vec3,
     scale,
     rotation,
   };
-  if (Math.abs(bounds(original).min.y) < 0.01)
+  if (original.furniture)
+    candidate = anchorFurnitureTransform(original, candidate);
+  else if (Math.abs(bounds(original).min.y) < 0.01)
     candidate.position[1] -= bounds(candidate).min.y;
   const result = placement(candidate, candidate.position, objects, snap);
   return { ...candidate, position: result.position, valid: result.valid };

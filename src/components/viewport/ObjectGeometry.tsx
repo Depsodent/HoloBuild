@@ -6,10 +6,11 @@ export function ObjectGeometry({
   type,
   size,
 }: {
-  type: ObjectType | "model";
+  type: ObjectType | "model" | "furniture";
   size?: [number, number, number];
 }) {
-  if (type === "model") return <boxGeometry args={size ?? [1, 1, 1]} />;
+  if (type === "model" || type === "furniture")
+    return <boxGeometry args={size ?? [1, 1, 1]} />;
   if (type === "sphere") return <sphereGeometry args={[0.5, 32, 20]} />;
   if (type === "cylinder") return <cylinderGeometry args={[0.5, 0.5, 1, 32]} />;
   if (type === "cone") return <coneGeometry args={[0.5, 1, 32]} />;

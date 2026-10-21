@@ -1,3 +1,5 @@
+import { furniturePlacement } from "../furniture/placement";
+import { prepareFurnitureCreation } from "../furniture/assistant";
 import { precisionUpdate } from "../scene/precision";
 import { selectedParameterScope } from "./parameterScope";
 import { balconyOperation } from "../scene/balconyTransform";
@@ -96,6 +98,41 @@ export async function interpretConversation(
           useConversationStore.getState().pendingCreationRequest || prompt,
       });
     plannerStage("Validating");
+    if (plan.kind === "furnish") {
+      useGenerationStore.setState({ status: "idle", message: "" });
+      const explicit = prompt.match(
+        /\bat\s*\(?\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)?(?:\s*m(?:et(?:er|re)s)?)?[.!?]?$/i,
+      );
+      const support = base.find((o) => o.id === scene.selectedId),
+        b = support ? bounds(support) : null;
+      const expected = explicit
+        ? explicit.slice(1).map(Number)
+        : support &&
+            !scene.selectedStructureId &&
+            (support.type === "floor" || support.furniture) &&
+            b
+          ? [(b.min.x + b.max.x) / 2, b.max.y, (b.min.z + b.max.z) / 2]
+          : null;
+      if (
+        plan.position &&
+        (!expected ||
+          plan.position.some((v, i) => Math.abs(v - expected[i]) > 1e-4))
+      )
+        return {
+          ok: false,
+          message:
+            "Which support and location? Select a floor/tabletop Part or provide base X, Y, Z. I cannot infer room labels or invent coordinates.",
+        };
+      const message = prepareFurnitureCreation(
+        plan.preset,
+        plan.position,
+        plan.message,
+      );
+      plannerStage(
+        useEditStore.getState().prepared ? "Preview Ready" : "Complete",
+      );
+      return { ok: !!useEditStore.getState().prepared, message };
+    }
     if (plan.kind === "create" || plan.kind === "compose") {
       if (/\b(?:hinged|functional door)\b/i.test(creationPrompt))
         throw Error(
@@ -186,6 +223,40 @@ export async function interpretConversation(
           "That request targets a group; choose Structure or clarify the intended component.",
         );
       const op = plan.operation;
+      if (
+        object.furniture &&
+        op.type === "move" &&
+        /\b(?:near(?:er)?|beside|next to|corner|bedroom|living room)\b/i.test(
+          prompt,
+        )
+      )
+        throw Error(
+          "Specify an exact position or world direction/distance, or reposition through the furniture catalog. Room and near-window coordinates are not inferred.",
+        );
+      if (object.furniture && op.type === "delete") {
+        const next = base.filter((o) => o.id !== object.id);
+        for (const p of next)
+          if (p.furniture) {
+            const v = furniturePlacement(p, next);
+            if (!v.valid)
+              throw Error(
+                "Removing this support would invalidate " +
+                  p.name +
+                  ". Move supported items first.",
+              );
+          }
+        prepareComponentCommand(
+          { type: "delete", id: object.id },
+          next,
+          [],
+          plan.message,
+        );
+        return {
+          ok: true,
+          message:
+            plan.message + " Confirm removal or Cancel; scene unchanged.",
+        };
+      }
       if (op.type === "design" || op.type === "batch") {
         if (!selectedParameterScope(base, object.id, op))
           throw Error(

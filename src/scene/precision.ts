@@ -1,3 +1,4 @@
+import { anchorFurnitureTransform } from "../furniture/placement";
 import { openingDefinitions, facadeAt } from "../generation/openings";
 import { frameMatrix, transformPart } from "./structures";
 import { Vector3 } from "three";
@@ -97,17 +98,22 @@ export function precisionUpdate(
     throw Error(
       "Invalid transform or surface: use finite coordinates, scale 0.1–20 and optical values in their displayed ranges.",
     );
-  const candidate = parsed.data;
+  let candidate = parsed.data;
   if (
     (patch.scale || patch.rotation) &&
     !patch.position &&
-    Math.abs(bounds(o).min.y) < 0.01
+    (Math.abs(bounds(o).min.y) < 0.01 || !!o.furniture)
   )
-    candidate.position = [
-      candidate.position[0],
-      candidate.position[1] - bounds(candidate).min.y,
-      candidate.position[2],
-    ];
+    candidate = o.furniture
+      ? anchorFurnitureTransform(o, candidate)
+      : {
+          ...candidate,
+          position: [
+            candidate.position[0],
+            candidate.position[1] - bounds(candidate).min.y,
+            candidate.position[2],
+          ],
+        };
   if (transform) {
     const p = placement(candidate, candidate.position, objects, false);
     if (!p.valid)

@@ -1,3 +1,9 @@
+import {
+  furniturePlacement,
+  anchorFurnitureTransform,
+} from "../furniture/placement";
+import { navigationWorld, bodyClear } from "../exploration/navigation";
+import { useViewStore, walkingFeet } from "../exploration/viewStore";
 import { exploring } from "../exploration/viewStore";
 import { nativePartOperation } from "./nativeAssemblies";
 import { duplicateAssembly } from "../generation/libraryOperations";
@@ -62,6 +68,7 @@ export type Command =
     }
   | { type: "create"; objectType?: ObjectType; prepared?: SceneObject }
   | { type: "import"; object: SceneObject }
+  | { type: "furniture"; object: SceneObject }
   | { type: "construct"; objects: SceneObject[]; contacts?: [string, string][] }
   | {
       type: "update";
@@ -78,7 +85,37 @@ export type Command =
       selection?: { id: string; mode: "component" | "structure" };
     };
 export function execute(command: Command): boolean {
-  if (exploring()) {
+  return run(command, false);
+}
+/** Narrow explicit permission, never enables ordinary scene/history controls while walking. */
+export function executeFurnishing(
+  command: Command,
+  base: SceneObject[],
+): boolean {
+  const s = useSceneStore.getState(),
+    v = useViewStore.getState();
+  const target =
+    "id" in command ? s.objects.find((o) => o.id === command.id) : null;
+  if (
+    !v.walking ||
+    !v.furnishing ||
+    base !== s.objects ||
+    !(
+      command.type === "furniture" ||
+      ((command.type === "update" || command.type === "delete") &&
+        target?.furniture)
+    )
+  ) {
+    useSceneStore.setState({
+      status:
+        "Furnishing rejected: scene changed or no active furniture operation.",
+    });
+    return false;
+  }
+  return run(command, true);
+}
+function run(command: Command, furnishing: boolean): boolean {
+  if (exploring() && !furnishing) {
     useSceneStore.setState({
       status:
         "Exit exploration before editing. Scene and history are unchanged.",
@@ -247,6 +284,16 @@ export function execute(command: Command): boolean {
       const batch = validateBatch(command.objects, objects, command.contacts);
       objects.push(...batch);
       selectedId = batch[0].id;
+    } else if (command.type === "furniture") {
+      const o = objectSchema.parse(command.object);
+      if (!o.furniture || o.type !== "furniture")
+        throw Error("Expected registered native furniture.");
+      if (objects.some((p) => p.id === o.id))
+        throw Error("Furniture was already placed.");
+      const valid = furniturePlacement(o, objects);
+      if (!valid.valid) throw Error(valid.reason);
+      objects.push(o);
+      selectedId = o.id;
     } else if (command.type === "import") {
       const model = objectSchema.parse(command.object);
       if (model.type !== "model") throw Error("Expected model");
@@ -501,7 +548,7 @@ export function execute(command: Command): boolean {
           command.patch.scale
         )
           protectConnectedPart(original);
-        const candidate = objectSchema.parse({ ...original, ...command.patch });
+        let candidate = objectSchema.parse({ ...original, ...command.patch });
         if (
           command.patch.position ||
           command.patch.rotation ||
@@ -511,10 +558,14 @@ export function execute(command: Command): boolean {
           if (
             (command.patch.rotation || command.patch.scale) &&
             candidate.position[1] === original.position[1] &&
-            Math.abs(bounds(original).min.y) < 0.01
+            (Math.abs(bounds(original).min.y) < 0.01 || !!original.furniture)
           ) {
-            candidate.position = [...candidate.position];
-            candidate.position[1] -= bounds(candidate).min.y;
+            if (original.furniture)
+              candidate = anchorFurnitureTransform(original, candidate);
+            else {
+              candidate.position = [...candidate.position];
+              candidate.position[1] -= bounds(candidate).min.y;
+            }
           }
           const result = placement(
             candidate,
@@ -564,6 +615,16 @@ export function execute(command: Command): boolean {
       }
     }
     objects = sceneSchema.parse(objects);
+    for (const o of objects)
+      if (o.furniture) {
+        const v = furniturePlacement(o, objects);
+        if (!v.valid) throw Error(o.name + ": " + v.reason);
+      }
+    if (furnishing) {
+      const feet = walkingFeet();
+      if (!feet || !bodyClear(navigationWorld(objects), feet))
+        throw Error("Keep clear of your current position; aim farther away.");
+    }
     const originals = new Map(s.objects.map((o) => [o.id, o]));
     objects = objects.map((o) => {
       const old = originals.get(o.id);

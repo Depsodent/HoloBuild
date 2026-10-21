@@ -27,7 +27,7 @@ export function refineGenerationPreview(operation: StructureOperation) {
   const info = structureInfo(result.parts),
     inverse = frameMatrix(info).invert();
   const objects: PlanPart[] = result.parts.map((o) => {
-    if (o.type === "model")
+    if (o.type === "model" || o.type === "furniture")
       throw Error(
         "Parametric draft refinement requires construction primitives.",
       );

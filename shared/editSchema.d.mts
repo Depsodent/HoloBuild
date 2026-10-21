@@ -75,6 +75,8 @@ export interface EditContext {
     mode: "component" | "structure" | "none";
     id?: string;
     type?: string;
+    name?: string;
+    furniture?: string;
     assembly?: string;
     role?: PlanPart["role"];
     position?: Vec3;

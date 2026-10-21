@@ -1,3 +1,4 @@
+import { objectSize } from "../../scene/objectFactory";
 import { AutoGestureController } from "../../interaction/autoGestureController";
 import { ObjectGeometry } from "./ObjectGeometry";
 import { useEffect, useRef } from "react";
@@ -285,6 +286,35 @@ export function GestureInteraction() {
         const p = new Vector3(...o.position).project(camera);
         return { x: (p.x + 1) / 2, y: (1 - p.y) / 2 };
       };
+      window.__HOLO_TEST__.furnitureRendered = () => {
+        const rows: {
+          id: string;
+          preset: string;
+          drawMeshes: number;
+          triangles: number;
+        }[] = [];
+        scene.traverse((node) => {
+          if (node.userData.furniturePreset && node.parent?.userData.objectId) {
+            let drawMeshes = 0,
+              triangles = 0;
+            node.traverse((child) => {
+              if (child instanceof Mesh) {
+                drawMeshes++;
+                triangles +=
+                  (child.geometry.index?.count ??
+                    child.geometry.attributes.position.count) / 3;
+              }
+            });
+            rows.push({
+              id: node.parent.userData.objectId,
+              preset: node.userData.furniturePreset,
+              drawMeshes,
+              triangles,
+            });
+          }
+        });
+        return rows;
+      };
       window.__HOLO_TEST__.rendered = () => {
         const result: {
           id: string;
@@ -338,7 +368,7 @@ export function PlacementPreview() {
             scale={o.scale}
             raycast={() => {}}
           >
-            <ObjectGeometry type={o.type} size={o.model?.size} />
+            <ObjectGeometry type={o.type} size={objectSize(o)} />
             <meshBasicMaterial
               wireframe
               color={preview.valid ? "#79ffe0" : "#ff6c83"}
@@ -356,7 +386,7 @@ export function PlacementPreview() {
       rotation={preview.rotation ?? object.rotation}
       scale={preview.scale ?? object.scale}
     >
-      <ObjectGeometry type={object.type} size={object.model?.size} />
+      <ObjectGeometry type={object.type} size={objectSize(object)} />
       <meshBasicMaterial
         color={preview.valid ? "#79ffe0" : "#ff6c83"}
         transparent

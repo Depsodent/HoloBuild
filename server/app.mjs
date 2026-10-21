@@ -435,7 +435,7 @@ export function createPlannerHandler(
         new URL(config.base).port === "11434";
       const creationRequest = (text) =>
         /^(?:please\s+)?(?:generate|build|create)\b[\s\S]*\b(?:house|home|cottage|room|tower|office|warehouse|shed|bridge)\b/i.test(
-          text ?? "",
+          (text ?? "").replace(/\boffice (?=desk|chair)\b/gi, ""),
         );
       const originalCreation = body.context?.creationRequest;
       const pendingPlacement =

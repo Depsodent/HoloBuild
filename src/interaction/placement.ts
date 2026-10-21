@@ -1,3 +1,4 @@
+import { furniturePlacement } from "../furniture/placement";
 import { objectSize } from "../scene/objectFactory";
 import { Box3, Euler, Matrix4, Quaternion, Vector3 } from "three";
 import type { SceneObject, Vec3 } from "../scene/objectTypes";
@@ -10,6 +11,7 @@ export function bounds(object: SceneObject, position = object.position) {
     ...object.rotation,
     ...object.scale,
     ...(object.model?.size ?? []),
+    object.furniture?.preset ?? "",
   ].join(":");
   const cached = boundCache.get(object);
   if (cached?.key === key) return cached.box.clone();
@@ -68,6 +70,10 @@ export function placement(
   ];
   if (point.some((v) => !Number.isFinite(v) || Math.abs(v) > 50))
     return { position: point, valid: false };
+  if (object.furniture) {
+    const result = furniturePlacement({ ...object, position: point }, objects);
+    return { position: point, valid: result.valid, reason: result.reason };
+  }
   const box = bounds(object, point);
   if (
     box.min.y < -0.01 ||

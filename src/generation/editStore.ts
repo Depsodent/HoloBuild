@@ -85,6 +85,9 @@ export function editContext(): EditContext {
         ? {
             id: part.id,
             type: part.type,
+            ...(part.furniture
+              ? { name: part.name, furniture: part.furniture.preset }
+              : {}),
             role: part.construction?.role,
             assembly: part.construction?.assembly,
             position: part.position,

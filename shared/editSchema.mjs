@@ -1,3 +1,4 @@
+import { FURNITURE_IDS } from "./furnitureCatalog.mjs";
 import { standaloneStairSchema, nativeWallSchema } from "./nativeSchema.mjs";
 import { z } from "zod";
 import {
@@ -166,6 +167,8 @@ export const editContextSchema = z
         mode: z.enum(["component", "structure", "none"]),
         id: z.string().uuid().optional(),
         type: z.string().max(20).optional(),
+        name: z.string().max(60).optional(),
+        furniture: z.enum(FURNITURE_IDS).optional(),
         role: z.enum(roles).optional(),
         assembly: z
           .string()

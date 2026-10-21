@@ -46,3 +46,10 @@ Start permission checking, enter/exit Walkthrough, then finish the check: old ca
 ## Acceptance record
 
 Record task, device/browser, expected/actual behavior, pass/fail/unsupported, diagnostics and reproduction steps. Leave unknown results pending. Do not manufacture participants, user-study results, hardware support or community impact.
+
+
+## Milestone 13.1 physical acceptance (pending)
+
+Use a two-floor native house with real stairs and balcony. Jump (Space), land, try Space in midair, hold/release Shift, test ceiling/wall collision and blur/pointer-lock recovery. Open Furnish, search living-room/bedroom items, aim/rotate a green ghost, place sofa/table and upstairs bed/wardrobe; verify no door/stair blockage or floating pieces. Cancel a ghost, reposition/remove a selected item, Reset and exit. Edit material/dimensions in Inspector, duplicate/delete, save/load and exact Undo/Redo. Test one-hand movement and two-hand scale/yaw on furniture after exiting. Test wall clock/mirror and ceiling light on appropriate flat faces; unsupported surfaces must reject.
+
+Try Add a sofa at 4,0,3, Change this sofa to blue and selected removal with preview/confirmation; ambiguous room/near-window requests must clarify rather than invent locations. During catalog search, typing must not move the camera. Test narrow layouts/keyboard navigation and the global Stop Camera. Record actual browser, device and observed diagnostics; do not mark webcam/mic/touch/friend-device acceptance passed without real testing.

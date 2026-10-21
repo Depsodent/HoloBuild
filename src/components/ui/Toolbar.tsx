@@ -1,3 +1,4 @@
+import { FurnitureCatalog } from "./FurnitureCatalog";
 import { ArchitecturalLibrary } from "./ArchitecturalLibrary";
 import { usePrecisionSettings } from "../../scene/precisionSettings";
 import { useToolsStore, type ToolsTab } from "../../workspace/toolsStore";
@@ -134,6 +135,10 @@ export function Toolbar({ compact = false }: { compact?: boolean }) {
           )}
           <ArchitecturalLibrary />
         </div>
+        <details className="furniture-library">
+          <summary>Furniture & interiors</summary>
+          <FurnitureCatalog />
+        </details>
         {!compact && <ModelImport compact={false} section="import" />}
       </section>
       <section

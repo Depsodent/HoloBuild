@@ -1,3 +1,4 @@
+import { furnitureIntent } from "../furniture/assistant";
 import { exploring } from "../exploration/viewStore";
 import { selectedWallIntent } from "./selectedWall";
 import { precisionIntent } from "./precisionIntent";
@@ -181,6 +182,8 @@ export async function dispatchAssistant(
           : "Redid the action.",
       );
     }
+    const furnished = furnitureIntent(raw);
+    if (furnished) return respond(furnished);
     const wallCreation = selectedWallIntent(raw);
     if (wallCreation) return respond(wallCreation);
     const precise = await precisionIntent(raw, settings);
