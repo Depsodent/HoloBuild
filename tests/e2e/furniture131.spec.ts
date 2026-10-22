@@ -1,3 +1,4 @@
+import { activate } from "../helpers/walkthrough";
 import { PerspectiveCamera, Vector3 } from "three";
 import { hold, poseAt, target } from "../helpers/gestureInput";
 import { test, expect, type Page } from "@playwright/test";
@@ -22,10 +23,8 @@ async function ready(p: Page, objects: ReturnType<typeof createObject>[] = []) {
   await expect(p.locator("footer .status")).toContainText("Replace complete.");
 }
 async function keyboard(p: Page) {
-  await p.getByRole("button", { name: "Controls", exact: true }).click();
-  await p
-    .getByRole("button", { name: "Use keyboard / touch", exact: true })
-    .click();
+  await activate(p, "Controls");
+  await activate(p, "Use keyboard / touch");
 }
 async function ask(p: Page, text: string) {
   await showTools(p, "ai");
@@ -91,16 +90,12 @@ test("walkthrough keeps four controls, jumps only on contact, sprints and clears
   await page.evaluate(() => window.dispatchEvent(new Event("blur")));
   await page.keyboard.down("w");
   await page.keyboard.up("w");
-  await page
-    .getByRole("button", { name: "Reset Position", exact: true })
-    .click();
+  await activate(page, "Reset Position");
   await expect.poll(async () => (await view(page)).feet).toEqual([0, 0, 0]);
   expect(feet[2]).toBeLessThan(-0.7);
   expect(await scene(page)).toEqual(initial);
   expect(await history(page)).toBe(h);
-  await page
-    .getByRole("button", { name: "Exit Walkthrough", exact: true })
-    .click();
+  await activate(page, "Exit Walkthrough");
 });
 test("walkthrough catalog searches, keeps camera controls distinct, places one real sofa and cancels a second preview", async ({
   page,
@@ -110,7 +105,7 @@ test("walkthrough catalog searches, keeps camera controls distinct, places one r
   await page
     .getByRole("button", { name: "Enter Walkthrough", exact: true })
     .click();
-  await page.getByRole("button", { name: "Furnish", exact: true }).click();
+  await activate(page, "Furnish");
   await page
     .getByRole("searchbox", { name: "Search furniture", exact: true })
     .fill("sofa");
@@ -120,7 +115,7 @@ test("walkthrough catalog searches, keeps camera controls distinct, places one r
   await choose(page, "Two-seat sofa");
   expect(await scene(page)).toHaveLength(0);
   await aim(page);
-  await page.keyboard.press("e");
+  await page.keyboard.press("ArrowRight");
   await aim(page);
   await page.keyboard.press("Enter");
   await page.keyboard.press("Enter");
@@ -144,16 +139,16 @@ test("walkthrough catalog searches, keeps camera controls distinct, places one r
     .getByRole("searchbox", { name: "Search furniture", exact: true })
     .fill("armchair");
   await choose(page, "Armchair");
-  await page.keyboard.press("Escape");
+  await page
+    .getByRole("button", { name: "Cancel preview", exact: true })
+    .click();
   expect(await scene(page)).toHaveLength(1);
   expect(await history(page)).toBe(h + 1);
   await page.screenshot({ path: ".cache/m131-furnish-sofa.png" });
   await page
     .getByRole("button", { name: "Done furnishing", exact: true })
     .click();
-  await page
-    .getByRole("button", { name: "Exit Walkthrough", exact: true })
-    .click();
+  await activate(page, "Exit Walkthrough");
   await page.getByRole("button", { name: "Undo", exact: true }).click();
   expect(await scene(page)).toHaveLength(0);
   await page.getByRole("button", { name: "Redo", exact: true }).click();
@@ -268,12 +263,8 @@ test("multi-floor furniture respects real support and stairs; invalid load keeps
     .click();
   await keyboard(page);
   await page.keyboard.press("Space");
-  await page
-    .getByRole("button", { name: "Reset Position", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Exit Walkthrough", exact: true })
-    .click();
+  await activate(page, "Reset Position");
+  await activate(page, "Exit Walkthrough");
   expect(await scene(page)).toEqual(before);
 });
 
@@ -391,16 +382,14 @@ test("two-story interior acceptance jumps, sprints, climbs connected stairs, fur
     .poll(async () => (await view(page)).feet![1], { timeout: 30000 })
     .toBeCloseTo(entryY, 2);
   await axis(page, 2, 2.7);
-  await page.getByRole("button", { name: "Furnish", exact: true }).click();
+  await activate(page, "Furnish");
   await place(page, "Two-seat sofa", [1.5, 0.2, -1.4], true);
   await place(page, "Coffee table", [1.5, 0.2, -0.3]);
   await page
     .getByRole("button", { name: "Done furnishing", exact: true })
     .click();
-  await page.getByRole("button", { name: "Controls", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Use keyboard / touch", exact: true })
-    .click();
+  await activate(page, "Controls");
+  await activate(page, "Use keyboard / touch");
   await page
     .getByRole("button", { name: "Close controls", exact: true })
     .click();
@@ -412,7 +401,7 @@ test("two-story interior acceptance jumps, sprints, climbs connected stairs, fur
   await axis(page, 2, 2.1);
   expect((await view(page)).feet![1]).toBeCloseTo(3.4, 1);
   await axis(page, 0, 1.4);
-  await page.getByRole("button", { name: "Furnish", exact: true }).click();
+  await activate(page, "Furnish");
   await place(page, "Single bed", [1.4, 3.4, -1.1], true);
   await place(page, "Wardrobe", [0, 3.4, -1.3]);
   expect((await scene(page)).filter((o) => o.furniture)).toHaveLength(4);
@@ -421,12 +410,8 @@ test("two-story interior acceptance jumps, sprints, climbs connected stairs, fur
   await page
     .getByRole("button", { name: "Done furnishing", exact: true })
     .click();
-  await page
-    .getByRole("button", { name: "Reset Position", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Exit Walkthrough", exact: true })
-    .click();
+  await activate(page, "Reset Position");
+  await activate(page, "Exit Walkthrough");
   const furnished = await scene(page);
   expect(furnished.filter((o) => !o.furniture)).toEqual(original);
   const bed = furnished.find((o) => o.furniture?.preset === "bed-single")!;
@@ -446,13 +431,11 @@ test("two-story interior acceptance jumps, sprints, climbs connected stairs, fur
   await showTools(page, "build");
   await page.getByTitle("Create Cube", { exact: true }).click();
   const beforeLoad = await scene(page);
-  await page
-    .locator('input[type=file][accept=".json"]')
-    .setInputFiles({
-      name: "furnished-two-story.json",
-      mimeType: "application/json",
-      buffer: data,
-    });
+  await page.locator('input[type=file][accept=".json"]').setInputFiles({
+    name: "furnished-two-story.json",
+    mimeType: "application/json",
+    buffer: data,
+  });
   await expect(page.locator("footer .status")).toContainText(
     "Replace complete.",
   );
@@ -472,7 +455,7 @@ test("catalog typing and paused transitions clear held movement without hiding e
     .click();
   await keyboard(page);
   await page.keyboard.down("w");
-  await page.getByRole("button", { name: "Furnish", exact: true }).click();
+  await activate(page, "Furnish");
   const before = (await view(page)).feet;
   await page
     .getByRole("searchbox", { name: "Search furniture", exact: true })
@@ -499,7 +482,5 @@ test("catalog typing and paused transitions clear held movement without hiding e
   await page
     .getByRole("button", { name: "Done furnishing", exact: true })
     .click();
-  await page
-    .getByRole("button", { name: "Exit Walkthrough", exact: true })
-    .click();
+  await activate(page, "Exit Walkthrough");
 });

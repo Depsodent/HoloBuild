@@ -1,3 +1,6 @@
+import { requestLook, releaseLook } from "./pointerLock";
+import { cancelDirect } from "./directManipulation";
+import { cancelFurniture } from "../furniture/furnishStore";
 import { useViewStore } from "./viewStore";
 import { useSceneStore } from "../scene/sceneStore";
 import { useGenerationStore } from "../generation/generationStore";
@@ -29,16 +32,21 @@ export function enterExploration() {
     message: "",
   });
   window.dispatchEvent(new Event("holobuild:exploration-enter"));
+  requestLook();
   return true;
 }
 export function exitExploration() {
-  if (document.pointerLockElement) document.exitPointerLock?.();
+  if (!useViewStore.getState().walking) return;
+  cancelDirect();
+  cancelFurniture();
   useViewStore.setState({
     walking: false,
+    manipulating: false,
     furnishing: false,
     looking: false,
     paused: true,
     virtual: { forward: 0, right: 0, turn: 0 },
     message: "",
   });
+  releaseLook();
 }

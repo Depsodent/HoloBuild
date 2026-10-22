@@ -1,0 +1,68 @@
+{
+  "validatedAt": "2026-10-22T13:00:22.4595507Z",
+  "baseline": "a3d7c7a57839b001b17c0c45d18f692893b66bf2",
+  "units": {
+    "files": 42,
+    "passed": 488
+  },
+  "backend": {
+    "passed": 70
+  },
+  "typescript": "Referenced build passed",
+  "eslint": "Full pass",
+  "build": {
+    "passed": true,
+    "seconds": 12.56,
+    "unresolvedNotices": 0,
+    "notices": 70
+  },
+  "browser": {
+    "distinctAffectedCases": 23,
+    "classification": "23 distinct affected cases have passing evidence.15 unchanged-path results reused; final new7 controls plus isolated repeated-session regression pass. Stationary off-grid/no-op correction has a failing-before/passing-after unit reproducer.",
+    "precedingRun": {
+      "passed": 15,
+      "minutes": 3.9,
+      "failed": 1
+    },
+    "finalPointerAndControls": {
+      "isolatedRepeatedModePassed": 1,
+      "newControlsPassed": 7,
+      "isolatedSeconds": 9.6,
+      "laterRetry": "7 pass;1 sole initial-cube UUID mismatch concurrent with Vite HMR. Unchanged isolated case passed with source settled; no weakened assertion.",
+      "priorEightCasePass": true
+    },
+    "singleUninterruptedFullPass": false
+  },
+  "productionUI": {
+    "testedAt": "2026-10-22T12:55:58.921Z",
+    "url": "http://127.0.0.1:5182",
+    "sourceCheckpoint": "a3d7c7a57839b001b17c0c45d18f692893b66bf2",
+    "providerCalls": 0,
+    "physicalDeviceTested": false,
+    "ok": true,
+    "checks": {
+      "productionUI": true,
+      "developmentBridgeUsed": false,
+      "automaticRealPointerLock": true,
+      "lockedCenterRayPicking": true,
+      "relativeGroundPlaneDrag": true,
+      "invalidCollisionCancellation": true,
+      "arrowRotationDuringCtrlDrag": true,
+      "unrelatedObjectPreserved": true,
+      "oneAtomicUndoRedo": true,
+      "oneEscapeExitLocked": true,
+      "oneEscapeExitPlacement": true,
+      "oneEscapeExitDrag": true,
+      "layoutRestored": true,
+      "catalogToggleAndLockRestore": true,
+      "typingIgnoresShortcuts": true,
+      "originalSceneRestored": true,
+      "physicalKeyboardMouseTested": false
+    },
+    "pageErrors": 0
+  },
+  "productionDependencyVulnerabilities": 0,
+  "physicalDeviceAcceptance": "pending",
+  "credentialsQuotasInfrastructureChanged": false,
+  "production": "pending verified publication"
+}

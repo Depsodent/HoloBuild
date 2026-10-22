@@ -31,8 +31,9 @@ export const BuildingObject = memo(function BuildingObject({
   const dragBase = useRef<SceneObject[] | null>(null);
   const cancelled = useRef(false);
   const [hover, setHover] = useState(false);
-  const selected =
-    useSceneStore((s) => s.selectedId === object.id) && !readOnly;
+  const isSelected = useSceneStore((s) => s.selectedId === object.id);
+  const selected = isSelected && !readOnly;
+  const walkSelected = isSelected && readOnly;
   useEffect(() => {
     if (!selected && dragBase.current) {
       cancelled.current = true;
@@ -144,13 +145,15 @@ export const BuildingObject = memo(function BuildingObject({
               useViewStore.getState().furnishing &&
               object.furniture &&
               !useFurnishStore.getState().draft
-            )
+            ) {
+              useSceneStore.getState().select(object.id);
               useFurnishStore.setState({
                 selected: object.id,
                 reason:
                   object.name +
                   " selected. Reposition or remove it here; Inspector is available after Exit.",
               });
+            }
             return;
           }
           useSceneStore.getState().select(object.id);
@@ -193,12 +196,16 @@ export const BuildingObject = memo(function BuildingObject({
             highlight={hover || gestureHover}
           />
         )}
-        {(!object.furniture || selected || hover || gestureHover) && (
+        {(!object.furniture ||
+          selected ||
+          walkSelected ||
+          hover ||
+          gestureHover) && (
           <Edges
             color={
               groupSelected
                 ? "#ffd782"
-                : selected
+                : selected || walkSelected
                   ? "#b8fff5"
                   : hover || gestureHover
                     ? "#64f7e6"

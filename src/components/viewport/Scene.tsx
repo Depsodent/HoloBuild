@@ -97,10 +97,11 @@ export const Scene = memo(function Scene() {
         <CameraController />
         <Metrics />
         <FurnishInteraction />
+        <PlacementPreview />
         {!readOnly && (
           <>
             {!furniturePreview && <GestureInteraction />}
-            <PlacementPreview />
+
             <StructureControls />
             <PrecisionOverlay />
             <GenerationPreview />

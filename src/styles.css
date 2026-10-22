@@ -64,3 +64,5 @@
 .viewport{container-type:inline-size}@container(max-width:1000px){.furnish-entry,.furnish-panel{top:164px}.furnish-panel{max-height:calc(100% - 176px)}}
 
 .furnish-panel header{height:auto;min-height:0;padding:0;background:none;border:0}
+
+.walk-crosshair{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:6;pointer-events:none;color:#c8fff1;font-size:24px;text-shadow:0 1px 4px #000}

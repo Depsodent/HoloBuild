@@ -1,34 +1,35 @@
-# Walkthrough
+# Walkthrough controls
 
-Choose Walkthrough at the lower left of the viewport. Confirm or cancel pending AI previews first. Webcam tracking is optional. Normal walking is read-only. The separate Furnish action explicitly permits validated furniture commands; ordinary mouse/gesture manipulation and Undo/Redo resume after exiting. Save remains available.
+Enter Walkthrough requests Look Around directly from the entry click. Actual pointer lock controls the active indicator. If the browser refuses, is unsupported or is finishing an earlier release, click Look Around once or choose Controls → Use keyboard / touch. There are no automatic retry/prompt loops.
 
-## Four primary controls
+| Input | Action |
+| --- | --- |
+| W/A/S/D | Move |
+| Space | Jump from support |
+| Hold Shift | Sprint |
+| Ctrl + right mouse drag | Select and reposition a supported target |
+| E | Open/close the furniture catalog |
+| Left/Right Arrow | Rotate selected/moving object in 15-degree increments |
+| Escape | Exit the entire Walkthrough, cancelling unconfirmed operations |
 
-- **Look Around** requests pointer lock from your click. Its active state reflects actual mouse lock. Use WASD to move and the mouse to look. Escape releases the mouse and pauses.
-- **Exit Walkthrough** releases pointer lock and restores the editor camera, panels, selection context and layout. It changes no geometry or history.
-- **Reset Position** returns to the initial safe entry position and orientation, including after climbing floors. If geometry has changed around the start, a clear entry is checked again. Reset pauses movement.
-- **Controls** opens a short, dismissible help region. Keyboard/touch fallback and on-screen movement buttons are here, outside the primary toolbar. Use keyboard / touch resumes without pointer lock; Arrow Up/Down move and Left/Right turn. Close controls or Escape within help dismisses it.
+The primary toolbar remains **Look Around / Exit Walkthrough / Reset Position / Controls**. Reset returns to the initial safe position and orientation and pauses. Arrow Up/Down remain an optional movement fallback; touch Turn buttons still turn the camera. Left/Right Arrow no longer turn the camera. Editable fields ignore construction shortcuts; Escape still exits Walkthrough. Held/repeated keys cannot create repeated rotation history entries.
 
-Movement uses 2.2 m/s (hold Shift: 4.4 m/s) and 1.6 m eye height. Space jumps from actual support, with gravity, ceiling clearance and stable landing; midair re-jumping is disabled. Extra view settings and saved viewpoints are removed. Old browser-local view preferences are retired without touching workspace preferences or saved projects. Use the normal editor's orbit/zoom for demonstrations.
+## Direct manipulation
 
-The existing global **Stop Camera** action remains in the top bar while capture is active. Hiding panels does not unmount or stop webcam tracking. Mode entry pauses speech capture, invalidates delayed permission checks and preserves finalized transcript text. Exit before starting another voice edit.
+While locked, aim the center crosshair at the object and hold Ctrl + right mouse. The camera and walking inputs freeze during the drag. Relative mouse deltas move a temporary preview across a camera-relative horizontal plane at the original elevation; the code does not use stale screen coordinates under pointer lock. With an unlocked pointer, pick the target normally in the canvas. Release right mouse to commit one validated movement/rotation command; invalid placement cancels. Context menus are suppressed for this interaction.
 
-## Furnish
+Independent primitives, imported models and furniture are supported. Structure selection moves/rotates the entire selected structure through its existing strict group command. Connected architectural Parts remain protected: use their Inspector/architectural tools, or choose Structure before entry. A Part hit never silently becomes a whole-building edit. Floor elevation, supported furniture, reserved doors/stairs, collisions and current-player clearance must remain valid. Wall-mounted furniture retains its face and cannot freely yaw away. Vertical relocation remains an Inspector operation.
 
-Use the separate Furnish action to browse 45 native interior presets and aim a non-destructive placement preview. Q/E rotates free-standing items; click canvas or Enter places once; Escape cancels. Catalog clicks never place objects. Normal walking stays read-only outside Furnish; exit for Inspector/history/gestures. Full support, access and collision checks still apply. See FURNISHING.md for attachments, AI limits and persistence.
+Left/Right Arrow rotates an active preview; release commits movement plus rotation together. A selected target without an active drag receives one validated undoable rotation per non-repeated key press. With no applicable selection, arrows do nothing. Escape, blur, hidden document, stale selection or scene changes cancel active movement safely. Confirmed changes remain normal scene objects and work with Inspector, gestures, save/load and exact Undo/Redo after exit.
 
-## Navigation and safety
+## Catalog and mouse ownership
 
-The swept body has a 0.22 m horizontal radius and 1.75 m vertical clearance. Wall sliding, gravity and actual floor/tread support handle native walls, connected stairs, floor voids and balconies. Compatible static door panels are hidden and passable only while walking; they reappear on exit. Windows and rails remain solid. This does not animate hinged doors. Empty scenes use the workspace ground. No clear entry produces an explanation rather than placing the camera inside an obstruction.
+E opens the existing 45-preset catalog and deliberately releases the pointer. E or Done furnishing closes it, cancels any unconfirmed placement and requests Look Around from that interaction where permitted. Search fields keep E and arrow keys for text editing. While walking, arrows rotate the placement ghost; click the canvas, Enter or Place furniture confirms. Cancel preview discards only the preview; Escape exits all of Walkthrough. In the editor, existing Q/E rotation and Escape-to-cancel remain available.
 
-Imported meshes, curved primitives and pitched/rolled shapes use conservative solid bounds; their internal cavities and precise curved surfaces are not navigable. Reset or Exit provides recovery. Navigation is not a general physics simulation or a building-safety assessment.
+A locked pointer belongs to the canvas, so mouse clicks cannot target ordinary UI buttons. Use E to release it for the catalog, or Tab/focus a toolbar action and Enter; keyboard activation keeps Controls, Reset, Exit and global Stop Camera accessible. Actual browser permissions and native Escape timing vary. Unexpected native lock loss exits; intentional catalog/fallback/blur unlocks do not accidentally exit. No physical keyboard/mouse acceptance is claimed from automated tests.
 
-## Construction and microphone checks
+## Existing navigation and capture
 
-Build → Stairs offers Standalone Stairs and Connect Floors. Standalone flights use real steps with width/rise/run/count/position/orientation/material controls, creating no hidden floor or inferred landing. Raised placement requires real supporting geometry. Connect Floors retains actual adjacent-floor elevations, cut-outs and landing checks. Balconies require a compatible host and aligned doorway.
+Movement remains 2.2m/s, Shift 4.4m/s, eye height1.6m. Grounded jump, gravity, swept wall/ceiling collisions, native doors, connected stairs, slab voids and balcony rails retain their existing solver. Imported/curved/tilted bounds remain conservative. Navigation is not structural certification or a general physics simulation.
 
-In Part mode, select a native manual wall or generated building wall and request Add a window to the selected wall. The existing preview/confirmation/history path creates a real segmented opening and retains unaffected openings. Cancel changes nothing. Select an existing window for opening edits. Imported/non-editable walls explain their limitation.
-
-Native speech requires a compatible browser, microphone permission and localhost/HTTPS. Stop requests finalization; Cancel aborts but retains finalized text. Only actual final recognition events fill the composer. Unsupported or failed recognition keeps typed input available. Check site/OS permissions and the displayed support/status/error before retrying. No paid transcription service is introduced.
-
-Physical webcam, microphone, touch and friend-laptop acceptance remain pending until users actually test them. See MANUAL_TESTS.md and the current milestone handoff.
+Entry rejects pending AI previews. Exit releases the pointer, clears movement, cancels unconfirmed edits and restores the previous editor camera/panels/layout. Ordinary walking remains read-only outside explicit furnishing/direct transforms; Undo/Redo resume after exiting. Camera capture stays mounted, global Stop Camera remains accessible, and speech generation/permission guards preserve finalized transcript text. Physical webcam/microphone/touch/friend-device checks remain pending.

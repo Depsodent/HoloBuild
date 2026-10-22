@@ -114,6 +114,37 @@ export function executeFurnishing(
   }
   return run(command, true);
 }
+/** Only reviewed movement/yaw from the explicit Walkthrough manipulation transaction. */
+export function executeWalkthroughTransform(
+  command: Command,
+  base: SceneObject[],
+): boolean {
+  const s = useSceneStore.getState(),
+    v = useViewStore.getState();
+  const transform = (op: StructureOperation): boolean =>
+    op.type === "move" ||
+    op.type === "rotate" ||
+    (op.type === "batch" &&
+      op.operations.length <= 2 &&
+      op.operations.every((p) => p.type === "move" || p.type === "rotate"));
+  const target =
+    "id" in command ? s.objects.find((o) => o.id === command.id) : null;
+  const allowed =
+    command.type === "update"
+      ? !!target &&
+        !target.construction &&
+        target.id === s.selectedId &&
+        !s.selectedStructureId &&
+        Object.keys(command.patch).every(
+          (k) => k === "position" || k === "rotation",
+        )
+      : command.type === "structure" &&
+        command.structureId === s.selectedStructureId &&
+        transform(command.operation);
+  if (!v.walking || !v.manipulating || base !== s.objects || !allowed)
+    return false;
+  return run(command, true);
+}
 function run(command: Command, furnishing: boolean): boolean {
   if (exploring() && !furnishing) {
     useSceneStore.setState({

@@ -1,3 +1,4 @@
+import { activate } from "../helpers/walkthrough";
 import { test, expect, type Page } from "@playwright/test";
 import fs from "node:fs";
 import { readFile } from "node:fs/promises";
@@ -8,10 +9,8 @@ async function keyboard(page: Page) {
       .getByRole("button", { name: "Use keyboard / touch", exact: true })
       .isVisible())
   )
-    await page.getByRole("button", { name: "Controls", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Use keyboard / touch", exact: true })
-    .click();
+    await activate(page, "Controls");
+  await activate(page, "Use keyboard / touch");
 }
 const scene = (p: Page) => p.evaluate(() => window.__HOLO_TEST__!.scene());
 const view = (p: Page) => p.evaluate(() => window.__HOLO_TEST__!.view!());
@@ -99,19 +98,14 @@ test("generated two-story house walkthrough crosses a door, climbs stairs and re
   await move(page, "s", 2, origin[2] + 3.55, 1);
   expect((await view(page)).feet![1]).toBeCloseTo(3.4, 1);
   await move(page, "w", 2, origin[2] + 2.35, -1);
-  await page
-    .getByRole("button", { name: "Reset Position", exact: true })
-    .click();
+  await activate(page, "Reset Position");
   await expect.poll(async () => (await view(page)).feet).toEqual(initialFeet);
-  await page
-    .getByRole("button", { name: "Reset Position", exact: true })
-    .click();
+  await activate(page, "Reset Position");
   await expect.poll(async () => (await view(page)).feet).toEqual(initialFeet);
   await page.keyboard.press("Escape");
-  await expect(page.getByLabel("Exploration controls")).toContainText("Paused");
-  await page
-    .getByRole("button", { name: "Exit Walkthrough", exact: true })
-    .click();
+  await expect(
+    page.getByRole("button", { name: "Enter Walkthrough", exact: true }),
+  ).toBeVisible();
   await sameCamera(page, beforeView);
   expect(await scene(page)).toEqual(built);
   expect(await page.evaluate(() => window.__HOLO_TEST__!.snapshot())).toEqual(
@@ -170,9 +164,7 @@ test("generated two-story house walkthrough crosses a door, climbs stairs and re
     .getByRole("button", { name: "Enter Walkthrough", exact: true })
     .click();
   await expect(page.getByLabel("Construction tools sidebar")).toBeHidden();
-  await page
-    .getByRole("button", { name: "Exit Walkthrough", exact: true })
-    .click();
+  await activate(page, "Exit Walkthrough");
   await expect(page.getByLabel("Construction tools sidebar")).toBeVisible();
   expect(JSON.parse(JSON.stringify(await scene(page)))).toEqual(
     JSON.parse(saved).objects,
@@ -201,9 +193,7 @@ test("read-only modes block shortcuts and selection; pointer lock failure and em
   await expect(page.getByLabel("Exploration controls")).toContainText(
     /keyboard\/touch/i,
   );
-  await page
-    .getByRole("button", { name: "Exit Walkthrough", exact: true })
-    .click();
+  await activate(page, "Exit Walkthrough");
   await sameCamera(page, pose);
   page.on("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "Reset scene", exact: true }).click();
@@ -212,7 +202,7 @@ test("read-only modes block shortcuts and selection; pointer lock failure and em
     .getByRole("button", { name: "Enter Walkthrough", exact: true })
     .click();
   await expect(page.getByLabel("Exploration controls")).toContainText(
-    "Empty scene",
+    "Mouse look active",
   );
   await keyboard(page);
   await move(page, "w", 2, -0.5, -1);
@@ -222,9 +212,6 @@ test("read-only modes block shortcuts and selection; pointer lock failure and em
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
     480,
   );
-  await page
-    .getByRole("button", { name: "Exit Walkthrough", exact: true })
-    .click();
   await expect(
     page.getByRole("button", { name: "Enter Walkthrough", exact: true }),
   ).toBeFocused();
@@ -298,14 +285,12 @@ test("synthetic webcam tracking stays mounted and emergency Stop works during wa
         (v.srcObject as MediaStream).getVideoTracks()[0].readyState,
     ),
   ).toBe("live");
-  await page.getByRole("button", { name: "Stop camera", exact: true }).click();
+  await activate(page, "Stop camera");
   await expect(page.locator("html")).toHaveAttribute(
     "data-explore-stopped",
     "true",
   );
-  await page
-    .getByRole("button", { name: "Exit Walkthrough", exact: true })
-    .click();
+  await activate(page, "Exit Walkthrough");
 });
 
 test("pointer-lock mouse look changes orientation and Escape releases it without scene history", async ({
@@ -318,7 +303,7 @@ test("pointer-lock mouse look changes orientation and Escape releases it without
   await page
     .getByRole("button", { name: "Enter Walkthrough", exact: true })
     .click();
-  await page.getByRole("button", { name: "Look Around", exact: true }).click();
+  await activate(page, "Look Around");
   await expect
     .poll(() => page.evaluate(() => document.pointerLockElement?.tagName))
     .toBe("CANVAS");
@@ -336,19 +321,9 @@ test("pointer-lock mouse look changes orientation and Escape releases it without
   await expect
     .poll(() => page.evaluate(() => document.pointerLockElement === null))
     .toBe(true);
-  await expect(page.getByLabel("Exploration controls")).toContainText("Paused");
-  await page
-    .getByRole("button", { name: "Reset Position", exact: true })
-    .click();
-  await expect
-    .poll(async () => {
-      const q = (await view(page)).quaternion;
-      return Math.max(...q.map((n, i) => Math.abs(n - start.quaternion[i])));
-    })
-    .toBeLessThan(0.0001);
-  await page
-    .getByRole("button", { name: "Exit Walkthrough", exact: true })
-    .click();
+  await expect(
+    page.getByRole("button", { name: "Enter Walkthrough", exact: true }),
+  ).toBeVisible();
   await sameCamera(page, original);
   expect(await scene(page)).toEqual(before);
   expect(await page.evaluate(() => window.__HOLO_TEST__!.snapshot())).toEqual(
@@ -415,9 +390,7 @@ test("a delayed microphone permission precheck cannot start hidden capture after
     return w.m12Starts;
   });
   expect(starts).toBe(0);
-  await page
-    .getByRole("button", { name: "Exit Walkthrough", exact: true })
-    .click();
+  await activate(page, "Exit Walkthrough");
 });
 
 test("four primary controls, retired preferences and repeated mode cleanup preserve exact editor context", async ({
@@ -469,6 +442,9 @@ test("four primary controls, retired preferences and repeated mode cleanup prese
     await page
       .getByRole("button", { name: "Enter Walkthrough", exact: true })
       .click();
+    await expect
+      .poll(() => page.evaluate(() => document.pointerLockElement?.tagName))
+      .toBe("CANVAS");
     const toolbar = page.getByRole("toolbar", { name: "Walkthrough controls" });
     await expect(toolbar.getByRole("button")).toHaveText([
       "Look Around",
@@ -481,15 +457,14 @@ test("four primary controls, retired preferences and repeated mode cleanup prese
       .getByRole("button", { name: "Controls", exact: true })
       .press("Enter");
     await expect(page.getByLabel("Walkthrough help")).toContainText("WASD");
-    await page
-      .getByRole("button", { name: "Close controls", exact: true })
-      .click();
+    await activate(page, "Close controls");
     await expect(
       toolbar.getByRole("button", { name: "Controls", exact: true }),
     ).toBeFocused();
-    await page
-      .getByRole("button", { name: "Exit Walkthrough", exact: true })
-      .click();
+    await activate(page, "Exit Walkthrough");
+    await expect
+      .poll(() => page.evaluate(() => document.pointerLockElement))
+      .toBeNull();
     await expect
       .poll(() =>
         page.evaluate(() =>
@@ -524,27 +499,23 @@ test("pointer-lock rejection has keyboard fallback and four controls fit narrow 
   await page
     .getByRole("button", { name: "Enter Walkthrough", exact: true })
     .click();
-  await page.getByRole("button", { name: "Look Around", exact: true }).click();
+  await activate(page, "Look Around");
   await expect(page.getByLabel("Exploration controls")).toContainText(
     "declined",
   );
   await expect(
     page.getByRole("button", { name: "Look Around", exact: true }),
   ).toHaveAttribute("aria-pressed", "false");
+  await activate(page, "Controls");
   await expect(page.getByLabel("Walkthrough help")).toBeVisible();
   await keyboard(page);
   await move(page, "w", 2, -0.4, -1);
-  await page.keyboard.press("Escape");
-  await page
-    .getByRole("button", { name: "Reset Position", exact: true })
-    .click();
+  await activate(page, "Reset Position");
   const toolbar = page.getByRole("toolbar", { name: "Walkthrough controls" });
   expect(await toolbar.getByRole("button").count()).toBe(4);
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth),
   ).toBeLessThanOrEqual(481);
-  await page
-    .getByRole("button", { name: "Exit Walkthrough", exact: true })
-    .click();
+  await activate(page, "Exit Walkthrough");
   expect(await scene(page)).toEqual(base);
 });

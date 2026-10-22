@@ -1,3 +1,20 @@
+import {
+  releaseLook,
+  syncLook,
+  lookUnavailable,
+} from "../../exploration/pointerLock";
+import { exitExploration } from "../../exploration/actions";
+import {
+  cancelDirect,
+  rotateDirect,
+} from "../../exploration/directManipulation";
+import {
+  useFurnishStore,
+  openFurnish,
+  closeFurnish,
+  rotateFurniture,
+  cancelFurniture,
+} from "../../furniture/furnishStore";
 import { OrbitControls } from "@react-three/drei";
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
@@ -148,6 +165,14 @@ export function CameraController() {
     }
     body.current = found;
     yaw.current = heading;
+    camera.position.set(
+      found.position[0],
+      found.position[1] + EYE_HEIGHT,
+      found.position[2],
+    );
+    camera.quaternion.setFromEuler(lookEuler.set(0, heading, 0));
+    camera.updateMatrixWorld();
+    publishCameraFeet(found.position);
     pitch.current = 0;
     keys.current.clear();
     jumpQueued.current = false;
@@ -172,7 +197,7 @@ export function CameraController() {
         r = session.current,
         was = r.walking;
       r.walking = s.walking;
-      if (s.paused) {
+      if (s.paused || s.manipulating || s.furnishing) {
         keys.current.clear();
         jumpQueued.current = false;
       }
@@ -186,8 +211,7 @@ export function CameraController() {
         spawn();
       }
       if (!s.walking && was) {
-        if (document.pointerLockElement === gl.domElement)
-          document.exitPointerLock?.();
+        if (document.pointerLockElement === gl.domElement) releaseLook();
         keys.current.clear();
         body.current = null;
         publishCameraFeet(null);
@@ -198,6 +222,8 @@ export function CameraController() {
       }
       if (s.resetSeq !== r.lastReset) {
         r.lastReset = s.resetSeq;
+        cancelDirect();
+        cancelFurniture();
         if (s.walking) spawn(true);
       }
     };
@@ -240,8 +266,8 @@ export function CameraController() {
     const pause = () => {
       keys.current.clear();
       jumpQueued.current = false;
-      if (document.pointerLockElement === gl.domElement)
-        document.exitPointerLock?.();
+      releaseLook();
+      cancelDirect();
       if (useViewStore.getState().walking)
         useViewStore.setState({
           paused: true,
@@ -253,22 +279,50 @@ export function CameraController() {
     const down = (e: KeyboardEvent) => {
       if (!useViewStore.getState().walking) return;
       if (e.key === "Escape") {
-        pause();
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        exitExploration();
         return;
       }
       if (
         (e.target as HTMLElement)?.closest?.(
-          "input,select,textarea,button,[contenteditable=true]",
+          "input,select,textarea,[contenteditable=true]",
         ) ||
-        e.ctrlKey ||
+        (e.ctrlKey &&
+          !(
+            useViewStore.getState().manipulating &&
+            ["ArrowLeft", "ArrowRight"].includes(e.key)
+          )) ||
         e.metaKey ||
         e.altKey
       )
         return;
+      const v = useViewStore.getState();
+      if (e.key.toLowerCase() === "e") {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (!e.repeat) {
+          if (v.furnishing) closeFurnish();
+          else openFurnish();
+        }
+        return;
+      }
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (!e.repeat) {
+          const dir = e.key === "ArrowLeft" ? -1 : 1;
+          if (useFurnishStore.getState().draft)
+            rotateFurniture((dir * Math.PI) / 12);
+          else if (!v.furnishing) rotateDirect(dir);
+        }
+        return;
+      }
+      if ((e.target as HTMLElement)?.closest?.("button")) return;
       const k = e.key.toLowerCase();
       if (k === " ") {
         e.preventDefault();
-        if (!e.repeat && !useViewStore.getState().paused)
+        if (!e.repeat && !v.paused && !v.manipulating && !v.furnishing)
           jumpQueued.current = true;
         return;
       }
@@ -286,7 +340,7 @@ export function CameraController() {
         ].includes(k)
       ) {
         e.preventDefault();
-        if (!useViewStore.getState().paused) keys.current.add(k);
+        if (!v.paused && !v.manipulating && !v.furnishing) keys.current.add(k);
       }
     };
     const up = (e: KeyboardEvent) => keys.current.delete(e.key.toLowerCase()),
@@ -294,17 +348,9 @@ export function CameraController() {
         if (document.hidden) pause();
       };
     const locked = () => {
-      if (!useViewStore.getState().walking) return;
       keys.current.clear();
       jumpQueued.current = false;
-      const looking = document.pointerLockElement === gl.domElement;
-      useViewStore.setState({
-        looking,
-        paused: !looking,
-        message: looking
-          ? "Mouse look active · WASD move · Escape pauses."
-          : "Paused · Look Around or Controls to resume.",
-      });
+      if (syncLook()) exitExploration();
     };
     const typing = (e: FocusEvent) => {
       if (
@@ -314,21 +360,14 @@ export function CameraController() {
       )
         pause();
     };
-    const lockError = () => {
-      if (useViewStore.getState().walking)
-        useViewStore.setState({
-          paused: true,
-          looking: false,
-          guide: true,
-          message:
-            "Mouse lock unavailable or declined. Use keyboard/touch in Controls.",
-        });
-    };
+    const lockError = lookUnavailable;
     const mouse = (e: MouseEvent) => {
       const s = useViewStore.getState();
       if (
         !s.walking ||
         s.paused ||
+        s.manipulating ||
+        s.furnishing ||
         document.pointerLockElement !== gl.domElement
       )
         return;
@@ -338,7 +377,7 @@ export function CameraController() {
         Math.min(1.45, pitch.current - e.movementY * 0.002),
       );
     };
-    window.addEventListener("keydown", down);
+    window.addEventListener("keydown", down, true);
     window.addEventListener("keyup", up);
     window.addEventListener("blur", pause);
     document.addEventListener("visibilitychange", hidden);
@@ -348,7 +387,7 @@ export function CameraController() {
     document.addEventListener("focusin", typing);
     return () => {
       held.clear();
-      window.removeEventListener("keydown", down);
+      window.removeEventListener("keydown", down, true);
       window.removeEventListener("keyup", up);
       window.removeEventListener("blur", pause);
       document.removeEventListener("visibilitychange", hidden);
@@ -356,15 +395,15 @@ export function CameraController() {
       document.removeEventListener("pointerlockerror", lockError);
       document.removeEventListener("mousemove", mouse);
       document.removeEventListener("focusin", typing);
-      if (document.pointerLockElement === gl.domElement)
-        document.exitPointerLock?.();
+      releaseLook();
+      cancelDirect();
     };
   }, [walking, gl]);
   useFrame((_, delta) => {
     const s = useViewStore.getState();
     if (s.walking && body.current) {
       const dt = Math.min(delta, 0.1);
-      if (!s.paused) {
+      if (!s.paused && !s.manipulating && !s.furnishing) {
         const k = keys.current;
         let f =
             (k.has("w") || k.has("arrowup") ? 1 : 0) -
@@ -374,12 +413,7 @@ export function CameraController() {
         const n = Math.max(1, Math.hypot(f, r));
         f /= n;
         r /= n;
-        yaw.current +=
-          ((k.has("arrowleft") ? 1 : 0) -
-            (k.has("arrowright") ? 1 : 0) +
-            s.virtual.turn) *
-          dt *
-          1.5;
+        yaw.current += s.virtual.turn * dt * 1.5;
         if (jumpQueued.current) {
           body.current = jumpBody(world(), body.current, EYE_HEIGHT + 0.15);
           jumpQueued.current = false;

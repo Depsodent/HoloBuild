@@ -1,3 +1,4 @@
+import { activate } from "./walkthrough-buttons.mjs";
 /* global document */
 import fs from "node:fs/promises";
 import { PerspectiveCamera, Vector3 } from "three";
@@ -137,7 +138,7 @@ export async function smokeFurniture131(page, modelAsk) {
   await page
     .getByRole("button", { name: "Enter Walkthrough", exact: true })
     .click();
-  await page.getByRole("button", { name: "Controls", exact: true }).click();
+  await activate(page, "Controls");
   const readFeet = async () => {
     const text = await page
         .getByLabel("Walking position", { exact: true })
@@ -147,7 +148,7 @@ export async function smokeFurniture131(page, modelAsk) {
     return m.slice(1).map(Number);
   };
   const entry = await readFeet();
-  await page.getByRole("button", { name: "Furnish", exact: true }).click();
+  await activate(page, "Furnish");
   await page
     .getByRole("searchbox", { name: "Search furniture", exact: true })
     .fill("Single bed");
@@ -193,10 +194,8 @@ export async function smokeFurniture131(page, modelAsk) {
   await page
     .getByRole("button", { name: "Done furnishing", exact: true })
     .click();
-  await page.getByRole("button", { name: "Controls", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Use keyboard / touch", exact: true })
-    .click();
+  await activate(page, "Controls");
+  await activate(page, "Use keyboard / touch");
   await page.keyboard.down("w");
   try {
     await expect
@@ -205,7 +204,7 @@ export async function smokeFurniture131(page, modelAsk) {
   } finally {
     await page.keyboard.up("w");
   }
-  await page.keyboard.press("Escape");
+
   await page
     .getByRole("button", { name: "Close controls", exact: true })
     .click();
@@ -215,9 +214,7 @@ export async function smokeFurniture131(page, modelAsk) {
       (new URL(page.url()).protocol === "https:" ? "public" : "local") +
       "-native-furnish.png",
   });
-  await page
-    .getByRole("button", { name: "Exit Walkthrough", exact: true })
-    .click();
+  await activate(page, "Exit Walkthrough");
   await history(tinted, interior);
   await load({ ...interior, objects: [] });
   await page
@@ -233,13 +230,11 @@ export async function smokeFurniture131(page, modelAsk) {
     "Reset Position",
     "Controls",
   ]);
-  await page.getByRole("button", { name: "Controls", exact: true }).click();
+  await activate(page, "Controls");
   await expect(page.getByLabel("Walkthrough help")).toContainText(
     "Space jumps",
   );
-  await page
-    .getByRole("button", { name: "Use keyboard / touch", exact: true })
-    .click();
+  await activate(page, "Use keyboard / touch");
   async function feet() {
     const text = await page
         .getByLabel("Walking position", { exact: true })
@@ -266,11 +261,9 @@ export async function smokeFurniture131(page, modelAsk) {
     await page.keyboard.up("Shift");
     await page.keyboard.up("w");
   }
-  await page
-    .getByRole("button", { name: "Reset Position", exact: true })
-    .click();
+  await activate(page, "Reset Position");
   await expect.poll(feet).toEqual(start);
-  await page.getByRole("button", { name: "Furnish", exact: true }).click();
+  await activate(page, "Furnish");
   await page.setViewportSize({ width: 700, height: 800 });
   const panel = await page
     .getByLabel("Furnish workspace", { exact: true })
@@ -302,7 +295,7 @@ export async function smokeFurniture131(page, modelAsk) {
   ).toBeEnabled({ timeout: 15000 });
   assert.deepEqual((await saved()).objects, []);
   await page.locator("canvas[data-engine]").focus();
-  await page.keyboard.press("e");
+  await page.keyboard.press("ArrowRight");
   await expect(
     page.getByRole("button", { name: "Place furniture", exact: true }),
   ).toBeEnabled();
@@ -318,7 +311,9 @@ export async function smokeFurniture131(page, modelAsk) {
     .getByRole("searchbox", { name: "Search furniture", exact: true })
     .fill("Armchair");
   await page.getByRole("button", { name: /^Armchair/ }).click();
-  await page.keyboard.press("Escape");
+  await page
+    .getByRole("button", { name: "Cancel preview", exact: true })
+    .click();
   assert.deepEqual((await saved()).objects, placed.objects);
   await page.screenshot({
     path:
@@ -329,9 +324,7 @@ export async function smokeFurniture131(page, modelAsk) {
   await page
     .getByRole("button", { name: "Done furnishing", exact: true })
     .click();
-  await page
-    .getByRole("button", { name: "Exit Walkthrough", exact: true })
-    .click();
+  await activate(page, "Exit Walkthrough");
   await page.getByRole("button", { name: "Undo", exact: true }).click();
   assert.deepEqual((await saved()).objects, []);
   await page.getByRole("button", { name: "Redo", exact: true }).click();

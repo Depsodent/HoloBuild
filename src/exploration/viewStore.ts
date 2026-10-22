@@ -1,3 +1,4 @@
+import { releaseLook } from "./pointerLock";
 import { create } from "zustand";
 export const SPRINT_SPEED = 4.4,
   WALK_SPEED = 2.2,
@@ -11,6 +12,7 @@ try {
 export const useViewStore = create(() => ({
   walking: false,
   furnishing: false,
+  manipulating: false,
   paused: true,
   looking: false,
   guide: false,
@@ -24,10 +26,11 @@ export const useViewStore = create(() => ({
 export const exploring = () => useViewStore.getState().walking;
 export function resetWalkthrough() {
   if (!exploring()) return;
-  if (document.pointerLockElement) document.exitPointerLock?.();
+  releaseLook();
   useViewStore.setState((s) => ({
     resetSeq: s.resetSeq + 1,
     furnishing: false,
+    manipulating: false,
     paused: true,
     looking: false,
     virtual: { forward: 0, right: 0, turn: 0 },

@@ -1,3 +1,4 @@
+import { requestLook, keyboardLook } from "../../exploration/pointerLock";
 import { useEffect, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useViewStore, resetWalkthrough } from "../../exploration/viewStore";
@@ -26,7 +27,6 @@ export function ExplorationControls() {
     controls = useRef<HTMLButtonElement>(null),
     was = useRef(false);
   useEffect(() => {
-    if (s.walking && !was.current) first.current?.focus();
     if (!s.walking && was.current)
       document
         .querySelector<HTMLButtonElement>('[aria-label="Enter Walkthrough"]')
@@ -34,39 +34,8 @@ export function ExplorationControls() {
     was.current = s.walking;
   }, [s.walking]);
   function resume(lock: boolean) {
-    const canvas = document.querySelector<HTMLCanvasElement>(
-      "canvas[data-engine]",
-    );
-    if (!canvas) return;
-    canvas.tabIndex = 0;
-    canvas.focus();
-    const declined = () => {
-      if (useViewStore.getState().walking)
-        useViewStore.setState({
-          paused: true,
-          looking: false,
-          guide: true,
-          message:
-            "Mouse lock unavailable or declined. Use keyboard/touch in Controls.",
-        });
-    };
-    if (!lock) {
-      useViewStore.setState({
-        paused: false,
-        looking: false,
-        message: "Keyboard/touch active · arrows move/turn · Escape pauses.",
-      });
-      return;
-    }
-    if (!canvas.requestPointerLock) {
-      declined();
-      return;
-    }
-    try {
-      Promise.resolve(canvas.requestPointerLock()).catch(declined);
-    } catch {
-      declined();
-    }
+    if (lock) requestLook();
+    else keyboardLook();
   }
   const release = () =>
     useViewStore.setState({ virtual: { forward: 0, right: 0, turn: 0 } });
@@ -98,90 +67,99 @@ export function ExplorationControls() {
       </div>
     );
   return (
-    <section className="exploration-controls" aria-label="Exploration controls">
-      <div
-        className="exploration-toolbar"
-        role="toolbar"
-        aria-label="Walkthrough controls"
-      >
-        <button
-          ref={first}
-          aria-pressed={s.looking}
-          onClick={() => resume(true)}
-        >
-          Look Around
-        </button>
-        <button onClick={exitExploration}>Exit Walkthrough</button>
-        <button onClick={resetWalkthrough}>Reset Position</button>
-        <button
-          ref={controls}
-          aria-expanded={s.guide}
-          aria-controls="walkthrough-help"
-          onClick={() => {
-            release();
-            useViewStore.setState({ guide: !s.guide });
-          }}
-        >
-          Controls
-        </button>
-      </div>
-      <p role="status">
-        {s.message ||
-          (s.paused
-            ? "Paused · Look Around to begin; keyboard/touch in Controls."
-            : "Mouse look active · WASD move · Escape pauses.")}
-      </p>
-      {s.guide && (
-        <div
-          id="walkthrough-help"
-          role="region"
-          aria-label="Walkthrough help"
-          onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              e.stopPropagation();
-              closeHelp();
-            }
-          }}
-        >
-          <p>
-            WASD move. Space jumps when grounded; hold Shift to sprint. Arrow
-            Up/Down move; Left/Right turn. Look Around locks the mouse; Escape
-            unlocks and pauses. Tab to Exit Walkthrough to return to the editor.
-            Reset Position restores the safe starting position.
-          </p>
-          <p>
-            Native doors act as open portals; windows and rails stay solid.
-            {s.approximate > 0
-              ? " Imported, curved and tilted shapes use conservative bounds; mesh interiors are not navigable."
-              : ""}
-          </p>
-          <div className="walk-help-actions">
-            <button onClick={() => resume(false)}>Use keyboard / touch</button>
-            <button onClick={closeHelp}>Close controls</button>
-          </div>
-          <div className="walk-touch-controls" aria-label="Movement controls">
-            <button disabled={s.paused} {...hold(1, 0)}>
-              Forward
-            </button>
-            <button disabled={s.paused} {...hold(0, -1)}>
-              Left
-            </button>
-            <button disabled={s.paused} {...hold(-1, 0)}>
-              Back
-            </button>
-            <button disabled={s.paused} {...hold(0, 1)}>
-              Right
-            </button>
-            <button disabled={s.paused} {...hold(0, 0, 1)}>
-              Turn left
-            </button>
-            <button disabled={s.paused} {...hold(0, 0, -1)}>
-              Turn right
-            </button>
-          </div>
-          <WalkingPosition />
-        </div>
+    <>
+      {s.looking && (
+        <span className="walk-crosshair" aria-hidden="true">
+          +
+        </span>
       )}
-    </section>
+      <section
+        className="exploration-controls"
+        aria-label="Exploration controls"
+      >
+        <div
+          className="exploration-toolbar"
+          role="toolbar"
+          aria-label="Walkthrough controls"
+        >
+          <button
+            ref={first}
+            aria-pressed={s.looking}
+            onClick={() => resume(true)}
+          >
+            Look Around
+          </button>
+          <button onClick={exitExploration}>Exit Walkthrough</button>
+          <button onClick={resetWalkthrough}>Reset Position</button>
+          <button
+            ref={controls}
+            aria-expanded={s.guide}
+            aria-controls="walkthrough-help"
+            onClick={() => {
+              release();
+              useViewStore.setState({ guide: !s.guide });
+            }}
+          >
+            Controls
+          </button>
+        </div>
+        <p role="status">
+          {s.message ||
+            (s.paused
+              ? "Paused · Look Around to begin; keyboard/touch in Controls."
+              : "Mouse look active · WASD move · Escape exits.")}
+        </p>
+        {s.guide && (
+          <div
+            id="walkthrough-help"
+            role="region"
+            aria-label="Walkthrough help"
+          >
+            <p>
+              WASD move. Space jumps when grounded; hold Shift to sprint. Arrow
+              Up/Down move. E toggles the furniture catalog. Left/Right rotate
+              the selected object by 15 degrees. Ctrl + right-drag selects and
+              moves supported objects; under mouse lock, aim at the center
+              crosshair and drag relative to the ground plane. Escape exits
+              Walkthrough, discarding unconfirmed edits. Reset Position restores
+              the safe starting position.
+            </p>
+            <p>
+              Native doors act as open portals; windows and rails stay solid.
+              {s.approximate > 0
+                ? " Imported, curved and tilted shapes use conservative bounds; mesh interiors are not navigable."
+                : ""}
+            </p>
+            <div className="walk-help-actions">
+              <button onClick={() => resume(false)}>
+                Use keyboard / touch
+              </button>
+              <button onClick={closeHelp}>Close controls</button>
+            </div>
+            <div className="walk-touch-controls" aria-label="Movement controls">
+              <button disabled={s.paused} {...hold(1, 0)}>
+                Forward
+              </button>
+              <button disabled={s.paused} {...hold(0, -1)}>
+                Left
+              </button>
+              <button disabled={s.paused} {...hold(-1, 0)}>
+                Back
+              </button>
+              <button disabled={s.paused} {...hold(0, 1)}>
+                Right
+              </button>
+              <button disabled={s.paused} {...hold(0, 0, 1)}>
+                Turn left
+              </button>
+              <button disabled={s.paused} {...hold(0, 0, -1)}>
+                Turn right
+              </button>
+            </div>
+            <WalkingPosition />
+          </div>
+        )}
+      </section>
+    </>
   );
 }

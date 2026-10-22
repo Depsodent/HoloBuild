@@ -1,3 +1,5 @@
+import { releaseLook, requestLook } from "../exploration/pointerLock";
+import { cancelDirect } from "../exploration/directManipulation";
 import { create } from "zustand";
 import { FURNITURE } from "../../shared/furnitureCatalog.mjs";
 import { useSceneStore } from "../scene/sceneStore";
@@ -137,7 +139,9 @@ export function confirmFurniture() {
   return ok;
 }
 export function openFurnish() {
-  if (document.pointerLockElement) document.exitPointerLock?.();
+  cancelDirect();
+  cancelFurniture();
+  releaseLook();
   useViewStore.setState({
     furnishing: true,
     guide: false,
@@ -151,8 +155,9 @@ export function openFurnish() {
     reason: "Choose furniture, then aim at a support surface.",
   });
 }
-export function closeFurnish() {
+export function closeFurnish(resume = true) {
   cancelFurniture();
   useFurnishStore.setState({ catalog: false, selected: null });
   useViewStore.setState({ furnishing: false });
+  if (resume && useViewStore.getState().walking) requestLook();
 }

@@ -32,7 +32,7 @@ export function FurnishControls() {
   );
   useEffect(() => {
     if (!active && walking) cancelFurniture();
-    if (!walking) closeFurnish();
+    if (!walking) closeFurnish(false);
   }, [walking, active]);
   useEffect(() => {
     const stop = () => cancelFurniture();
@@ -55,7 +55,7 @@ export function FurnishControls() {
     >
       <header>
         <strong>{s.draft?.name ?? selected?.name ?? "Furnish"}</strong>
-        <button onClick={walking ? closeFurnish : cancelFurniture}>
+        <button onClick={() => (walking ? closeFurnish() : cancelFurniture())}>
           {walking ? "Done furnishing" : "Cancel placement"}
         </button>
       </header>
@@ -63,8 +63,9 @@ export function FurnishControls() {
       {s.draft ? (
         <>
           <p>
-            Aim at a support · Q/E rotate · click scene or Enter places · Escape
-            cancels.
+            {walking
+              ? "Aim at a support · arrows rotate · click scene or Enter places · E closes · Escape exits."
+              : "Aim at a support · Q/E rotate · click scene or Enter places · Escape cancels."}
           </p>
           <div className="furnish-actions">
             <button

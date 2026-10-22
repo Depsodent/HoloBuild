@@ -1,3 +1,4 @@
+import { activate } from "./walkthrough-buttons.mjs";
 /* global document, window */
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
@@ -111,13 +112,13 @@ export async function smokeExploration(page) {
     "Reset Position",
     "Controls",
   ]);
-  await page.getByRole("button", { name: "Controls", exact: true }).click();
+  await activate(page, "Controls");
   await expect(
     page.getByRole("button", { name: "Forward", exact: true }),
-  ).toBeDisabled();
+  ).toBeEnabled();
   const initialFeet = await point(),
     beforeLook = await canvasImage();
-  await page.getByRole("button", { name: "Look Around", exact: true }).click();
+  await activate(page, "Look Around");
   await expect
     .poll(() => page.evaluate(() => document.pointerLockElement?.tagName))
     .toBe("CANVAS");
@@ -125,7 +126,7 @@ export async function smokeExploration(page) {
     page.getByRole("button", { name: "Look Around", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
   await page.mouse.move(900, 650);
-  await page.keyboard.press("Escape");
+  await activate(page, "Use keyboard / touch");
   await expect
     .poll(() => page.evaluate(() => document.pointerLockElement === null))
     .toBe(true);
@@ -134,13 +135,9 @@ export async function smokeExploration(page) {
     !afterLook.equals(beforeLook),
     "Mouse look did not change the rendered view",
   );
-  await page
-    .getByRole("button", { name: "Reset Position", exact: true })
-    .click();
+  await activate(page, "Reset Position");
   assert.deepEqual(await point(), initialFeet);
-  await page
-    .getByRole("button", { name: "Use keyboard / touch", exact: true })
-    .click();
+  await activate(page, "Use keyboard / touch");
   const face = door.construction.facade ?? "front",
     normal =
       face === "front"
@@ -281,15 +278,10 @@ export async function smokeExploration(page) {
       (new URL(page.url()).protocol === "https:" ? "public" : "local") +
       "-walkthrough.png",
   });
-  await page.getByRole("button", { name: "Controls", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Use keyboard / touch", exact: true })
-    .click();
+  await activate(page, "Controls");
+  await activate(page, "Use keyboard / touch");
   await axis(bAxis, inside);
-  await page.keyboard.press("Escape");
-  await page
-    .getByRole("button", { name: "Exit Walkthrough", exact: true })
-    .click();
+  await activate(page, "Exit Walkthrough");
   const restored = await canvasImage();
   assert.ok(
     original.equals(restored),
