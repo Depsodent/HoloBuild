@@ -34,7 +34,7 @@
     "singleUninterruptedFullPass": false
   },
   "productionUI": {
-    "testedAt": "2026-10-22T12:55:58.921Z",
+    "testedAt": "2026-10-22T13:09:10.932Z",
     "url": "http://127.0.0.1:5182",
     "sourceCheckpoint": "a3d7c7a57839b001b17c0c45d18f692893b66bf2",
     "providerCalls": 0,
@@ -64,5 +64,12 @@
   "productionDependencyVulnerabilities": 0,
   "physicalDeviceAcceptance": "pending",
   "credentialsQuotasInfrastructureChanged": false,
-  "production": "pending verified publication"
+  "production": {
+    "sourceCheckpoint": "cc01ea67601e993435d8b48ac9068fb168a585bb",
+    "deployment": "dpl_3p3DggCY2ZQZQ6oivtdGkVWbRmk1",
+    "controlsVerified": true,
+    "houseGenerationAndEditingVerified": true,
+    "liveFurnitureAI": "Two budget timeouts; not marked passed",
+    "receipt": "WALKTHROUGH_CONTROLS_PRODUCTION_VALIDATION.json"
+  }
 }

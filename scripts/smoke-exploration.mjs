@@ -48,6 +48,12 @@ export async function smokeExploration(page) {
   }
   const canvas = page.locator("canvas[data-engine]");
   async function canvasImage() {
+    if (await page.evaluate(() => document.pointerLockElement === null)) {
+      await page
+        .getByRole("button", { name: "Save project", exact: true })
+        .focus();
+      await page.mouse.move(20, 20);
+    }
     await page.evaluate(
       () =>
         new Promise((resolve) =>
@@ -95,6 +101,7 @@ export async function smokeExploration(page) {
     localStorage.getItem("holobuild.workspace.v1"),
   );
   const original = await canvasImage();
+  await fs.writeFile(".cache/controls-editor-before.png", original);
   await expect(
     page.getByRole("button", { name: /Enter Presentation|Save viewpoint/ }),
   ).toHaveCount(0);
@@ -282,7 +289,11 @@ export async function smokeExploration(page) {
   await activate(page, "Use keyboard / touch");
   await axis(bAxis, inside);
   await activate(page, "Exit Walkthrough");
+  await expect
+    .poll(() => page.evaluate(() => document.pointerLockElement))
+    .toBeNull();
   const restored = await canvasImage();
+  await fs.writeFile(".cache/controls-editor-restored.png", restored);
   assert.ok(
     original.equals(restored),
     "Editor canvas pixels differ after returning from walkthrough",

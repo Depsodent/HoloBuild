@@ -1,0 +1,863 @@
+{
+  "verifiedAt": "2026-10-22T13:41:30.837Z",
+  "url": "https://holobuild.vercel.app",
+  "sourceCheckpoint": "cc01ea67601e993435d8b48ac9068fb168a585bb",
+  "deploymentId": "dpl_3p3DggCY2ZQZQ6oivtdGkVWbRmk1",
+  "state": "READY",
+  "controlsReleaseVerified": true,
+  "allLiveProviderProbesPassed": false,
+  "unresolved": "Two furniture-specific live AI probes timed out at the unchanged provider budget. House generation/editing passed. Latency root cause beyond the reported timeout category was not established; no timeout/quota/model changes or further live retries.",
+  "metadata": {
+    "checkedAt": "2026-10-22T13:38:31.559Z",
+    "deploymentId": "dpl_3p3DggCY2ZQZQ6oivtdGkVWbRmk1",
+    "sourceCheckpoint": "cc01ea67601e993435d8b48ac9068fb168a585bb",
+    "state": "READY",
+    "url": "https://holobuild-jwrs0h8v2-aaryand616-6524.vercel.app",
+    "publicAliasDeployment": "dpl_3p3DggCY2ZQZQ6oivtdGkVWbRmk1",
+    "previousDeployment": "dpl_f9ro39ExXkYoZeiHDmiFzjgq2yKF",
+    "previousUrl": "holobuild-2ocbipwpv-aaryand616-6524.vercel.app",
+    "rollbackReady": true,
+    "accountPlan": "hobby",
+    "protectedVariableMetadataUnchanged": true,
+    "filesChecked": 323,
+    "unsafeUploadPaths": [],
+    "emptyDirectoryMarkers": [
+      "src/dist",
+      "src/docs",
+      "src/playwright-report",
+      "src/public/assets",
+      "src/public/models",
+      "src/public/textures",
+      "src/public/third-party-notices",
+      "src/public/vision/wasm",
+      "src/src/ai",
+      "src/src/hooks",
+      "src/src/utils",
+      "src/test-results"
+    ],
+    "privateValuesLogged": false
+  },
+  "security": {
+    "checkedAt": "2026-10-22T13:16:08.069Z",
+    "url": "https://holobuild.vercel.app",
+    "aiEnabled": true,
+    "checks": [
+      {
+        "check": "HTTP redirects to HTTPS",
+        "passed": true
+      },
+      {
+        "check": "Anonymous HTTPS and security headers",
+        "passed": true
+      },
+      {
+        "check": "Public AI explicitly enabled",
+        "passed": true
+      },
+      {
+        "check": "Untrusted Origin and CORS preflight denied",
+        "passed": true
+      },
+      {
+        "check": "Private local/config/server paths not served",
+        "passed": true
+      },
+      {
+        "check": "Deployed JS matches audited local build and has no private values",
+        "passed": true,
+        "scripts": 7
+      },
+      {
+        "check": "MediaPipe assets, WASM MIME and license evidence",
+        "passed": true
+      }
+    ],
+    "geminiCalled": false,
+    "credentialsPrinted": false
+  },
+  "realGeminiHouseAndEdit": {
+    "provider": [
+      {
+        "event": "result",
+        "requestId": "cefde18f-6a72-44fe-9e02-e4ccc64d21f5",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "create",
+        "timings": {
+          "firstTokenMs": 18701.454697999987,
+          "headerMs": 18700.69801099997,
+          "providerMs": 19354.854979999975,
+          "validationMs": 10.828584000002593,
+          "totalMs": 19944.12624099999,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      },
+      {
+        "event": "result",
+        "requestId": "a2f11c8d-7e11-46c8-9be9-80fd836eb348",
+        "provider": "Gemini",
+        "model": "gemini-3.5-flash-lite",
+        "kind": "edit",
+        "timings": {
+          "firstTokenMs": 20416.894490000006,
+          "headerMs": 20416.498473999993,
+          "providerMs": 20584.240789000003,
+          "validationMs": 2.6029519999865443,
+          "totalMs": 21138.464895000012,
+          "modelLoadMs": null,
+          "residentBefore": null,
+          "residentVramBytes": null
+        }
+      }
+    ],
+    "checks": {
+      "creation": {
+        "inertPreview": true,
+        "parts": 44,
+        "stairSteps": 16,
+        "upperFloorVoid": true,
+        "balconyParts": 8,
+        "alignedRealAccess": true,
+        "unrelatedCubePreserved": true,
+        "exactUndoRedo": true
+      },
+      "genuineConversationalEdit": {
+        "sameStructure": true,
+        "inertPreview": true,
+        "unrelatedComponentsPreserved": true,
+        "exactUndoRedo": true
+      },
+      "staircaseConversation": {
+        "material": "wood",
+        "cancel": true,
+        "inertPreview": true,
+        "exactUndoRedo": true
+      },
+      "editableOpening": {
+        "partInspector": true,
+        "panelIdPreserved": true,
+        "realAccessRetained": true,
+        "stairAndBalconyRecipesPreserved": true,
+        "exactUndoRedo": true
+      },
+      "saveLoad": {
+        "allArchitecturalMetadata": true,
+        "exactObjects": true,
+        "undoRedoLoad": true
+      },
+      "precision": {
+        "productionUI": true,
+        "developmentBridgeUsed": false,
+        "inspectorTabs": true,
+        "roughnessMetalnessOpacity": true,
+        "partScopePreservesArchitecture": true,
+        "numericDimensions": true,
+        "centimetrePreview": true,
+        "draftAcrossTabs": true,
+        "gridControls": true,
+        "measurements": true,
+        "exactUndoRedo": true,
+        "portableSurfaceAndTransformPersistence": true,
+        "physicalDeviceTested": false
+      }
+    },
+    "initialCombinedSmokePassed": false,
+    "helperFailure": "Editor canvas pixels differ after returning from walkthrough",
+    "classification": "Canvas clip included the intentionally restored keyboard-focus ring, not a camera transform error. Test focus normalized outside clip; exact comparison and actual same-house replay passed."
+  },
+  "focusDifference": {
+    "width": 874,
+    "height": 832,
+    "changedPixels": 624,
+    "bounds": [
+      11,
+      748,
+      117,
+      792
+    ],
+    "cause": "Restored Enter Walkthrough keyboard focus outline; camera geometry unchanged outside its button rectangle"
+  },
+  "exactNormalizedEditorCanvas": {
+    "equal": true,
+    "sha256": "284ce4273dc0be8b1a4244eec25f8be1efa986c1a1baad2008aaf0318b69fe6d"
+  },
+  "recordedRealHouseReplay": {
+    "testedAt": "2026-10-22T13:25:25.250Z",
+    "url": "https://holobuild.vercel.app",
+    "sourceCheckpoint": "cc01ea67601e993435d8b48ac9068fb168a585bb",
+    "recordedRealGeminiScene": true,
+    "sceneSha256": "e8e648429fbfe9daec7257c191c4b7e913aca7b439435267bd5ffb3fbb56e85d",
+    "providerCalls": 0,
+    "physicalDeviceTested": false,
+    "ok": true,
+    "checks": {
+      "productionUI": true,
+      "developmentBridgeUsed": false,
+      "realGeminiHost": true,
+      "doorPassage": true,
+      "connectedStairClimb": true,
+      "upperFloorVoid": true,
+      "balconyAccessAndReturn": true,
+      "pointerLockMouseLook": true,
+      "escapePause": true,
+      "walkthroughRestoresLayout": true,
+      "editorCanvasPixelsRestored": true,
+      "fourPrimaryControls": true,
+      "retiredPresentationAbsent": true,
+      "resetToInitialFeet": true,
+      "selectedGeneratedWallWindow": true,
+      "selectedManualWallWindow": true,
+      "previewCancelAndConfirmation": true,
+      "standalone270DegreeStairs": true,
+      "appearanceOnNewTreads": true,
+      "portableSaveLoad": true,
+      "exactUndoRedo": true,
+      "additionalProviderCalls": 0,
+      "physicalDeviceTested": false
+    },
+    "pageErrors": 0
+  },
+  "publicControls": {
+    "testedAt": "2026-10-22T13:30:39.878Z",
+    "url": "https://holobuild.vercel.app",
+    "sourceCheckpoint": "cc01ea67601e993435d8b48ac9068fb168a585bb",
+    "providerCalls": 0,
+    "physicalDeviceTested": false,
+    "ok": true,
+    "checks": {
+      "productionUI": true,
+      "developmentBridgeUsed": false,
+      "automaticRealPointerLock": true,
+      "lockedCenterRayPicking": true,
+      "relativeGroundPlaneDrag": true,
+      "invalidCollisionCancellation": true,
+      "arrowRotationDuringCtrlDrag": true,
+      "unrelatedObjectPreserved": true,
+      "oneAtomicUndoRedo": true,
+      "oneEscapeExitLocked": true,
+      "oneEscapeExitPlacement": true,
+      "oneEscapeExitDrag": true,
+      "layoutRestored": true,
+      "catalogToggleAndLockRestore": true,
+      "typingIgnoresShortcuts": true,
+      "originalSceneRestored": true,
+      "physicalKeyboardMouseTested": false
+    },
+    "pageErrors": 0
+  },
+  "publicFurnitureUI": {
+    "testedAt": "2026-10-22T13:35:22.589Z",
+    "url": "https://holobuild.vercel.app",
+    "sourceCheckpoint": "cc01ea67601e993435d8b48ac9068fb168a585bb",
+    "providerCalls": 0,
+    "physicalDeviceTested": false,
+    "ok": true,
+    "checks": {
+      "productionUI": true,
+      "developmentBridgeUsed": false,
+      "realGeminiFurnitureCreation": false,
+      "realGeminiSelectedFurnitureEdit": false,
+      "realGeneratedHouseInteriorPlacement": true,
+      "nativeEntryWithFurniture": true,
+      "unrelatedArchitecturePreserved": true,
+      "inertPreview": true,
+      "cancelAndConfirmation": true,
+      "jumpGravityLanding": true,
+      "sprintAndReset": true,
+      "fourPrimaryControls": true,
+      "catalogSearch": true,
+      "narrowCatalogAndKeyboard": true,
+      "rayAimedGhostPlacement": true,
+      "rotation": true,
+      "repeatedEnterCreatesOneObject": true,
+      "keyboardCancel": true,
+      "inspectorColor": true,
+      "duplicate": true,
+      "portableSaveLoad": true,
+      "exactUndoRedo": true,
+      "isolatedGroundPlacementAfterRealArchitectureWorkflow": true,
+      "geometryAndScopeValidated": true,
+      "physicalDeviceTested": false
+    },
+    "pageErrors": 0
+  },
+  "failedFurnitureProviderProbes": [
+    {
+      "event": "error",
+      "requestId": "74a45760-66b3-445e-be68-8b5bde17de02",
+      "errorKind": "timeout"
+    },
+    {
+      "event": "error",
+      "requestId": "abddc994-c3f3-4e48-8585-6f28802ec639",
+      "errorKind": "timeout"
+    }
+  ],
+  "logs": {
+    "checkedAt": "2026-10-22T13:38:22.741Z",
+    "deployment": "dpl_3p3DggCY2ZQZQ6oivtdGkVWbRmk1",
+    "since": "2026-10-22T13:15:20Z",
+    "requestRecords": 75,
+    "httpStatusCounts": {
+      "200": 66,
+      "403": 3,
+      "404": 6
+    },
+    "requests": [
+      {
+        "timestamp": "2026-10-22T13:35:23.346Z",
+        "path": "/favicon.svg",
+        "status": 200,
+        "requestId": "pqj7h-1792676123346-e0edf3399d19"
+      },
+      {
+        "timestamp": "2026-10-22T13:35:23.346Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "24nwp-1792676123346-532ccf91e388"
+      },
+      {
+        "timestamp": "2026-10-22T13:35:22.830Z",
+        "path": "/assets/three-vendor-C3XL4jGW.js",
+        "status": 200,
+        "requestId": "pqj7h-1792676122830-31289c624522"
+      },
+      {
+        "timestamp": "2026-10-22T13:35:22.826Z",
+        "path": "/assets/index-CZkVpDtC.css",
+        "status": 200,
+        "requestId": "q7x4v-1792676122826-e81f111e10e6"
+      },
+      {
+        "timestamp": "2026-10-22T13:35:22.826Z",
+        "path": "/assets/react-vendor-BASvHcO8.js",
+        "status": 200,
+        "requestId": "bhkng-1792676122826-8ce142795a86"
+      },
+      {
+        "timestamp": "2026-10-22T13:35:22.821Z",
+        "path": "/assets/index-DWzRwIDJ.js",
+        "status": 200,
+        "requestId": "qxcrt-1792676122821-150999b5d2d5"
+      },
+      {
+        "timestamp": "2026-10-22T13:35:22.766Z",
+        "path": "/",
+        "status": 200,
+        "requestId": "gzg7c-1792676122766-fc301ab41a9a"
+      },
+      {
+        "timestamp": "2026-10-22T13:32:56.497Z",
+        "path": "/api/planner/assistant",
+        "status": 200,
+        "requestId": "jrtk2-1792675976497-0f8fb51a1fbc"
+      },
+      {
+        "timestamp": "2026-10-22T13:32:51.156Z",
+        "path": "/favicon.svg",
+        "status": 200,
+        "requestId": "24nwp-1792675971156-3e4595215de6"
+      },
+      {
+        "timestamp": "2026-10-22T13:32:51.152Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "k2gt2-1792675971152-1811e2e8ee89"
+      },
+      {
+        "timestamp": "2026-10-22T13:32:50.322Z",
+        "path": "/assets/react-vendor-BASvHcO8.js",
+        "status": 200,
+        "requestId": "js6mt-1792675970322-43a68f9e1a72"
+      },
+      {
+        "timestamp": "2026-10-22T13:32:50.322Z",
+        "path": "/assets/three-vendor-C3XL4jGW.js",
+        "status": 200,
+        "requestId": "ct2mp-1792675970322-abf3f2cbe18a"
+      },
+      {
+        "timestamp": "2026-10-22T13:32:50.322Z",
+        "path": "/assets/index-CZkVpDtC.css",
+        "status": 200,
+        "requestId": "84hjr-1792675970322-e808e10b233d"
+      },
+      {
+        "timestamp": "2026-10-22T13:32:50.322Z",
+        "path": "/assets/index-DWzRwIDJ.js",
+        "status": 200,
+        "requestId": "sxxx2-1792675970322-b4710bb0c98a"
+      },
+      {
+        "timestamp": "2026-10-22T13:32:50.242Z",
+        "path": "/",
+        "status": 200,
+        "requestId": "5ll54-1792675970242-d1782fc61ece"
+      },
+      {
+        "timestamp": "2026-10-22T13:30:41.907Z",
+        "path": "/favicon.svg",
+        "status": 200,
+        "requestId": "h7kq2-1792675841907-2794056a95d5"
+      },
+      {
+        "timestamp": "2026-10-22T13:30:41.901Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "js6mt-1792675841901-8f7cf888a06f"
+      },
+      {
+        "timestamp": "2026-10-22T13:30:41.104Z",
+        "path": "/assets/react-vendor-BASvHcO8.js",
+        "status": 200,
+        "requestId": "tpwb4-1792675841104-9f9382f98c4d"
+      },
+      {
+        "timestamp": "2026-10-22T13:30:41.092Z",
+        "path": "/assets/three-vendor-C3XL4jGW.js",
+        "status": 200,
+        "requestId": "jjsqt-1792675841092-4ac2785b7bc3"
+      },
+      {
+        "timestamp": "2026-10-22T13:30:41.091Z",
+        "path": "/assets/index-CZkVpDtC.css",
+        "status": 200,
+        "requestId": "cnwqk-1792675841091-033d0d300ecb"
+      },
+      {
+        "timestamp": "2026-10-22T13:30:41.086Z",
+        "path": "/assets/index-DWzRwIDJ.js",
+        "status": 200,
+        "requestId": "htfsl-1792675841086-8d6039ac2e83"
+      },
+      {
+        "timestamp": "2026-10-22T13:30:40.981Z",
+        "path": "/",
+        "status": 200,
+        "requestId": "tpwb4-1792675840981-7c60e6e68918"
+      },
+      {
+        "timestamp": "2026-10-22T13:28:32.438Z",
+        "path": "/api/planner/assistant",
+        "status": 200,
+        "requestId": "gzg7c-1792675712438-cdc443d44df8"
+      },
+      {
+        "timestamp": "2026-10-22T13:28:27.421Z",
+        "path": "/favicon.svg",
+        "status": 200,
+        "requestId": "s8w4p-1792675707421-a427f9ed6361"
+      },
+      {
+        "timestamp": "2026-10-22T13:28:27.417Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "dmkvd-1792675707417-d742f8f88f75"
+      },
+      {
+        "timestamp": "2026-10-22T13:28:26.717Z",
+        "path": "/assets/three-vendor-C3XL4jGW.js",
+        "status": 200,
+        "requestId": "s8w4p-1792675706717-a0a6cb8e35a0"
+      },
+      {
+        "timestamp": "2026-10-22T13:28:26.716Z",
+        "path": "/assets/react-vendor-BASvHcO8.js",
+        "status": 200,
+        "requestId": "kdt59-1792675706716-fcef743cd925"
+      },
+      {
+        "timestamp": "2026-10-22T13:28:26.716Z",
+        "path": "/assets/index-CZkVpDtC.css",
+        "status": 200,
+        "requestId": "cnlwb-1792675706716-dbb8d2cef544"
+      },
+      {
+        "timestamp": "2026-10-22T13:28:26.712Z",
+        "path": "/assets/index-DWzRwIDJ.js",
+        "status": 200,
+        "requestId": "9mlts-1792675706712-5f6d7bd18c99"
+      },
+      {
+        "timestamp": "2026-10-22T13:28:26.638Z",
+        "path": "/",
+        "status": 200,
+        "requestId": "9mlts-1792675706638-5c3bc369efac"
+      },
+      {
+        "timestamp": "2026-10-22T13:25:26.617Z",
+        "path": "/favicon.svg",
+        "status": 200,
+        "requestId": "9mlts-1792675526617-f57b3aa5b487"
+      },
+      {
+        "timestamp": "2026-10-22T13:25:26.616Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "97xqz-1792675526616-acd5b66c6f6e"
+      },
+      {
+        "timestamp": "2026-10-22T13:25:26.102Z",
+        "path": "/assets/index-CZkVpDtC.css",
+        "status": 200,
+        "requestId": "pc4cq-1792675526102-8e8e3f6e2bbb"
+      },
+      {
+        "timestamp": "2026-10-22T13:25:26.101Z",
+        "path": "/assets/react-vendor-BASvHcO8.js",
+        "status": 200,
+        "requestId": "ns6bf-1792675526101-17089959785c"
+      },
+      {
+        "timestamp": "2026-10-22T13:25:26.101Z",
+        "path": "/assets/index-DWzRwIDJ.js",
+        "status": 200,
+        "requestId": "dn6vh-1792675526101-397d47edbdf6"
+      },
+      {
+        "timestamp": "2026-10-22T13:25:26.101Z",
+        "path": "/assets/three-vendor-C3XL4jGW.js",
+        "status": 200,
+        "requestId": "9mlts-1792675526101-2f334b6df65d"
+      },
+      {
+        "timestamp": "2026-10-22T13:25:26.047Z",
+        "path": "/",
+        "status": 200,
+        "requestId": "97xqz-1792675526047-8079212f7fde"
+      },
+      {
+        "timestamp": "2026-10-22T13:21:39.734Z",
+        "path": "/favicon.svg",
+        "status": 200,
+        "requestId": "k5954-1792675299734-cdcf81926191"
+      },
+      {
+        "timestamp": "2026-10-22T13:21:39.726Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "2jkkb-1792675299726-343724fa7a08"
+      },
+      {
+        "timestamp": "2026-10-22T13:21:39.198Z",
+        "path": "/assets/react-vendor-BASvHcO8.js",
+        "status": 200,
+        "requestId": "46bk5-1792675299198-c8d29cb8a50d"
+      },
+      {
+        "timestamp": "2026-10-22T13:21:39.197Z",
+        "path": "/assets/three-vendor-C3XL4jGW.js",
+        "status": 200,
+        "requestId": "k8cgw-1792675299197-aad232cfb4b9"
+      },
+      {
+        "timestamp": "2026-10-22T13:21:39.196Z",
+        "path": "/assets/index-CZkVpDtC.css",
+        "status": 200,
+        "requestId": "rm5cb-1792675299196-52801951d3a3"
+      },
+      {
+        "timestamp": "2026-10-22T13:21:39.192Z",
+        "path": "/assets/index-DWzRwIDJ.js",
+        "status": 200,
+        "requestId": "k5954-1792675299192-6f8b58a1b8d9"
+      },
+      {
+        "timestamp": "2026-10-22T13:21:39.044Z",
+        "path": "/",
+        "status": 200,
+        "requestId": "sp5sw-1792675299044-81f532398a8a"
+      },
+      {
+        "timestamp": "2026-10-22T13:16:29.219Z",
+        "path": "/api/planner/assistant",
+        "status": 200,
+        "requestId": "xkqj5-1792674989219-e4104e25a067"
+      },
+      {
+        "timestamp": "2026-10-22T13:16:07.841Z",
+        "path": "/third-party-notices/distribution.json",
+        "status": 200,
+        "requestId": "ct2mp-1792674967841-4f786fa9caf8"
+      },
+      {
+        "timestamp": "2026-10-22T13:16:07.486Z",
+        "path": "/third-party-notices/index.json",
+        "status": 200,
+        "requestId": "hbqnc-1792674967486-50ba39e4997d"
+      },
+      {
+        "timestamp": "2026-10-22T13:16:05.006Z",
+        "path": "/api/planner/assistant",
+        "status": 200,
+        "requestId": "cnlwb-1792674965006-a3d1b37151bb"
+      },
+      {
+        "timestamp": "2026-10-22T13:16:04.390Z",
+        "path": "/vision/wasm/vision_wasm_internal.wasm",
+        "status": 200,
+        "requestId": "ct2mp-1792674964390-49a89e87c7b1"
+      },
+      {
+        "timestamp": "2026-10-22T13:16:01.676Z",
+        "path": "/vision/hand_landmarker.task",
+        "status": 200,
+        "requestId": "ct2mp-1792674961676-251855b9442d"
+      },
+      {
+        "timestamp": "2026-10-22T13:16:01.368Z",
+        "path": "/assets/workerDetector-BMIPTz81.js",
+        "status": 200,
+        "requestId": "zblft-1792674961368-36afe2f4053a"
+      },
+      {
+        "timestamp": "2026-10-22T13:16:01.046Z",
+        "path": "/assets/vision_bundle-BJqyx4FW.js",
+        "status": 200,
+        "requestId": "l8mxj-1792674961046-d1b44f6f802d"
+      },
+      {
+        "timestamp": "2026-10-22T13:16:00.731Z",
+        "path": "/assets/trackingWorker-BNBieSSy.js",
+        "status": 200,
+        "requestId": "wj7nv-1792674960731-75482553407d"
+      },
+      {
+        "timestamp": "2026-10-22T13:16:00.646Z",
+        "path": "/favicon.svg",
+        "status": 200,
+        "requestId": "24nwp-1792674960646-178ebd4167c7"
+      },
+      {
+        "timestamp": "2026-10-22T13:16:00.641Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "xh8xr-1792674960641-9901f77b5303"
+      },
+      {
+        "timestamp": "2026-10-22T13:16:00.536Z",
+        "path": "/assets/three-vendor-C3XL4jGW.js",
+        "status": 200,
+        "requestId": "pqj7h-1792674960536-d114084bd305"
+      },
+      {
+        "timestamp": "2026-10-22T13:16:00.451Z",
+        "path": "/assets/react-vendor-BASvHcO8.js",
+        "status": 200,
+        "requestId": "gzg7c-1792674960451-d8f5f2656bbc"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:59.658Z",
+        "path": "/assets/index-CZkVpDtC.css",
+        "status": 200,
+        "requestId": "84hjr-1792674959658-151edd5bd2ef"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:59.658Z",
+        "path": "/assets/react-vendor-BASvHcO8.js",
+        "status": 200,
+        "requestId": "469q9-1792674959658-76f37fe2eda0"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:59.657Z",
+        "path": "/assets/three-vendor-C3XL4jGW.js",
+        "status": 200,
+        "requestId": "ghd5c-1792674959657-daeb98af60bb"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:59.656Z",
+        "path": "/assets/index-DWzRwIDJ.js",
+        "status": 200,
+        "requestId": "5qgxp-1792674959656-af2c62d9e2f4"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:59.607Z",
+        "path": "/",
+        "status": 200,
+        "requestId": "rm5cb-1792674959607-a10fdb817fb1"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:59.577Z",
+        "path": "/assets/index-DWzRwIDJ.js",
+        "status": 200,
+        "requestId": "97xqz-1792674959577-ca3348339e6b"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:59.311Z",
+        "path": "/assets/GLTFLoader-CM2ScPvp.js",
+        "status": 200,
+        "requestId": "ct2mp-1792674959311-36bcb353d3d8"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:59.272Z",
+        "path": "/server/app.mjs",
+        "status": 404,
+        "requestId": "xkqj5-1792674959272-002006fcd210"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:58.996Z",
+        "path": "/.cache/vercel-auth/auth.json",
+        "status": 404,
+        "requestId": "bw5dl-1792674958996-64607bea5706"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:58.871Z",
+        "path": "/.git/config",
+        "status": 404,
+        "requestId": "7nmbf-1792674958871-2aff0a83014b"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:58.802Z",
+        "path": "/.env.hosted.local",
+        "status": 404,
+        "requestId": "84v2n-1792674958802-0270bb2e5783"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:58.402Z",
+        "path": "/.env.gemini.local",
+        "status": 404,
+        "requestId": "7nmbf-1792674958402-5f6726e5c2cc"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:58.291Z",
+        "path": "/.env",
+        "status": 404,
+        "requestId": "8qpsv-1792674958291-4ba001993e50"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:57.996Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "gzg7c-1792674957996-1b4b7e338173"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:57.661Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "gzg7c-1792674957661-7aa4a1ffa3b7"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:57.376Z",
+        "path": "/api/planner/status",
+        "status": 403,
+        "requestId": "gzg7c-1792674957376-8118a1a52751"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:56.651Z",
+        "path": "/api/planner/status",
+        "status": 200,
+        "requestId": "f79ts-1792674956651-27cdab1f3d8b"
+      },
+      {
+        "timestamp": "2026-10-22T13:15:55.858Z",
+        "path": "/",
+        "status": 200,
+        "requestId": "gzg7c-1792674955858-c79eebfad17b"
+      }
+    ],
+    "runtime": [
+      {
+        "timestamp": "2026-10-22T13:33:26.823Z",
+        "path": "/api/planner/assistant",
+        "level": "warn",
+        "requestId": "abddc994-c3f3-4e48-8585-6f28802ec639",
+        "status": 504,
+        "kind": "timeout",
+        "phase": "provider",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-22T13:29:02.818Z",
+        "path": "/api/planner/assistant",
+        "level": "warn",
+        "requestId": "74a45760-66b3-445e-be68-8b5bde17de02",
+        "status": 504,
+        "kind": "timeout",
+        "phase": "provider",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-22T13:15:58.111Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "d46ee13d-af1a-4e43-abcd-30cc83fb19fd",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-22T13:15:57.780Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "fed9134b-95b6-4d82-a3bc-9a033499104a",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-22T13:15:57.497Z",
+        "path": "/api/planner/status",
+        "level": "warn",
+        "requestId": "76e2d931-4b34-458c-9dcb-a48769d811fb",
+        "status": 403,
+        "kind": "request",
+        "phase": "request",
+        "structured": true
+      }
+    ],
+    "expectedOriginProbeCount": 3,
+    "knownTimeouts": [
+      {
+        "timestamp": "2026-10-22T13:33:26.823Z",
+        "path": "/api/planner/assistant",
+        "level": "warn",
+        "requestId": "abddc994-c3f3-4e48-8585-6f28802ec639",
+        "status": 504,
+        "kind": "timeout",
+        "phase": "provider",
+        "structured": true
+      },
+      {
+        "timestamp": "2026-10-22T13:29:02.818Z",
+        "path": "/api/planner/assistant",
+        "level": "warn",
+        "requestId": "74a45760-66b3-445e-be68-8b5bde17de02",
+        "status": 504,
+        "kind": "timeout",
+        "phase": "provider",
+        "structured": true
+      }
+    ],
+    "unexpected": [],
+    "server5xx": 0,
+    "quotaOrStorageErrors": [],
+    "rawBodiesPromptsIpsOrUserAgentsIncluded": false,
+    "notes": [
+      "Two live furniture probes timed out and are recorded as failures, not converted to successes.",
+      "No further live retries or timeout/quota changes. Provider-latency root cause beyond the reported timeout category was not established.",
+      "HTTP200 streams were checked for terminal result/error independently.",
+      "House generation/editing and all recorded-scene UI workflows passed. Observed log window only."
+    ],
+    "reviewComplete": true
+  },
+  "leases": {
+    "checkedAt": "2026-10-22T13:37:18.657Z",
+    "productionReadOnly": true,
+    "activeLeases": 0,
+    "credentialsPrinted": false,
+    "quotaMutations": false
+  },
+  "credentialsQuotasOrPaidServicesChanged": false,
+  "physicalAcceptance": {
+    "keyboardMouse": "pending",
+    "webcam": "pending",
+    "microphone": "pending",
+    "touch": "pending",
+    "friendLaptop": "pending"
+  },
+  "runtimeChangedAfterDeployment": false
+}

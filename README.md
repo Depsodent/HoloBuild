@@ -15,7 +15,7 @@ A local-first 3D editor with webcam gestures, mouse tools, voice/text commands a
 - Resizable sidebars, persistent left tabs and floating camera/diagnostics; Stop Camera remains reachable when minimized.
 - Unified Ask HoloBuild: deterministic text/voice commands, Offline templates, optional local Ollama and native server-side Gemini generation/editing.
 - AI preview → explicit confirmation → one undoable action. Invalid geometry is rejected, never silently repaired. Auto fallback is explicitly labeled Offline.
-- Four-control Walkthrough with grounded Jump, held Sprint and contextual Furnish; exit restores the editor view.
+- Four-control Walkthrough with automatic Look Around, grounded Jump/Sprint, Ctrl/right-drag, arrow rotation and E catalog; one Escape restores the editor.
 - 45 native furniture/interior presets across six categories, validated floor/tabletop/wall/ceiling attachment, Inspector/gesture/AI edits and portable exact history.
 
 ![HoloBuild production workspace with a Gemini-generated platform](docs/images/workspace.png)
@@ -43,6 +43,8 @@ For Gemini, enter `GEMINI_API_KEY`, `LLM_PROVIDER=gemini` and an account-verifie
 Click/select or point/pinch to grab; move while pinched, release to place. In Auto, two stable pinches prepare scale/yaw without a mode switch. Lost/ambiguous tracking cancels previews safely. V/G/R/S select mouse tools; Delete removes; Ctrl+Z / Ctrl+Shift+Z undo/redo. Target Part edits one component; Target Structure resolves its parent. Stop Camera is in the top bar and compact camera controls.
 
 Save exports self-contained JSON, including imported assets. Browser-local assets use IndexedDB; changing origin or clearing storage can remove local references, so keep exported backups. See [manual tests](docs/MANUAL_TESTS.md), [workspace](docs/WORKSPACE.md), [commands](docs/COMMANDS.md) and [structure editing](docs/STRUCTURE_EDITING.md).
+
+Walkthrough requests mouse lock on entry. WASD moves, Space jumps, Shift sprints, E toggles the catalog, Ctrl + right-drag repositions supported targets, and arrows rotate. One Escape exits completely. See [Walkthrough controls](docs/WALKTHROUGH.md) and the [controls release handoff](docs/WALKTHROUGH_CONTROLS_HANDOFF.md) for supported scopes, pointer-lock fallback and acceptance checks.
 
 ## Architecture and limits
 

@@ -143,268 +143,296 @@ try {
   await page.getByRole("button", { name: "AI Settings", exact: true }).click();
   await page.getByLabel("Planner mode", { exact: true }).selectOption("llm");
   await page.getByRole("button", { name: "Request", exact: true }).click();
-  const before = await saved();
-  let plan = await modelAsk(
-    "generate a 2 story house including a balcony and stairs",
-  );
-  if (plan.kind === "clarify")
-    plan = await modelAsk(
-      "Put interior stairs on the left, connecting ground floor level 0 to second floor level 1, yaw 0. Use a centered front balcony at level 1 offset 0 with aligned access door, plus a separate centered front entry on level 0. Use 6m width/depth, 3m storey height, flat roof and valid default dimensions/materials.",
+  if (process.env.HOLO_RELEASE_REPLAY_SCENE) {
+    report.phase =
+      "Recorded real Gemini house: remaining furniture and controls";
+    const recorded = JSON.parse(
+      await fs.readFile(process.env.HOLO_RELEASE_REPLAY_SCENE, "utf8"),
     );
-  assert.equal(
-    plan.kind,
-    "create",
-    "Expected actual design, not an acknowledgement",
-  );
-  await expect(
-    page.getByLabel("Construction plan preview", { exact: true }),
-  ).toBeVisible();
-  assert.deepEqual((await saved()).objects, before.objects);
-  await page
-    .getByRole("button", { name: "Confirm construction", exact: true })
-    .click();
-  const built = await saved(),
-    parts = built.objects.filter((o) => o.construction),
-    template = parts[0].construction.structure.template;
-  assert.equal(template.floors, 2);
-  assert.ok(template.stairs.length);
-  assert.ok(template.balconies.length);
-  const stair = template.stairs[0],
-    balcony = template.balconies[0],
-    access = template.openings.find((o) => o.id === balcony.access);
-  assert.equal(stair.from, 0);
-  assert.equal(stair.to, 1);
-  assert.ok(
-    Math.abs(stair.steps * stair.rise - (template.height + 0.2)) < 1e-6,
-  );
-  assert.equal(
-    parts.filter((o) => o.construction.role === "stair").length,
-    stair.steps,
-  );
-  assert.equal(
-    parts.filter((o) => o.construction.role === "balcony").length,
-    8,
-  );
-  assert.equal(
-    parts.filter(
-      (o) => o.construction.role === "floor" && o.construction.level === 1,
-    ).length,
-    4,
-  );
-  for (const key of ["level", "facade", "offset"])
-    assert.equal(access[key], balcony[key]);
-  assert.ok(
-    parts.some(
-      (o) =>
-        o.construction.role === "door" && o.construction.opening === access.id,
-    ),
-  );
-  assert.deepEqual(
-    built.objects.filter((o) => !o.construction),
-    before.objects,
-  );
-  await exactHistory(before, built);
-  report.checks.creation = {
-    inertPreview: true,
-    parts: parts.length,
-    stairSteps: stair.steps,
-    upperFloorVoid: true,
-    balconyParts: 8,
-    alignedRealAccess: true,
-    unrelatedCubePreserved: true,
-    exactUndoRedo: true,
-  };
-  const group = parts[0].construction.structureId;
-  const roofTone =
-    built.objects
-      .find((o) => o.construction?.role === "roof")
-      .color.toLowerCase() === "#008080"
-      ? "indigo"
-      : "teal";
-  const editPlan = await modelAsk(
-    "Could you make the roof a shade of " +
-      roofTone +
-      " while keeping the rest of this same house as it is?",
-  );
-  assert.equal(editPlan.kind, "edit");
-  await expect(
-    page.getByLabel("Structure modification preview", { exact: true }),
-  ).toBeVisible();
-  assert.deepEqual((await saved()).objects, built.objects);
-  await page
-    .getByRole("button", { name: "Confirm structure edit", exact: true })
-    .click();
-  const edited = await saved();
-  await fs.writeFile(
-    ".cache/m105-real-after-roof.json",
-    JSON.stringify(edited),
-  );
-  assert.equal(edited.objects.length, built.objects.length);
-  for (const o of edited.objects) {
-    const old = built.objects.find((p) => p.id === o.id);
-    assert.ok(old);
-    for (const k of ["position", "rotation", "scale", "material"])
-      assert.deepEqual(o[k], old[k]);
-    if (o.construction?.role !== "roof") assert.equal(o.color, old.color);
-  }
-  assert.ok(
-    edited.objects
-      .filter((o) => o.construction?.role === "roof")
-      .every((o) => o.color !== built.objects.find((p) => p.id === o.id).color),
-  );
-  assert.equal(
-    new Set(
-      edited.objects
-        .filter((o) => o.construction)
-        .map((o) => o.construction.structureId),
-    ).size,
-    1,
-  );
-  assert.ok(
-    edited.objects
-      .filter((o) => o.construction)
-      .every((o) => o.construction.structureId === group),
-  );
-  await exactHistory(built, edited);
-  if (milestone === "m13")
-    await page.screenshot({ path: ".cache/m13-" + name + "-generated.png" });
-  report.checks.genuineConversationalEdit = {
-    sameStructure: true,
-    inertPreview: true,
-    unrelatedComponentsPreserved: true,
-    exactUndoRedo: true,
-  };
-  const stairMaterial =
-      edited.objects.find((o) => o.construction?.role === "stair").material ===
-      "wood"
-        ? "concrete"
-        : "wood",
-    stairMaterialRequest =
-      "Make the stairs " + (stairMaterial === "wood" ? "wooden" : "concrete");
-  await ask(stairMaterialRequest);
-  await expect(
-    page.getByLabel("Structure modification preview", { exact: true }),
-  ).toBeVisible();
-  assert.deepEqual((await saved()).objects, edited.objects);
-  await page
-    .getByRole("button", { name: "Cancel structure edit", exact: true })
-    .click();
-  assert.deepEqual((await saved()).objects, edited.objects);
-  await ask(stairMaterialRequest);
-  await expect(
-    page.getByLabel("Structure modification preview", { exact: true }),
-  ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Confirm structure edit", exact: true })
-    .click();
-  const wooden = await saved();
-  assert.ok(
-    wooden.objects
-      .filter((o) => o.construction?.role === "stair")
-      .every((o) => o.material === stairMaterial),
-  );
-  await exactHistory(edited, wooden);
-  report.checks.staircaseConversation = {
-    material: stairMaterial,
-    cancel: true,
-    inertPreview: true,
-    exactUndoRedo: true,
-  };
-  const panel = wooden.objects.find(
-    (o) =>
-      o.construction?.opening === access.id && o.construction.role === "door",
-  );
-  await page.getByLabel("Selection mode").selectOption("component");
-  await page.getByRole("tab", { name: "Collection", exact: true }).click();
-  await page.getByLabel("Search scene objects").fill(panel.name);
-  await page
-    .locator(".scene-list button")
-    .filter({ hasText: panel.name })
-    .first()
-    .click();
-  await page.getByRole("tab", { name: "Inspector", exact: true }).click();
-  await page.getByRole("button", { name: "Advanced", exact: true }).click();
-  await expect(
-    page.getByLabel("Opening Inspector", { exact: true }),
-  ).toBeVisible();
-  const width =
-    Number(
-      await page.getByLabel("Opening width", { exact: true }).inputValue(),
-    ) + 0.1;
-  await page.getByLabel("Opening width", { exact: true }).fill(String(width));
-  await page
-    .getByRole("button", { name: "Preview opening change", exact: true })
-    .click();
-  await expect(
-    page.getByLabel("Structure modification preview", { exact: true }),
-  ).toBeVisible();
-  assert.deepEqual((await saved()).objects, wooden.objects);
-  await page
-    .getByRole("button", { name: "Confirm structure edit", exact: true })
-    .click();
-  const opened = await saved(),
-    afterRecipe = opened.objects.find((o) => o.construction).construction
-      .structure.template;
-  assert.ok(
-    Math.abs(
-      afterRecipe.openings.find((o) => o.id === access.id).width - width,
-    ) < 1e-8,
-  );
-  assert.equal(
-    opened.objects.find(
-      (o) =>
-        o.construction?.opening === access.id && o.construction.role === "door",
-    ).id,
-    panel.id,
-  );
-  assert.deepEqual(
-    afterRecipe.stairs,
-    wooden.objects.find((o) => o.construction).construction.structure.template
-      .stairs,
-  );
-  assert.deepEqual(afterRecipe.balconies, template.balconies);
-  await exactHistory(wooden, opened);
-  report.checks.editableOpening = {
-    partInspector: true,
-    panelIdPreserved: true,
-    realAccessRetained: true,
-    stairAndBalconyRecipesPreserved: true,
-    exactUndoRedo: true,
-  };
-  await page.getByRole("button", { name: "Undo", exact: true }).click();
-  await page.locator("input[type=file][accept='.json']").setInputFiles({
-    name: "milestone105.json",
-    mimeType: "application/json",
-    buffer: Buffer.from(JSON.stringify(opened)),
-  });
-  await expect(page.locator(".status")).toContainText("Replace complete.");
-  assert.deepEqual((await saved()).objects, opened.objects);
-  await exactHistory(wooden, opened);
-  report.checks.saveLoad = {
-    allArchitecturalMetadata: true,
-    exactObjects: true,
-    undoRedoLoad: true,
-  };
-  if (process.env.HOLO_PRECISION_SMOKE === "1")
-    report.checks.precision = await (
-      await import("./smoke-precision.mjs")
-    ).smokePrecision(page);
-  if (process.env.HOLO_LIBRARY_SMOKE === "1")
-    report.checks.library = await (
-      await import("./smoke-library.mjs")
-    ).smokeLibrary(page);
-  if (process.env.HOLO_EXPLORATION_SMOKE === "1")
-    report.checks.exploration = await (
-      await import("./smoke-exploration.mjs")
-    ).smokeExploration(page);
-  if (process.env.HOLO_FURNITURE_SMOKE === "1")
+    await page
+      .locator('input[type=file][accept=".json"]')
+      .setInputFiles({
+        name: "recorded-real-house.json",
+        mimeType: "application/json",
+        buffer: Buffer.from(JSON.stringify(recorded)),
+      });
+    await expect(page.locator("footer .status")).toContainText(
+      "Replace complete.",
+    );
     report.checks.furniture = await (
       await import("./smoke-furniture131.mjs")
     ).smokeFurniture131(page, modelAsk);
-  if (process.env.HOLO_WALK_CONTROLS_SMOKE === "1")
     report.checks.walkthroughControls = await (
       await import("./smoke-walkthrough-controls.mjs")
     ).smokeWalkthroughControls(page);
+  } else {
+    const before = await saved();
+    let plan = await modelAsk(
+      "generate a 2 story house including a balcony and stairs",
+    );
+    if (plan.kind === "clarify")
+      plan = await modelAsk(
+        "Put interior stairs on the left, connecting ground floor level 0 to second floor level 1, yaw 0. Use a centered front balcony at level 1 offset 0 with aligned access door, plus a separate centered front entry on level 0. Use 6m width/depth, 3m storey height, flat roof and valid default dimensions/materials.",
+      );
+    assert.equal(
+      plan.kind,
+      "create",
+      "Expected actual design, not an acknowledgement",
+    );
+    await expect(
+      page.getByLabel("Construction plan preview", { exact: true }),
+    ).toBeVisible();
+    assert.deepEqual((await saved()).objects, before.objects);
+    await page
+      .getByRole("button", { name: "Confirm construction", exact: true })
+      .click();
+    const built = await saved(),
+      parts = built.objects.filter((o) => o.construction),
+      template = parts[0].construction.structure.template;
+    assert.equal(template.floors, 2);
+    assert.ok(template.stairs.length);
+    assert.ok(template.balconies.length);
+    const stair = template.stairs[0],
+      balcony = template.balconies[0],
+      access = template.openings.find((o) => o.id === balcony.access);
+    assert.equal(stair.from, 0);
+    assert.equal(stair.to, 1);
+    assert.ok(
+      Math.abs(stair.steps * stair.rise - (template.height + 0.2)) < 1e-6,
+    );
+    assert.equal(
+      parts.filter((o) => o.construction.role === "stair").length,
+      stair.steps,
+    );
+    assert.equal(
+      parts.filter((o) => o.construction.role === "balcony").length,
+      8,
+    );
+    assert.equal(
+      parts.filter(
+        (o) => o.construction.role === "floor" && o.construction.level === 1,
+      ).length,
+      4,
+    );
+    for (const key of ["level", "facade", "offset"])
+      assert.equal(access[key], balcony[key]);
+    assert.ok(
+      parts.some(
+        (o) =>
+          o.construction.role === "door" &&
+          o.construction.opening === access.id,
+      ),
+    );
+    assert.deepEqual(
+      built.objects.filter((o) => !o.construction),
+      before.objects,
+    );
+    await exactHistory(before, built);
+    report.checks.creation = {
+      inertPreview: true,
+      parts: parts.length,
+      stairSteps: stair.steps,
+      upperFloorVoid: true,
+      balconyParts: 8,
+      alignedRealAccess: true,
+      unrelatedCubePreserved: true,
+      exactUndoRedo: true,
+    };
+    const group = parts[0].construction.structureId;
+    const roofTone =
+      built.objects
+        .find((o) => o.construction?.role === "roof")
+        .color.toLowerCase() === "#008080"
+        ? "indigo"
+        : "teal";
+    const editPlan = await modelAsk(
+      "Could you make the roof a shade of " +
+        roofTone +
+        " while keeping the rest of this same house as it is?",
+    );
+    assert.equal(editPlan.kind, "edit");
+    await expect(
+      page.getByLabel("Structure modification preview", { exact: true }),
+    ).toBeVisible();
+    assert.deepEqual((await saved()).objects, built.objects);
+    await page
+      .getByRole("button", { name: "Confirm structure edit", exact: true })
+      .click();
+    const edited = await saved();
+    await fs.writeFile(
+      ".cache/m105-real-after-roof.json",
+      JSON.stringify(edited),
+    );
+    assert.equal(edited.objects.length, built.objects.length);
+    for (const o of edited.objects) {
+      const old = built.objects.find((p) => p.id === o.id);
+      assert.ok(old);
+      for (const k of ["position", "rotation", "scale", "material"])
+        assert.deepEqual(o[k], old[k]);
+      if (o.construction?.role !== "roof") assert.equal(o.color, old.color);
+    }
+    assert.ok(
+      edited.objects
+        .filter((o) => o.construction?.role === "roof")
+        .every(
+          (o) => o.color !== built.objects.find((p) => p.id === o.id).color,
+        ),
+    );
+    assert.equal(
+      new Set(
+        edited.objects
+          .filter((o) => o.construction)
+          .map((o) => o.construction.structureId),
+      ).size,
+      1,
+    );
+    assert.ok(
+      edited.objects
+        .filter((o) => o.construction)
+        .every((o) => o.construction.structureId === group),
+    );
+    await exactHistory(built, edited);
+    if (milestone === "m13")
+      await page.screenshot({ path: ".cache/m13-" + name + "-generated.png" });
+    report.checks.genuineConversationalEdit = {
+      sameStructure: true,
+      inertPreview: true,
+      unrelatedComponentsPreserved: true,
+      exactUndoRedo: true,
+    };
+    const stairMaterial =
+        edited.objects.find((o) => o.construction?.role === "stair")
+          .material === "wood"
+          ? "concrete"
+          : "wood",
+      stairMaterialRequest =
+        "Make the stairs " + (stairMaterial === "wood" ? "wooden" : "concrete");
+    await ask(stairMaterialRequest);
+    await expect(
+      page.getByLabel("Structure modification preview", { exact: true }),
+    ).toBeVisible();
+    assert.deepEqual((await saved()).objects, edited.objects);
+    await page
+      .getByRole("button", { name: "Cancel structure edit", exact: true })
+      .click();
+    assert.deepEqual((await saved()).objects, edited.objects);
+    await ask(stairMaterialRequest);
+    await expect(
+      page.getByLabel("Structure modification preview", { exact: true }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Confirm structure edit", exact: true })
+      .click();
+    const wooden = await saved();
+    assert.ok(
+      wooden.objects
+        .filter((o) => o.construction?.role === "stair")
+        .every((o) => o.material === stairMaterial),
+    );
+    await exactHistory(edited, wooden);
+    report.checks.staircaseConversation = {
+      material: stairMaterial,
+      cancel: true,
+      inertPreview: true,
+      exactUndoRedo: true,
+    };
+    const panel = wooden.objects.find(
+      (o) =>
+        o.construction?.opening === access.id && o.construction.role === "door",
+    );
+    await page.getByLabel("Selection mode").selectOption("component");
+    await page.getByRole("tab", { name: "Collection", exact: true }).click();
+    await page.getByLabel("Search scene objects").fill(panel.name);
+    await page
+      .locator(".scene-list button")
+      .filter({ hasText: panel.name })
+      .first()
+      .click();
+    await page.getByRole("tab", { name: "Inspector", exact: true }).click();
+    await page.getByRole("button", { name: "Advanced", exact: true }).click();
+    await expect(
+      page.getByLabel("Opening Inspector", { exact: true }),
+    ).toBeVisible();
+    const width =
+      Number(
+        await page.getByLabel("Opening width", { exact: true }).inputValue(),
+      ) + 0.1;
+    await page.getByLabel("Opening width", { exact: true }).fill(String(width));
+    await page
+      .getByRole("button", { name: "Preview opening change", exact: true })
+      .click();
+    await expect(
+      page.getByLabel("Structure modification preview", { exact: true }),
+    ).toBeVisible();
+    assert.deepEqual((await saved()).objects, wooden.objects);
+    await page
+      .getByRole("button", { name: "Confirm structure edit", exact: true })
+      .click();
+    const opened = await saved(),
+      afterRecipe = opened.objects.find((o) => o.construction).construction
+        .structure.template;
+    assert.ok(
+      Math.abs(
+        afterRecipe.openings.find((o) => o.id === access.id).width - width,
+      ) < 1e-8,
+    );
+    assert.equal(
+      opened.objects.find(
+        (o) =>
+          o.construction?.opening === access.id &&
+          o.construction.role === "door",
+      ).id,
+      panel.id,
+    );
+    assert.deepEqual(
+      afterRecipe.stairs,
+      wooden.objects.find((o) => o.construction).construction.structure.template
+        .stairs,
+    );
+    assert.deepEqual(afterRecipe.balconies, template.balconies);
+    await exactHistory(wooden, opened);
+    report.checks.editableOpening = {
+      partInspector: true,
+      panelIdPreserved: true,
+      realAccessRetained: true,
+      stairAndBalconyRecipesPreserved: true,
+      exactUndoRedo: true,
+    };
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await page.locator("input[type=file][accept='.json']").setInputFiles({
+      name: "milestone105.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(JSON.stringify(opened)),
+    });
+    await expect(page.locator(".status")).toContainText("Replace complete.");
+    assert.deepEqual((await saved()).objects, opened.objects);
+    await exactHistory(wooden, opened);
+    report.checks.saveLoad = {
+      allArchitecturalMetadata: true,
+      exactObjects: true,
+      undoRedoLoad: true,
+    };
+    if (process.env.HOLO_PRECISION_SMOKE === "1")
+      report.checks.precision = await (
+        await import("./smoke-precision.mjs")
+      ).smokePrecision(page);
+    if (process.env.HOLO_LIBRARY_SMOKE === "1")
+      report.checks.library = await (
+        await import("./smoke-library.mjs")
+      ).smokeLibrary(page);
+    if (process.env.HOLO_EXPLORATION_SMOKE === "1")
+      report.checks.exploration = await (
+        await import("./smoke-exploration.mjs")
+      ).smokeExploration(page);
+    if (process.env.HOLO_FURNITURE_SMOKE === "1")
+      report.checks.furniture = await (
+        await import("./smoke-furniture131.mjs")
+      ).smokeFurniture131(page, modelAsk);
+    if (process.env.HOLO_WALK_CONTROLS_SMOKE === "1")
+      report.checks.walkthroughControls = await (
+        await import("./smoke-walkthrough-controls.mjs")
+      ).smokeWalkthroughControls(page);
+  }
   await page.locator("canvas[data-engine]").hover();
   await page.mouse.wheel(0, 500);
   await page.screenshot({
